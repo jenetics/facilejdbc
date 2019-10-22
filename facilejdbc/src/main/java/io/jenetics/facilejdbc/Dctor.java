@@ -17,7 +17,7 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.jpx.jdbc.internal.querily;
+package io.jenetics.facilejdbc;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
@@ -26,13 +26,11 @@ import static java.util.Objects.requireNonNull;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-import io.jenetics.jpx.jdbc.internal.querily.Param.Value;
+import io.jenetics.facilejdbc.Param.Value;
 
 /**
  * This class represents a <em>deconstructor</em> for a given (record) class. It

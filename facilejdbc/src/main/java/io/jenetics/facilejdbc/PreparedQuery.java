@@ -17,7 +17,7 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.jpx.jdbc.internal.querily;
+package io.jenetics.facilejdbc;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
@@ -33,7 +33,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import io.jenetics.jpx.jdbc.internal.querily.Param.Value;
+import io.jenetics.facilejdbc.Param.Value;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>

@@ -17,7 +17,7 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.jpx.jdbc.internal.querily;
+package io.jenetics.facilejdbc;
 
 import static java.lang.String.format;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
@@ -40,7 +40,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.jenetics.jpx.jdbc.internal.querily.Param.Value;
+import io.jenetics.facilejdbc.Param.Value;
 
 /**
  * A {@code Query} represents an executable piece of SQL text.

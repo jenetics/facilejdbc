@@ -17,7 +17,7 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.jpx.jdbc.internal.querily;
+package io.jenetics.facilejdbc;
 
 import java.sql.SQLException;
 
