@@ -1,0 +1,6 @@
+sudo: false
+language: java
+jdk:
+  - openjdk11
+
+script: "./gradlew check --info --stacktrace"
