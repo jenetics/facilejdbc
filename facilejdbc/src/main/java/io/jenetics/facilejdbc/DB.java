@@ -19,10 +19,33 @@
  */
 package io.jenetics.facilejdbc;
 
+import java.sql.Connection;
+
+import javax.sql.DataSource;
+
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
  * @since !__version__!
  */
-public class DB {
+public final class DB {
+	private DB() {
+	}
+
+	public static <T> T transaction(
+		final DataSource ds,
+		final SqlFunction<Connection, ? extends T> f
+	) {
+		return null;
+	}
+
+
+	public static void main(final String[] args) throws Exception {
+		final DataSource ds = null;
+		final Query query = Query.of("SELECT 1");
+
+		DB.transaction(ds, conn -> query.execute(conn));
+
+	}
+
 }
