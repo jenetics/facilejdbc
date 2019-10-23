@@ -44,7 +44,7 @@ public final class DB {
 		final DataSource ds = null;
 		final Query query = Query.of("SELECT 1");
 
-		DB.transaction(ds, conn -> query.execute(conn));
+		final boolean result = DB.transaction(ds, query::execute);
 
 	}
 
