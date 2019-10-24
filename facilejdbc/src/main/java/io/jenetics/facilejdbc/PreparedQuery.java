@@ -26,7 +26,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
@@ -45,11 +44,10 @@ final class PreparedQuery extends Query {
 	private final Map<String, Param> _params;
 
 	private PreparedQuery(
-		final String sql,
-		final List<String> names,
+		final Sql sql,
 		final Map<String, Param> params
 	) {
-		super(sql, names);
+		super(sql);
 		_params = params;
 	}
 
@@ -62,20 +60,20 @@ final class PreparedQuery extends Query {
 			map.put(param.name(), param);
 		}
 
-		return new PreparedQuery(sql(), names(), map);
+		return new PreparedQuery(sql(), map);
 	}
 
 	@Override
 	PreparedStatement prepare(final Connection conn) throws SQLException {
 		return  conn.prepareStatement(
-			sql(),
+			sql().sql(),
 			RETURN_GENERATED_KEYS
 		);
 	}
 
 	private void fill(final PreparedStatement stmt) throws SQLException {
 		int index = 1;
-		for (String name : names()) {
+		for (String name : sql().params()) {
 			if (_params.containsKey(name)) {
 				final Object value = toSQLValue(_params.get(name).value().value());
 				stmt.setObject(index, value);
@@ -98,7 +96,7 @@ final class PreparedQuery extends Query {
 
 			for (T row : rows) {
 				int index = 0;
-				for (String name : names()) {
+				for (String name : sql().params()) {
 					final Value value = dctor.apply(row, name, conn);
 					if (value != null) {
 						stmt.setObject(++index, value.value());
@@ -126,7 +124,7 @@ final class PreparedQuery extends Query {
 				Function.identity(),
 				(a, b) -> b));
 
-		return new PreparedQuery(query.sql(), query.names(), map);
+		return new PreparedQuery(query.sql(), map);
 	}
 
 }

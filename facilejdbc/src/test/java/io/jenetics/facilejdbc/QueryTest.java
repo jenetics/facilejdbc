@@ -32,13 +32,13 @@ public class QueryTest {
 	@Test
 	public void create() {
 		final Query query = Query
-			.of("SELECT * FROM table WHERE id = {id} AND name = {name}");
+			.of("SELECT * FROM table WHERE id = :id AND name = :name");
 
 		Assert.assertEquals(
-			query.sql(),
+			query.sql().sql(),
 			"SELECT * FROM table WHERE id = ? AND name = ?"
 		);
-		Assert.assertEquals(query.names(), asList("id", "name"));
+		Assert.assertEquals(query.sql().params(), asList("id", "name"));
 	}
 
 }
