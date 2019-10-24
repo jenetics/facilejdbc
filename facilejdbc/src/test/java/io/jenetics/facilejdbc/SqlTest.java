@@ -40,8 +40,8 @@ public class SqlTest {
 	) {
 		final Sql s = Sql.of(string);
 
-		Assert.assertEquals(s.params(), params);
-		Assert.assertEquals(s.sql(), sql);
+		Assert.assertEquals(s.paramNames(), params);
+		Assert.assertEquals(s.string(), sql);
 	}
 
 	@DataProvider

@@ -159,7 +159,7 @@ public class Query {
 		throws SQLException
 	{
 		int index = 0;
-		for (String name : _sql.params()) {
+		for (String name : _sql.paramNames()) {
 			final Value value = dctor.apply(row, name, conn);
 			if (value != null) {
 				stmt.setObject(++index, toSQLValue(value.value()));
@@ -252,7 +252,7 @@ public class Query {
 	}
 
 	PreparedStatement prepare(final Connection conn) throws SQLException {
-		return conn.prepareStatement(_sql.sql(), RETURN_GENERATED_KEYS);
+		return conn.prepareStatement(_sql.string(), RETURN_GENERATED_KEYS);
 	}
 
 	private static Optional<Long> readID(final Statement stmt)

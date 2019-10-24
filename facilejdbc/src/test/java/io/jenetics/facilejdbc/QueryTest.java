@@ -35,10 +35,10 @@ public class QueryTest {
 			.of("SELECT * FROM table WHERE id = :id AND name = :name");
 
 		Assert.assertEquals(
-			query.sql().sql(),
+			query.sql().string(),
 			"SELECT * FROM table WHERE id = ? AND name = ?"
 		);
-		Assert.assertEquals(query.sql().params(), asList("id", "name"));
+		Assert.assertEquals(query.sql().paramNames(), asList("id", "name"));
 	}
 
 }

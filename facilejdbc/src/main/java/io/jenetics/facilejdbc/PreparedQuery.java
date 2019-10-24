@@ -66,14 +66,14 @@ final class PreparedQuery extends Query {
 	@Override
 	PreparedStatement prepare(final Connection conn) throws SQLException {
 		return  conn.prepareStatement(
-			sql().sql(),
+			sql().string(),
 			RETURN_GENERATED_KEYS
 		);
 	}
 
 	private void fill(final PreparedStatement stmt) throws SQLException {
 		int index = 1;
-		for (String name : sql().params()) {
+		for (String name : sql().paramNames()) {
 			if (_params.containsKey(name)) {
 				final Object value = toSQLValue(_params.get(name).value().value());
 				stmt.setObject(index, value);
@@ -96,7 +96,7 @@ final class PreparedQuery extends Query {
 
 			for (T row : rows) {
 				int index = 0;
-				for (String name : sql().params()) {
+				for (String name : sql().paramNames()) {
 					final Value value = dctor.apply(row, name, conn);
 					if (value != null) {
 						stmt.setObject(++index, value.value());

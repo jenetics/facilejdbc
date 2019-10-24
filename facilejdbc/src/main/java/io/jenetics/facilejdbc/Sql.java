@@ -42,12 +42,12 @@ final class Sql {
 	private static final Pattern PARAM_PATTERN =
 		Pattern.compile("(\\s+:[\\w]+)");
 
-	private final String _sql;
-	private final List<String> _params;
+	private final String _string;
+	private final List<String> _paramNames;
 
-	private Sql(final String sql, final List<String> params) {
-		_sql = requireNonNull(sql);
-		_params = unmodifiableList(params);
+	private Sql(final String string, final List<String> paramNames) {
+		_string = requireNonNull(string);
+		_paramNames = unmodifiableList(paramNames);
 	}
 
 	/**
@@ -56,8 +56,8 @@ final class Sql {
 	 *
 	 * @return the prepared SQL string
 	 */
-	String sql() {
-		return _sql;
+	String string() {
+		return _string;
 	}
 
 	/**
@@ -66,25 +66,25 @@ final class Sql {
 	 *
 	 * @return the parsed parameter names
 	 */
-	List<String> params() {
-		return _params;
+	List<String> paramNames() {
+		return _paramNames;
 	}
 
 	@Override
 	public int hashCode() {
-		return _sql.hashCode();
+		return _string.hashCode();
 	}
 
 	@Override
 	public boolean equals(final Object obj) {
 		return obj == this ||
 			obj instanceof Sql &&
-			_sql.equals(((Sql) obj)._sql);
+			_string.equals(((Sql) obj)._string);
 	}
 
 	@Override
 	public String toString() {
-		return _sql;
+		return _string;
 	}
 
 
