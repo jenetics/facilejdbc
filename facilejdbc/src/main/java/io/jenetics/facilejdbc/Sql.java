@@ -39,8 +39,7 @@ import java.util.regex.Pattern;
  */
 final class Sql {
 
-	private static final Pattern PARAM_PATTERN =
-		Pattern.compile("(\\s+:[\\w]+)");
+	private static final Pattern PARAM_PATTERN = Pattern.compile("(\\s+:[\\w]+)");
 
 	private final String _string;
 	private final List<String> _paramNames;
