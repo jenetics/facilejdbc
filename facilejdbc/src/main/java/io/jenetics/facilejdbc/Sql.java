@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 final class Sql {
 
 	private static final Pattern PARAM_PATTERN =
-		Pattern.compile("(^|[^\\w:]+?):([\\w]+)");
+		Pattern.compile("(\\s+:[\\w]+)");
 
 	private final String _sql;
 	private final List<String> _params;
@@ -102,25 +102,23 @@ final class Sql {
 	static Sql of(final String sql) {
 		final List<String> names = new ArrayList<>();
 		final StringBuffer parsedQuery = new StringBuffer();
-		System.out.println("#" + sql + "#");
 
 		final Matcher matcher = PARAM_PATTERN.matcher(sql);
-
-		int start = 0;
 		while (matcher.find()) {
-			parsedQuery.append(sql, start, matcher.start(2));
+			final String match = matcher.group(1);
 
-			final String name = matcher.group(2);
-			System.out.println("### '" + matcher.group(1) + "' : '" + name + "' :" + matcher.groupCount() + ":" + matcher.group());
+			if (match != null) {
+				final int start = match.indexOf(':');
 
-			if (name != null) {
+				final String name = match.substring(start + 1);
 				names.add(name);
-				matcher.appendReplacement(parsedQuery, " ?");
+
+				final String replacement = match.substring(0, start) + "?";
+				matcher.appendReplacement(parsedQuery, replacement);
 			}
 
-			start = matcher.end();
 		}
-		parsedQuery.append(sql.substring(start));
+		matcher.appendTail(parsedQuery);
 
 		return new Sql(parsedQuery.toString(), names);
 	}

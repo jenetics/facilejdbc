@@ -19,7 +19,6 @@
  */
 package io.jenetics.facilejdbc;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.testng.Assert;
@@ -48,15 +47,15 @@ public class SqlTest {
 	@DataProvider
 	public Object[][] strings() {
 		return new Object[][] {
-			//{"", new String[0], ""},
-			//{" ", new String[0], " "},
-			//{"a ", new String[0], "a "},
-			{"a = :name1", List.of("name1"), "a = ?"}
-			//{"a :name1", new String[]{"name1"}, "a ?"},
-			//{"a :name1 :name2 :name1", new String[]{"name1", "name2", "name1"}, "a ? ? ?"},
-			//{"a :name1 b", new String[]{"name1"}, "a ? b"},
-			//{"a :name1 b:name2 :name3", new String[]{"name1", "name3"}, "a ? b:name2 ?"},
-			//{"a :name1 ::name2 :name3", new String[]{"name1", "name3"}, "a ? ::name2 ?"}
+			{"", List.of(), ""},
+			{" ", List.of(), " "},
+			{"a ", List.of(), "a "},
+			{"a = :name1", List.of("name1"), "a = ?"},
+			{"a :name1", List.of("name1"), "a ?"},
+			{"a :name1 :name2  :name1", List.of("name1", "name2", "name1"), "a ? ?  ?"},
+			{"a :name1 b", List.of("name1"), "a ? b"},
+			{"a :name1 b:name2 :name3", List.of("name1", "name3"), "a ? b:name2 ?"},
+			{"a :name1 ::name2 :name3", List.of("name1", "name3"), "a ? ::name2 ?"}
 		};
 	}
 
