@@ -19,26 +19,44 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.util.Arrays.asList;
+import java.util.List;
 
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @version !__version__!
+ * @since !__version__!
  */
-public class QueryTest {
+public class SqlTest {
 
-	@Test
-	public void create() {
-		final Query query = Query
-			.of("SELECT * FROM table WHERE id = :id AND name = :name");
+	@Test(dataProvider = "strings")
+	public void parsing(
+		final String string,
+		final List<String> params,
+		final String sql
+	) {
+		final Sql s = Sql.of(string);
 
-		Assert.assertEquals(
-			query.sql().string(),
-			"SELECT * FROM table WHERE id = ? AND name = ?"
-		);
-		Assert.assertEquals(query.sql().paramNames(), asList("id", "name"));
+		Assert.assertEquals(s.paramNames(), params);
+		Assert.assertEquals(s.string(), sql);
+	}
+
+	@DataProvider
+	public Object[][] strings() {
+		return new Object[][] {
+			{"", List.of(), ""},
+			{" ", List.of(), " "},
+			{"a ", List.of(), "a "},
+			{"a = :name1", List.of("name1"), "a = ?"},
+			{"a :name1", List.of("name1"), "a ?"},
+			{"a :name1 :name2  :name1", List.of("name1", "name2", "name1"), "a ? ?  ?"},
+			{"a :name1 b", List.of("name1"), "a ? b"},
+			{"a :name1 b:name2 :name3", List.of("name1", "name3"), "a ? b:name2 ?"},
+			{"a :name1 ::name2 :name3", List.of("name1", "name3"), "a ? ::name2 ?"}
+		};
 	}
 
 }

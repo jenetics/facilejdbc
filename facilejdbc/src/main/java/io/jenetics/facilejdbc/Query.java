@@ -21,7 +21,6 @@ package io.jenetics.facilejdbc;
 
 import static java.lang.String.format;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 
 import java.net.URI;
@@ -32,13 +31,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import io.jenetics.facilejdbc.Param.Value;
 
@@ -51,12 +46,10 @@ import io.jenetics.facilejdbc.Param.Value;
  */
 public class Query {
 
-	private final String _sql;
-	private final List<String> _names;
+	private final Sql _sql;
 
-	Query(final String sql, final List<String> names) {
+	Query(final Sql sql) {
 		_sql = requireNonNull(sql);
-		_names = unmodifiableList(names);
 	}
 
 	/**
@@ -64,17 +57,8 @@ public class Query {
 	 *
 	 * @return the SQL string of {@code this} query class
 	 */
-	public String sql() {
+	public Sql sql() {
 		return _sql;
-	}
-
-	/**
-	 * Return the parameter names of this query. The returned list may be empty.
-	 *
-	 * @return the parameter names of this query
-	 */
-	public List<String> names() {
-		return _names;
 	}
 
 	/**
@@ -175,7 +159,7 @@ public class Query {
 		throws SQLException
 	{
 		int index = 0;
-		for (String name : names()) {
+		for (String name : _sql.paramNames()) {
 			final Value value = dctor.apply(row, name, conn);
 			if (value != null) {
 				stmt.setObject(++index, toSQLValue(value.value()));
@@ -268,7 +252,7 @@ public class Query {
 	}
 
 	PreparedStatement prepare(final Connection conn) throws SQLException {
-		return conn.prepareStatement(sql(), RETURN_GENERATED_KEYS);
+		return conn.prepareStatement(_sql.string(), RETURN_GENERATED_KEYS);
 	}
 
 	private static Optional<Long> readID(final Statement stmt)
@@ -288,21 +272,7 @@ public class Query {
 	 * Static factory methods.
 	 * ************************************************************************/
 
-	private static final Pattern PARAM_PATTERN = Pattern.compile("\\{(\\w+?)\\}");
-
 	public static Query of(final String sql) {
-		final List<String> names = new ArrayList<>();
-		final StringBuffer parsedQuery = new StringBuffer();
-
-		final Matcher matcher = PARAM_PATTERN.matcher(sql);
-		while (matcher.find()) {
-			final String name = matcher.group(1);
-			names.add(name);
-
-			matcher.appendReplacement(parsedQuery, "?");
-		}
-		matcher.appendTail(parsedQuery);
-
-		return new Query(parsedQuery.toString(), names);
+		return new Query(Sql.of(sql));
 	}
 }
