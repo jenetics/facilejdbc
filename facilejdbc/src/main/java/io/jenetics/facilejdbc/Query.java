@@ -57,7 +57,7 @@ public class Query {
 	 *
 	 * @return the SQL string of {@code this} query class
 	 */
-	public Sql sql() {
+	Sql sql() {
 		return _sql;
 	}
 
@@ -92,6 +92,10 @@ public class Query {
 		try (PreparedStatement stmt = prepare(conn)) {
 			return stmt.execute();
 		}
+	}
+
+	PreparedStatement prepare(final Connection conn) throws SQLException {
+		return conn.prepareStatement(_sql.string(), RETURN_GENERATED_KEYS);
 	}
 
 	/**
@@ -251,9 +255,7 @@ public class Query {
 		}
 	}
 
-	PreparedStatement prepare(final Connection conn) throws SQLException {
-		return conn.prepareStatement(_sql.string(), RETURN_GENERATED_KEYS);
-	}
+
 
 	private static Optional<Long> readID(final Statement stmt)
 		throws SQLException
