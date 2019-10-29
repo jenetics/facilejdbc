@@ -28,8 +28,8 @@ import javax.sql.DataSource;
  * @version !__version__!
  * @since !__version__!
  */
-public final class DB {
-	private DB() {
+public final class Db {
+	private Db() {
 	}
 
 	public static <T> T transaction(
@@ -44,7 +44,7 @@ public final class DB {
 		final DataSource ds = null;
 		final Query query = Query.of("SELECT 1");
 
-		final boolean result = DB.transaction(ds, query::execute);
+		final boolean result = Db.transaction(ds, query::execute);
 
 	}
 
