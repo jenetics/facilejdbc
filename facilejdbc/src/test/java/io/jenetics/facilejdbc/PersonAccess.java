@@ -19,6 +19,13 @@
  */
 package io.jenetics.facilejdbc;
 
+import static io.jenetics.facilejdbc.Db.transaction;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.sql.DataSource;
+
 public class PersonAccess {
 	private PersonAccess() {}
 
@@ -47,15 +54,32 @@ public class PersonAccess {
 
 	}
 
+	private static final RowParser<Person> PARSER = row -> new Person(
+		row.getString("name"),
+		row.getString("email"),
+		row.getString("link")
+	);
+
 	private static final Query INSERT_QUERY = Query.of(
 		"INSERT INTO person(name, email, link) " +
 		"VALUES({name}, {email}, {link});"
 	);
 
 	private static final Query SELECT_QUERY = Query.of(
-		"SELECT name, email, link FROM person " +
+		"SELECT name, email, link " +
+		"FROM person " +
 		"WHERE name = :name"
 	);
+
+	public static void main(final String[] args) throws SQLException {
+		final DataSource ds = null;
+
+		final List<Person> persons = transaction(ds, conn ->
+			SELECT_QUERY
+				.on(Param.of("name", "Franz"))
+				.as(PARSER.list(), conn)
+		);
+	}
 
 //	private static final Dctor<Person> DCTOR = Dctor.of(
 //		Field.of("name", Person::getName),

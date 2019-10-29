@@ -63,14 +63,6 @@ final class PreparedQuery extends Query {
 		return new PreparedQuery(sql(), map);
 	}
 
-	@Override
-	PreparedStatement prepare(final Connection conn) throws SQLException {
-		return  conn.prepareStatement(
-			sql().string(),
-			RETURN_GENERATED_KEYS
-		);
-	}
-
 	private void fill(final PreparedStatement stmt) throws SQLException {
 		int index = 1;
 		for (String name : sql().paramNames()) {
