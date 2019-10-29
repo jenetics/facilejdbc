@@ -22,6 +22,10 @@ package io.jenetics.facilejdbc;
 import java.sql.SQLException;
 
 /**
+ * Represents a function that accepts three argument and produces a result. In
+ * contrast to the Java {@link java.util.function.Function} interface, a
+ * SQL-function is allowed to throw a {@link SQLException}.
+ *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
  * @since !__version__!
@@ -29,6 +33,15 @@ import java.sql.SQLException;
 @FunctionalInterface
 public interface SqlFunction3<A, B, C, R> {
 
+	/**
+	 * Applies this function to the given arguments.
+	 *
+	 * @param a the first argument
+	 * @param b the second argument
+	 * @param c the third argument
+	 * @return the function result
+	 * @throws SQLException if the execution of the SQL-function fails
+	 */
 	public R apply(final A a, final B b, final C c) throws SQLException;
 
 }
