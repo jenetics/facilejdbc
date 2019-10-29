@@ -92,13 +92,4 @@ public final class Db {
 		}
 	}
 
-
-	public static void main(final String[] args) throws Exception {
-		final DataSource ds = null;
-		final Query query = Query.of("SELECT 1");
-
-		final boolean result = Db.transaction(ds, query::execute);
-
-	}
-
 }
