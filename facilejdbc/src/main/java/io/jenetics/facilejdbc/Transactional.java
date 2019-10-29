@@ -20,32 +20,20 @@
 package io.jenetics.facilejdbc;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-/**
- * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
- */
-public final class DB {
-	private DB() {
-	}
+public interface Transactional {
 
-	public static <T> T transaction(
-		final DataSource ds,
-		final SqlFunction<Connection, ? extends T> f
-	) {
-		return null;
-	}
+	public DataSource dataSource();
 
-
-	public static void main(final String[] args) throws Exception {
-		final DataSource ds = null;
-		final Query query = Query.of("SELECT 1");
-
-		final boolean result = DB.transaction(ds, query::execute);
-
+	public default  <T> T transaction(
+		final SqlFunction<? super Connection, ? extends T> block
+	)
+		throws SQLException
+	{
+		return Db.transaction(dataSource(), block);
 	}
 
 }
