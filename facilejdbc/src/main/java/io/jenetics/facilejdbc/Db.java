@@ -20,10 +20,13 @@
 package io.jenetics.facilejdbc;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
 /**
+ * This class contains some helper functions for DB transaction handling.
+ *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
  * @since !__version__!
@@ -32,11 +35,61 @@ public final class Db {
 	private Db() {
 	}
 
+	/**
+	 * Open a new <i>transactional</i> context with the given connection. The
+	 * caller is responsible for closing the connection.
+	 *
+	 * @param connection the connection used in this transaction
+	 * @param block the code block to execute with the given connection
+	 * @param <T> the result type
+	 * @return the result of the connection block
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 * @throws SQLException if the transaction fails
+	 */
+	public static <T> T transaction(
+		final Connection connection,
+		final SqlFunction<? super Connection, ? extends T> block
+	)
+		throws SQLException
+	{
+		try {
+			if (connection.getAutoCommit()) {
+				connection.setAutoCommit(false);
+			}
+			var result = block.apply(connection);
+			connection.commit();
+			return result;
+		} catch (Throwable e) {
+			try {
+				connection.rollback();
+			} catch (Exception suppressed) {
+				e.addSuppressed(suppressed);
+			}
+			throw e;
+		}
+	}
+
+	/**
+	 * Open a new <i>transactional</i> context with the given connection. The
+	 * caller is responsible for closing the connection.
+	 *
+	 * @param ds the data source where the connection for the transaction is
+	 *           created.
+	 * @param block the code block to execute with the given connection
+	 * @param <T> the result type
+	 * @return the result of the connection block
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 * @throws SQLException if the transaction fails
+	 */
 	public static <T> T transaction(
 		final DataSource ds,
-		final SqlFunction<Connection, ? extends T> f
-	) {
-		return null;
+		final SqlFunction<? super Connection, ? extends T> block
+	)
+		throws SQLException
+	{
+		try (var conn = ds.getConnection()) {
+			return transaction(conn, block);
+		}
 	}
 
 
