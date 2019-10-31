@@ -26,6 +26,8 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import io.jenetics.facilejdbc.Dctor.Field;
+
 public class PersonAccess {
 	private PersonAccess() {}
 
@@ -79,13 +81,21 @@ public class PersonAccess {
 				.on(Param.of("name", "Franz"))
 				.as(PARSER.list(), conn)
 		);
+
+		INSERT_QUERY
+			.on(
+				Param.of("name", "foo"),
+				Param.of("email", "foo@gmail.com"),
+				Param.of("link", "http://google.com"))
+			.execute(ds.getConnection());
 	}
 
-//	private static final Dctor<Person> DCTOR = Dctor.of(
-//		Field.of("name", Person::getName),
-//		Field.of("email", p -> p.getEmail().map(Email::getAddress)),
-//		Field.of("link_id", (p, c) -> LinkAccess.insert(p.getLink().orElse(null), c))
-//	);
+	private static final Dctor<Person> DCTOR = Dctor.of(
+		Field.of("name", Person::name),
+		Field.of("email", Person::email),
+		Field.of("link", Person::email)
+		//Field.of("link_id", (p, c) -> LinkAccess.insert(p.getLink().orElse(null), c))
+	);
 //
 //	public static Long insert(final Person person, final Connection conn)
 //		throws SQLException
