@@ -19,5 +19,25 @@
  */
 package io.jenetics.facilejdbc.function;
 
-public interface SqlSupplier {
+import java.sql.SQLException;
+
+/**
+ * Represents a supplier of results. There is no requirement that a new or
+ * distinct result be returned each time the supplier is invoked.
+ *
+ * This is a functional interface whose functional method is {@link #get()}.
+ *
+ * @param <T> the result type
+ */
+@FunctionalInterface
+public interface SqlSupplier<T> {
+
+	/**
+	 * Return a result
+	 *
+	 * @return a result
+	 * @throws SQLException if fetching the result fails
+	 */
+	public T get() throws SQLException;
+
 }
