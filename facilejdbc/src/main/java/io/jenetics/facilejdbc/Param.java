@@ -32,6 +32,24 @@ import static java.util.Objects.requireNonNull;
  */
 public final class Param {
 
+	public static abstract class Val {
+		Val() {
+		}
+	}
+
+	public static final class EagerVal extends Val {
+	}
+
+	public static final class LazyVal extends Val {
+	}
+
+	public static final class DctorVal extends Val {
+	}
+
+	public static final class DbVal extends Val {
+	}
+
+
 	/**
 	 * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
 	 * @version !__version__!
@@ -103,6 +121,10 @@ public final class Param {
 	 */
 	public static Param of(final String name, final Object value) {
 		return new Param(name, Value.of(value));
+	}
+
+	public static Param lazy(final String name) {
+		return null;
 	}
 
 }
