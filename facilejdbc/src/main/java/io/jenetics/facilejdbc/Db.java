@@ -24,6 +24,8 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import io.jenetics.facilejdbc.function.SqlFunction;
+
 /**
  * This class contains some helper functions for DB transaction handling.
  *

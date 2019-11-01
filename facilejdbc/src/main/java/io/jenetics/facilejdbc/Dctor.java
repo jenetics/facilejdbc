@@ -31,6 +31,9 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import io.jenetics.facilejdbc.Param.Value;
+import io.jenetics.facilejdbc.function.SqlFunction;
+import io.jenetics.facilejdbc.function.SqlFunction2;
+import io.jenetics.facilejdbc.function.SqlFunction3;
 
 /**
  * This class represents a <em>deconstructor</em> for a given (record) class. It

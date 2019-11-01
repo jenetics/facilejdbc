@@ -36,6 +36,8 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import io.jenetics.facilejdbc.Param.Value;
+import io.jenetics.facilejdbc.function.SqlFunction2;
+import io.jenetics.facilejdbc.function.SqlFunction3;
 
 /**
  * A {@code Query} represents an executable piece of SQL text.

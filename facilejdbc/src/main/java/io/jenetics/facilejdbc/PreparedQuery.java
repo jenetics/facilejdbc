@@ -19,8 +19,6 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -33,6 +31,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.jenetics.facilejdbc.Param.Value;
+import io.jenetics.facilejdbc.function.SqlFunction3;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
