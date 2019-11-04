@@ -34,6 +34,7 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.Function;
 
 import io.jenetics.facilejdbc.Param.Value;
 import io.jenetics.facilejdbc.function.SqlFunction2;
@@ -140,6 +141,15 @@ public class Query {
 			stmt.executeUpdate();
 			return readID(stmt);
 		}
+	}
+
+	public <T> Long insert(
+		final T row,
+		final Function<? super T, Params> f
+	)
+		throws SQLException
+	{
+		return null;
 	}
 
 	public <T> Long insert(

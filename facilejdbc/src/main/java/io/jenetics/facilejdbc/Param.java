@@ -23,6 +23,8 @@ import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.function.Supplier;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
@@ -71,6 +73,10 @@ public final class Param {
 
 		public Object value() {
 			return _value;
+		}
+
+		void set(final PreparedStatement stmt, final int index) throws SQLException {
+			stmt.setObject(index, _value);
 		}
 
 		static Value of(final Object value) {
