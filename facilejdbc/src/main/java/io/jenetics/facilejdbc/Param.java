@@ -22,6 +22,12 @@ package io.jenetics.facilejdbc;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
+import java.sql.Connection;
+import java.util.function.Supplier;
+
+import io.jenetics.facilejdbc.function.SqlFunction;
+import io.jenetics.facilejdbc.function.SqlFunction2;
+
 /**
  * Represents a query parameter with <em>name</em> and <em>value</em>. The
  * parameter value is evaluated lazily.
@@ -123,7 +129,18 @@ public final class Param {
 		return new Param(name, Value.of(value));
 	}
 
-	public static Param lazy(final String name) {
+	public static Param eager(final String name, final Object value) {
+		return of(name, value);
+	}
+
+	public static <T> Param lazy(final String name, final Supplier<T> value) {
+		return null;
+	}
+
+	public static <R> Param db(
+		final String name,
+		final SqlFunction<Connection, ? extends R> value
+	) {
 		return null;
 	}
 
