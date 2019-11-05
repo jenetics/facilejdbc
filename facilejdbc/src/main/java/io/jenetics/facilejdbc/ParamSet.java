@@ -22,7 +22,7 @@ package io.jenetics.facilejdbc;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class Params {
+public class ParamSet {
 
 	public void fill(final PreparedStatement stmt) throws SQLException {
 

@@ -146,7 +146,7 @@ public class Query {
 
 	public <T> Long insert(
 		final T row,
-		final Function<? super T, Params> f
+		final Function<? super T, ParamSet> f
 	)
 		throws SQLException
 	{
