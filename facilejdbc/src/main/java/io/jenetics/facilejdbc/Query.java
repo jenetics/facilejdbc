@@ -179,7 +179,7 @@ public class Query {
 		for (String name : _sql.paramNames()) {
 			final Value value = dctor.apply(row, name, conn);
 			if (value != null) {
-				stmt.setObject(++index, toSQLValue(value.value()));
+				value.set(stmt, ++index);
 			} else {
 				throw new NoSuchElementException(format(
 					"Value for column '%s' not found.", name

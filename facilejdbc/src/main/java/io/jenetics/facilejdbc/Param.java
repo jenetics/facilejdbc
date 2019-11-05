@@ -38,35 +38,7 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * @version !__version__!
  * @since !__version__!
  */
-public final class Param implements Setter {
-
-	@Override
-	public void set(final PreparedStatement stmt, final int index) throws SQLException {
-		stmt.setObject(index, value().value());
-	}
-
-	public interface IValue {
-		public void set(final PreparedStatement stmt, final int index)
-			throws SQLException;
-	}
-
-	public static abstract class Val {
-		Val() {
-		}
-	}
-
-	public static final class EagerVal extends Val {
-	}
-
-	public static final class LazyVal extends Val {
-	}
-
-	public static final class DctorVal extends Val {
-	}
-
-	public static final class DbVal extends Val {
-	}
-
+public final class Param {
 
 	/**
 	 * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
@@ -81,12 +53,10 @@ public final class Param implements Setter {
 			_value = value;
 		}
 
-		public Object value() {
-			return _value;
-		}
-
 		@Override
-		public void set(final PreparedStatement stmt, final int index) throws SQLException {
+		public void set(final PreparedStatement stmt, final int index)
+			throws SQLException
+		{
 			stmt.setObject(index, _value);
 		}
 

@@ -66,8 +66,7 @@ final class PreparedQuery extends Query {
 		int index = 1;
 		for (String name : sql().paramNames()) {
 			if (_params.containsKey(name)) {
-				final Object value = toSQLValue(_params.get(name).value().value());
-				stmt.setObject(index, value);
+				_params.get(name).value().set(stmt, index);
 			}
 
 			++index;
@@ -105,9 +104,9 @@ final class PreparedQuery extends Query {
 				for (String name : sql().paramNames()) {
 					final Value value = dctor.apply(row, name, conn);
 					if (value != null) {
-						stmt.setObject(++index, value.value());
+						value.set(stmt, ++index);
 					} else if (_params.containsKey(name)) {
-						stmt.setObject(++index, _params.get(name).value().value());
+						_params.get(name).value().set(stmt, ++index);
 					} else {
 						throw new NoSuchElementException();
 					}
