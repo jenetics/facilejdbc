@@ -19,13 +19,22 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.util.Objects.requireNonNull;
+
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
-public class ParamSet {
+public final class ParamSet implements Preparer {
 
-	public void fill(final PreparedStatement stmt) throws SQLException {
+	private final List<Param> _params;
 
+	ParamSet(final List<Param> params) {
+		_params = requireNonNull(params);
+	}
+
+	@Override
+	public void prepare(final PreparedStatement stmt) throws SQLException {
 	}
 
 }
