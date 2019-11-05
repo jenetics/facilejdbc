@@ -22,13 +22,10 @@ package io.jenetics.facilejdbc;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.function.Supplier;
 
-import io.jenetics.facilejdbc.function.SqlFunction;
-import io.jenetics.facilejdbc.function.SqlFunction2;
+import io.jenetics.facilejdbc.function.SqlSupplier;
 
 /**
  * Represents a query parameter with <em>name</em> and <em>value</em>. The
@@ -45,11 +42,25 @@ public final class Param {
 	 * @version !__version__!
 	 * @since !__version__!
 	 */
-	public static final class Value implements Setter {
+	public static interface Value {
 
+		/**
+		 * Fills the parameter value to the given statement.
+		 *
+		 * @param stmt the prepared statement to fill (prepare)
+		 * @param index the parameter index
+		 * @throws SQLException if the preparation fails
+		 * @throws NullPointerException if the given {@code stmt} is {@code null}
+		 */
+		public void set(final PreparedStatement stmt, final int index)
+			throws SQLException;
+
+	}
+
+	private static final class EagerValue implements Value {
 		private final Object _value;
 
-		private Value(final Object value) {
+		private EagerValue(final Object value) {
 			_value = value;
 		}
 
@@ -59,12 +70,25 @@ public final class Param {
 		{
 			stmt.setObject(index, _value);
 		}
+	}
 
-		static Value of(final Object value) {
-			return new Value(value);
+	private static final class LazyValue implements Value {
+
+		private final SqlSupplier<?> _value;
+
+		private LazyValue(final SqlSupplier<?> value) {
+			_value = requireNonNull(value);
 		}
 
+		@Override
+		public void set(final PreparedStatement stmt, final int index)
+			throws SQLException
+		{
+			stmt.setObject(index, _value.get());
+		}
 	}
+
+
 
 	private final String _name;
 	private final Value _value;
@@ -113,22 +137,10 @@ public final class Param {
 	 *         {@code null}
 	 */
 	public static Param of(final String name, final Object value) {
-		return new Param(name, Value.of(value));
+		return new Param(name, new EagerValue(value));
 	}
 
-	public static Param eager(final String name, final Object value) {
-		return of(name, value);
+	public static Param lazy(final String name, final SqlSupplier<?> value) {
+		return new Param(name, new LazyValue(value));
 	}
-
-	public static <T> Param lazy(final String name, final Supplier<T> value) {
-		return null;
-	}
-
-	public static <R> Param db(
-		final String name,
-		final SqlFunction<Connection, ? extends R> value
-	) {
-		return null;
-	}
-
 }
