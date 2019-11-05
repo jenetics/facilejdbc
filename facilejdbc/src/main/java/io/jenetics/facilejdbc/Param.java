@@ -38,7 +38,17 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * @version !__version__!
  * @since !__version__!
  */
-public final class Param {
+public final class Param implements Setter {
+
+	@Override
+	public void set(final PreparedStatement stmt, final int index) throws SQLException {
+		stmt.setObject(index, value().value());
+	}
+
+	public interface IValue {
+		public void set(final PreparedStatement stmt, final int index)
+			throws SQLException;
+	}
 
 	public static abstract class Val {
 		Val() {
@@ -63,7 +73,7 @@ public final class Param {
 	 * @version !__version__!
 	 * @since !__version__!
 	 */
-	public static final class Value {
+	public static final class Value implements Setter {
 
 		private final Object _value;
 
@@ -75,7 +85,8 @@ public final class Param {
 			return _value;
 		}
 
-		void set(final PreparedStatement stmt, final int index) throws SQLException {
+		@Override
+		public void set(final PreparedStatement stmt, final int index) throws SQLException {
 			stmt.setObject(index, _value);
 		}
 

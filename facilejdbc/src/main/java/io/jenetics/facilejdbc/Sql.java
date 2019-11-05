@@ -22,8 +22,10 @@ package io.jenetics.facilejdbc;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,7 +39,7 @@ import java.util.regex.Pattern;
  * @version !__version__!
  * @since !__version__!
  */
-final class Sql {
+final class Sql implements Serializable {
 
 	private static final Pattern PARAM_PATTERN = Pattern.compile("(\\s+:[\\w]+)");
 
@@ -67,6 +69,10 @@ final class Sql {
 	 */
 	List<String> paramNames() {
 		return _paramNames;
+	}
+
+	OptionalInt paramIndex(final String name) {
+		return OptionalInt.empty();
 	}
 
 	@Override

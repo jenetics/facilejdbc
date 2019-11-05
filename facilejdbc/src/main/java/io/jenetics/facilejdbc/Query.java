@@ -50,6 +50,7 @@ import io.jenetics.facilejdbc.function.SqlFunction3;
 public class Query {
 
 	private final Sql _sql;
+	private final Preparer _preparer = null;
 
 	Query(final Sql sql) {
 		_sql = requireNonNull(sql);

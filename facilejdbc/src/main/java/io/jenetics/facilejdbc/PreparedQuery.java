@@ -74,6 +74,21 @@ final class PreparedQuery extends Query {
 		}
 	}
 
+	public <T> void insert(
+		final Iterable<T> rows,
+		final Function<? super T, ? extends Preparer> f,
+		final Connection conn
+	)
+		throws SQLException
+	{
+		try (PreparedStatement stmt = prepare(conn)) {
+			for (T row : rows) {
+				f.apply(row).prepare(stmt);
+				stmt.executeUpdate();
+			}
+		}
+	}
+
 	@Override
 	public <T> void inserts(
 		final Collection<T> rows,
