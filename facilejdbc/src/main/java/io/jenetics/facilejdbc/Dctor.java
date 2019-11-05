@@ -144,7 +144,7 @@ public final class Dctor<T>
 	{
 		for (Field<T, ?> field : _fields) {
 			if (Objects.equals(name, field.name())) {
-				return Value.of(field.apply(record, conn));
+				return null; //Value.of(field.apply(record, conn));
 			}
 		}
 

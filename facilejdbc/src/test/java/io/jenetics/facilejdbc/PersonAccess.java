@@ -81,6 +81,10 @@ public class PersonAccess {
 				.on(Param.of("name", "Franz"))
 				.as(PARSER.list(), conn)
 		);
+//
+//		SELECT_QUERY
+//			.with(ds.getConnection())
+//			.select();
 
 		INSERT_QUERY
 			.on(
@@ -88,6 +92,10 @@ public class PersonAccess {
 				Param.of("email", "foo@gmail.com"),
 				Param.of("link", "http://google.com"))
 			.execute(ds.getConnection());
+
+//		INSERT_QUERY
+//			.with(ds.getConnection())
+//			.insert(persons, DCTOR);
 	}
 
 	private static final Dctor<Person> DCTOR = Dctor.of(

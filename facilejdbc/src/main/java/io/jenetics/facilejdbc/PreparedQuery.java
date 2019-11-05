@@ -80,7 +80,7 @@ final class PreparedQuery extends Query {
 	)
 		throws SQLException
 	{
-		try (PreparedStatement stmt = prepare(conn)) {
+		try (PreparedStatement stmt = statement(conn)) {
 			for (T row : rows) {
 				f.apply(row).prepare(stmt);
 				stmt.executeUpdate();
@@ -88,7 +88,7 @@ final class PreparedQuery extends Query {
 		}
 	}
 
-	@Override
+	//@Override
 	public <T> void inserts(
 		final Collection<T> rows,
 		final SqlFunction3<? super T, String, Connection, Value> dctor,
@@ -96,7 +96,7 @@ final class PreparedQuery extends Query {
 	)
 		throws SQLException
 	{
-		try (PreparedStatement stmt = prepare(conn)) {
+		try (PreparedStatement stmt = statement(conn)) {
 			fill(stmt);
 
 			for (T row : rows) {

@@ -34,9 +34,9 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.function.Function;
 
 import io.jenetics.facilejdbc.Param.Value;
+import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
 import io.jenetics.facilejdbc.function.SqlFunction3;
 
@@ -78,172 +78,6 @@ public class Query {
 	}
 
 	/**
-	 * Executes the SQL statement defined by {@code this} query object, which
-	 * may be any kind of SQL statement.
-	 *
-	 * @see PreparedStatement#execute()
-	 *
-	 * @param conn the DB connection where {@code this} query is executed on
-	 * @return {@code true} if the first result is a {@link java.sql.ResultSet}
-	 *         object; {@code false} if the first result is an update count or
-	 *         there is no result
-	 * @throws SQLException if a database access error occurs
-	 * @throws java.sql.SQLTimeoutException when the driver has determined that
-	 *         the timeout value has been exceeded
-	 * @throws NullPointerException if the given connection is {@code null}
-	 */
-	public boolean execute(final Connection conn) throws SQLException  {
-		try (PreparedStatement stmt = prepare(conn)) {
-			return stmt.execute();
-		}
-	}
-
-	PreparedStatement prepare(final Connection conn) throws SQLException {
-		return conn.prepareStatement(_sql.string(), RETURN_GENERATED_KEYS);
-	}
-
-	/**
-	 * Executes the SQL statement defined by {@code this} query object, which
-	 * must be an SQL Data Manipulation Language (DML) statement, such as
-	 * {@code INSERT}, {@code UPDATE} or {@code DELETE}; or an SQL statement
-	 * that returns nothing, such as a DDL statement.
-	 *
-	 * @see PreparedStatement#executeUpdate()
-	 *
-	 * @param conn the DB connection where {@code this} query is executed on
-	 * @return either (1) the row count for SQL Data Manipulation Language (DML)
-	 *         statements or (2) 0 for SQL statements that return nothing
-	 * @throws SQLException if a database access error occurs
-	 * @throws java.sql.SQLTimeoutException when the driver has determined that
-	 *         the timeout value has been exceeded
-	 * @throws NullPointerException if the given connection is {@code null}
-	 */
-	public int update(final Connection conn) throws SQLException {
-		try (PreparedStatement stmt = prepare(conn)) {
-			return stmt.executeUpdate();
-		}
-	}
-
-	/**
-	 * Executes the SQL statement defined by {@code this} query object, which
-	 * must be an {@code INSERT} statement.
-	 *
-	 * @param conn the DB connection where {@code this} query is executed on
-	 * @return the key generated during the insertion
-	 * @throws SQLException if a database access error occurs
-	 * @throws java.sql.SQLTimeoutException when the driver has determined that
-	 *         the timeout value has been exceeded
-	 * @throws NullPointerException if the given connection is {@code null}
-	 */
-	public Optional<Long> insert(final Connection conn)
-		throws SQLException
-	{
-		try (PreparedStatement stmt = prepare(conn)) {
-			stmt.executeUpdate();
-			return readID(stmt);
-		}
-	}
-
-	public <T> Long insert(
-		final T row,
-		final Function<? super T, ParamSet> f
-	)
-		throws SQLException
-	{
-		return null;
-	}
-
-	public <T> Long insert(
-		final T row,
-		final SqlFunction3<? super T, String, Connection, Value> dctor,
-		final Connection conn
-	)
-		throws SQLException
-	{
-		try (PreparedStatement stmt = prepare(conn)) {
-			fill(row, dctor, stmt, conn);
-			stmt.executeUpdate();
-			return readID(stmt).orElse(null);
-		}
-	}
-
-	private <T> void fill(
-		final T row,
-		final SqlFunction3<? super T, String, Connection, Value> dctor,
-		final PreparedStatement stmt,
-		final Connection conn
-	)
-		throws SQLException
-	{
-		int index = 0;
-		for (String name : _sql.paramNames()) {
-			final Value value = dctor.apply(row, name, conn);
-			if (value != null) {
-				value.set(stmt, ++index);
-			} else {
-				throw new NoSuchElementException(format(
-					"Value for column '%s' not found.", name
-				));
-			}
-		}
-	}
-
-	public <T> SqlFunction2<T, Connection, Long>
-	insert(final SqlFunction3<? super T, String, Connection, Value> dctor) {
-		throw new UnsupportedOperationException();
-	}
-
-	static Object toSQLValue(final Object value) {
-		Object result = value;
-
-		while (result instanceof Optional) {
-			result = ((Optional<?>)result).orElse(null);
-		}
-
-		if (result instanceof URI) {
-			result = result.toString();
-		} else if (result instanceof URL) {
-			result = result.toString();
-		} else if (result instanceof ZonedDateTime) {
-			result = ((ZonedDateTime)result).toOffsetDateTime();
-		}
-
-		return result;
-	}
-
-	/**
-	 * Inserts the given rows in one transaction and with the same prepared
-	 * statement.
-	 *
-	 * @param rows the rows to insert
-	 * @param dctor the deconstruction function, which splits a given row into
-	 *        its components. This components can than be used setting the
-	 *        parameter values of the query.
-	 * @param conn the DB connection where {@code this} query is executed on
-	 * @param <T> the row type
-	 * @throws SQLException if a database access error occurs
-	 * @throws java.sql.SQLTimeoutException when the driver has determined that
-	 *         the timeout value has been exceeded
-	 * @throws NullPointerException if one of the parameters is {@code null}
-	 */
-	public <T> void inserts(
-		final Collection<T> rows,
-		final SqlFunction3<? super T, String, Connection, Value> dctor,
-		final Connection conn
-	)
-		throws SQLException
-	{
-		if (!rows.isEmpty()) {
-			try (PreparedStatement stmt = prepare(conn)) {
-				for (T row : rows) {
-					fill(row, dctor, stmt, conn);
-					stmt.executeUpdate();
-				}
-			}
-		}
-	}
-
-	/**
 	 * Executes {@code this} query and parses the result with the given
 	 * result-set parser.
 	 *
@@ -261,12 +95,212 @@ public class Query {
 	public <T> T as(final ResultSetParser<T> parser, final Connection conn)
 		throws SQLException
 	{
-		try (PreparedStatement ps = prepare(conn);
-			 ResultSet rs = ps.executeQuery())
-		{
-			return parser.parse(rs);
+		try (PreparedStatement stmt = statement(conn)) {
+			prepare(stmt);
+
+			try (ResultSet rs = stmt.executeQuery()) {
+				return parser.parse(rs);
+			}
 		}
 	}
+
+	private void prepare(final PreparedStatement stmt) throws SQLException {
+		if (_preparer != null) {
+			_preparer.prepare(stmt);
+		}
+	}
+
+	/**
+	 * Executes the SQL statement defined by {@code this} query object, which
+	 * may be any kind of SQL statement.
+	 *
+	 * @see PreparedStatement#execute()
+	 *
+	 * @param conn the DB connection where {@code this} query is executed on
+	 * @return {@code true} if the first result is a {@link java.sql.ResultSet}
+	 *         object; {@code false} if the first result is an update count or
+	 *         there is no result
+	 * @throws SQLException if a database access error occurs
+	 * @throws java.sql.SQLTimeoutException when the driver has determined that
+	 *         the timeout value has been exceeded
+	 * @throws NullPointerException if the given connection is {@code null}
+	 */
+	public boolean execute(final Connection conn) throws SQLException  {
+		try (PreparedStatement stmt = statement(conn)) {
+			return stmt.execute();
+		}
+	}
+
+	PreparedStatement statement(final Connection conn) throws SQLException {
+		return conn.prepareStatement(_sql.string(), RETURN_GENERATED_KEYS);
+	}
+
+
+
+	public void execute(
+		final Iterable<SqlFunction<Connection, Preparer>> batch,
+		final Connection conn
+	)
+		throws SQLException
+	{
+		try (PreparedStatement stmt = statement(conn)) {
+			for (var preparer : batch) {
+				preparer.apply(conn).prepare(stmt);
+				stmt.executeUpdate();
+			}
+		}
+	}
+
+
+
+
+
+
+
+
+//	/**
+//	 * Executes the SQL statement defined by {@code this} query object, which
+//	 * must be an SQL Data Manipulation Language (DML) statement, such as
+//	 * {@code INSERT}, {@code UPDATE} or {@code DELETE}; or an SQL statement
+//	 * that returns nothing, such as a DDL statement.
+//	 *
+//	 * @see PreparedStatement#executeUpdate()
+//	 *
+//	 * @param conn the DB connection where {@code this} query is executed on
+//	 * @return either (1) the row count for SQL Data Manipulation Language (DML)
+//	 *         statements or (2) 0 for SQL statements that return nothing
+//	 * @throws SQLException if a database access error occurs
+//	 * @throws java.sql.SQLTimeoutException when the driver has determined that
+//	 *         the timeout value has been exceeded
+//	 * @throws NullPointerException if the given connection is {@code null}
+//	 */
+//	public int update(final Connection conn) throws SQLException {
+//		try (PreparedStatement stmt = statement(conn)) {
+//			return stmt.executeUpdate();
+//		}
+//	}
+//
+//	/**
+//	 * Executes the SQL statement defined by {@code this} query object, which
+//	 * must be an {@code INSERT} statement.
+//	 *
+//	 * @param conn the DB connection where {@code this} query is executed on
+//	 * @return the key generated during the insertion
+//	 * @throws SQLException if a database access error occurs
+//	 * @throws java.sql.SQLTimeoutException when the driver has determined that
+//	 *         the timeout value has been exceeded
+//	 * @throws NullPointerException if the given connection is {@code null}
+//	 */
+//	public Optional<Long> insert(final Connection conn)
+//		throws SQLException
+//	{
+//		try (PreparedStatement stmt = statement(conn)) {
+//			stmt.executeUpdate();
+//			return readID(stmt);
+//		}
+//	}
+//
+//	public <T> Long insert(
+//		final T row,
+//		final SqlFunction2<? super T, Connection, ? extends Preparer> f,
+//		final Connection conn
+//	)
+//		throws SQLException
+//	{
+//		return null;
+//	}
+//
+//	public <T> Long insert(
+//		final T row,
+//		final SqlFunction3<? super T, String, Connection, Value> dctor,
+//		final Connection conn
+//	)
+//		throws SQLException
+//	{
+//		try (PreparedStatement stmt = statement(conn)) {
+//			fill(row, dctor, stmt, conn);
+//			stmt.executeUpdate();
+//			return readID(stmt).orElse(null);
+//		}
+//	}
+//
+//	private <T> void fill(
+//		final T row,
+//		final SqlFunction3<? super T, String, Connection, Value> dctor,
+//		final PreparedStatement stmt,
+//		final Connection conn
+//	)
+//		throws SQLException
+//	{
+//		int index = 0;
+//		for (String name : _sql.paramNames()) {
+//			final Value value = dctor.apply(row, name, conn);
+//			if (value != null) {
+//				value.set(stmt, ++index);
+//			} else {
+//				throw new NoSuchElementException(format(
+//					"Value for column '%s' not found.", name
+//				));
+//			}
+//		}
+//	}
+//
+//	public <T> SqlFunction2<T, Connection, Long>
+//	insert(final SqlFunction3<? super T, String, Connection, Value> dctor) {
+//		throw new UnsupportedOperationException();
+//	}
+//
+//	static Object toSQLValue(final Object value) {
+//		Object result = value;
+//
+//		while (result instanceof Optional) {
+//			result = ((Optional<?>)result).orElse(null);
+//		}
+//
+//		if (result instanceof URI) {
+//			result = result.toString();
+//		} else if (result instanceof URL) {
+//			result = result.toString();
+//		} else if (result instanceof ZonedDateTime) {
+//			result = ((ZonedDateTime)result).toOffsetDateTime();
+//		}
+//
+//		return result;
+//	}
+//
+//	/**
+//	 * Inserts the given rows in one transaction and with the same prepared
+//	 * statement.
+//	 *
+//	 * @param rows the rows to insert
+//	 * @param dctor the deconstruction function, which splits a given row into
+//	 *        its components. This components can than be used setting the
+//	 *        parameter values of the query.
+//	 * @param conn the DB connection where {@code this} query is executed on
+//	 * @param <T> the row type
+//	 * @throws SQLException if a database access error occurs
+//	 * @throws java.sql.SQLTimeoutException when the driver has determined that
+//	 *         the timeout value has been exceeded
+//	 * @throws NullPointerException if one of the parameters is {@code null}
+//	 */
+//	public <T> void inserts(
+//		final Collection<T> rows,
+//		final SqlFunction3<? super T, String, Connection, Value> dctor,
+//		final Connection conn
+//	)
+//		throws SQLException
+//	{
+//		if (!rows.isEmpty()) {
+//			try (PreparedStatement stmt = statement(conn)) {
+//				for (T row : rows) {
+//					fill(row, dctor, stmt, conn);
+//					stmt.executeUpdate();
+//				}
+//			}
+//		}
+//	}
+//
+
 
 
 
