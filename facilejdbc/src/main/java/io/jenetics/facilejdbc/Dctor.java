@@ -44,7 +44,7 @@ import io.jenetics.facilejdbc.function.SqlFunction3;
  * @since !__version__!
  */
 public final class Dctor<T>
-	implements SqlFunction3<T, String, Connection, Value>
+	implements SqlFunction2<T, Connection, Preparer>
 {
 
 	/**
@@ -139,13 +139,13 @@ public final class Dctor<T>
 	}
 
 	@Override
-	public Value apply(final T record, final String name, final Connection conn)
+	public Preparer apply(final T record, final Connection conn)
 		throws SQLException
 	{
 		for (Field<T, ?> field : _fields) {
-			if (Objects.equals(name, field.name())) {
-				return null; //Value.of(field.apply(record, conn));
-			}
+			//if (Objects.equals(name, field.name())) {
+			//	return null; //Value.of(field.apply(record, conn));
+			//}
 		}
 
 		return null;

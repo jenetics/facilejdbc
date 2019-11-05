@@ -20,6 +20,7 @@
 package io.jenetics.facilejdbc;
 
 import static io.jenetics.facilejdbc.Db.transaction;
+import static io.jenetics.facilejdbc.Param.value;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -78,7 +79,7 @@ public class PersonAccess {
 
 		final List<Person> persons = transaction(ds, conn ->
 			SELECT_QUERY
-				.on(Param.of("name", "Franz"))
+				.on(value("name", "Franz"))
 				.as(PARSER.list(), conn)
 		);
 //
@@ -88,9 +89,9 @@ public class PersonAccess {
 
 		INSERT_QUERY
 			.on(
-				Param.of("name", "foo"),
-				Param.of("email", "foo@gmail.com"),
-				Param.of("link", "http://google.com"))
+				value("name", "foo"),
+				value("email", "foo@gmail.com"),
+				value("link", "http://google.com"))
 			.execute(ds.getConnection());
 
 //		INSERT_QUERY

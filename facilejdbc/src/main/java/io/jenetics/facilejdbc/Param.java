@@ -126,6 +126,10 @@ public final class Param {
 	 * Static factory methods.
 	 * ************************************************************************/
 
+	public static Param of(final String name, final Value value) {
+		return new Param(name, value);
+	}
+
 	/**
 	 * Create a new query parameter object from the given {@code name} and
 	 * {@code value}.
@@ -136,11 +140,12 @@ public final class Param {
 	 * @throws NullPointerException if the given parameter {@code name} is
 	 *         {@code null}
 	 */
-	public static Param of(final String name, final Object value) {
+	public static Param value(final String name, final Object value) {
 		return new Param(name, new EagerValue(value));
 	}
 
 	public static Param lazy(final String name, final SqlSupplier<?> value) {
 		return new Param(name, new LazyValue(value));
 	}
+
 }
