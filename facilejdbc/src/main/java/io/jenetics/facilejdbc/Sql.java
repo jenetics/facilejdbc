@@ -133,7 +133,7 @@ public final class Sql implements Serializable {
 	 * @return the newly created {@code Sql} object
 	 * @throws NullPointerException if the given SQL string is {@code null}
 	 */
-	static Sql of(final String sql) {
+	public static Sql of(final String sql) {
 		final List<String> names = new ArrayList<>();
 		final StringBuffer parsedQuery = new StringBuffer();
 
