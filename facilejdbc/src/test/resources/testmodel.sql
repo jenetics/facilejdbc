@@ -1,0 +1,7 @@
+CREATE TABLE person(
+    id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	forename VARCHAR(255),
+	surname VARCHAR(255),
+	birthday DATE,
+	email VARCHAR(255)
+);

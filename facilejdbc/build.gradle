@@ -25,11 +25,15 @@ import org.apache.tools.ant.filters.ReplaceTokens
  * @version 1.0
  */
 
-description = 'FacileJDBC Library'
+plugins {
+	id "io.franzbecker.gradle-lombok" version "3.2.0"
+}
 
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'signing'
+
+description = 'FacileJDBC Library'
 
 repositories {
 	mavenCentral()
@@ -37,9 +41,11 @@ repositories {
 }
 
 dependencies {
-	testCompile 'org.testng:testng:7.0.0'
-	testCompile 'nl.jqno.equalsverifier:equalsverifier:3.1'
+	testImplementation 'org.testng:testng:7.0.0'
+	testImplementation 'nl.jqno.equalsverifier:equalsverifier:3.1'
+	testImplementation 'com.h2database:h2:1.4.200'
 }
+
 
 javadoc {
 	project.configure(options) {
@@ -79,7 +85,7 @@ jar {
 		attributes(
 			'Implementation-Title': 'Facile JDBC library',
 			'Implementation-Version': "${project.name}-${project.version}",
-			'Implementation-URL': 'http://jenetics.io',
+			'Implementation-URL': 'https://github.com/jenetics/facilejdbc',
 			'Implementation-Vendor': 'jenetics',
 			'ProjectName': project.name,
 			'Version': project.version,
