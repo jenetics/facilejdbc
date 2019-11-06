@@ -29,7 +29,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * A {@code Query} represents an executable piece of SQL text.
@@ -85,6 +87,21 @@ public class Query {
 		}
 
 		return query;
+	}
+
+	/**
+	 * Return a new query object with the given query parameter values.
+	 *
+	 * @param params the query parameters
+	 * @return a new query object with the set parameters
+	 * @throws NullPointerException if the given {@code params} is {@code null}
+	 */
+	public Query on(final Map<String, ?> params) {
+		return on(
+			params.entrySet().stream()
+				.map(e -> Param.value(e.getKey(), e.getValue()))
+				.collect(Collectors.toList())
+		);
 	}
 
 	/**
