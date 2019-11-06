@@ -50,6 +50,7 @@ public class SqlTest {
 			{"", List.of(), ""},
 			{" ", List.of(), " "},
 			{"a ", List.of(), "a "},
+			{"VALUES(:a, :b)", List.of("a", "b"), "VALUES(?, ?)"},
 			{"a = :name1", List.of("name1"), "a = ?"},
 			{"a :name1", List.of("name1"), "a ?"},
 			{"a :name1 :name2  :name1", List.of("name1", "name2", "name1"), "a ? ?  ?"},

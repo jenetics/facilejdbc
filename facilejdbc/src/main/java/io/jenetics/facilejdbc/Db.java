@@ -24,6 +24,7 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import io.jenetics.facilejdbc.function.SqlConsumer;
 import io.jenetics.facilejdbc.function.SqlFunction;
 
 /**
@@ -93,5 +94,18 @@ public final class Db {
 			return transaction(conn, block);
 		}
 	}
+
+	/*
+	public static <T> void transaction(
+		final DataSource ds,
+		final SqlConsumer<? super Connection> block
+	)
+		throws SQLException
+	{
+		try (var conn = ds.getConnection()) {
+			transaction(conn, c -> {block.accept(c); return null;});
+		}
+	}
+	 */
 
 }

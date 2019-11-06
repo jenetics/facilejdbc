@@ -19,11 +19,18 @@
  */
 package io.jenetics.facilejdbc.testmodel;
 
+import static io.jenetics.facilejdbc.Dctor.field;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+
+import io.jenetics.facilejdbc.Dctor;
+import io.jenetics.facilejdbc.Query;
+import io.jenetics.facilejdbc.RowParser;
 
 @Value
 @Builder(builderClassName = "Builder", toBuilder = true)
@@ -33,4 +40,37 @@ public final class Person {
 	private final String surname;
 	private final LocalDate birthday;
 	private final String email;
+
+	public static final class Access {
+		private Access() {
+		}
+
+		public static final RowParser<Person> PARSER = row -> Person.builder()
+			.forename(row.getString("forename"))
+			.surname(row.getString("surname"))
+			.birthday(row.getDate("birthday").toLocalDate())
+			.email(row.getString("email"))
+			.build();
+
+
+		public static final Dctor<Person> DCTOR = Dctor.of(
+			field("forename", Person::forename),
+			field("surname", Person::surname),
+			field("birthday", Person::birthday),
+			field("email", Person::email)
+		);
+
+		public static final Query SELECT = Query.of(
+			"SELECT * FROM person " +
+			"WHERE forename like :forename " +
+			"ORDER BY surname;"
+		);
+
+		public static final Query INSERT = Query.of(
+			"INSERT INTO person(forename, surname, birthday, email) " +
+			"VALUES(:forename, :surname, :birthday, :email);"
+		);
+
+	}
+
 }
