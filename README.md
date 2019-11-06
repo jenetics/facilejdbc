@@ -1,14 +1,20 @@
-**_UNDER CONSTRUCTION_**
+**_UNDER DEVELOPMENT_**
 
 # Facile JDBC
 
-SQL is still the best abstraction for querying relational databases. JDBC, as standard way for reading and writing relational data is also well known and for most use cases sufficient. A common complaint about JDBC might be it's verbosity, when it comes to read/write data to/from the _entity_ objects.  This small library tries to make the usage of SQL/JDBC less verbose.
+> _Making the JDBC usage simpler and less verbose._
 
-The `facilejdbc` library is inspired by the Scala [Anorm](https://playframework.github.io/anorm/) library.
+## Overview
 
-**`facilejdbc` is not**
-* An OR-Mapper
-* A type safe query language
+SQL is still the best abstraction for querying relational databases. JDBC, as standard way for reading and writing relational data is also well known and for many use cases sufficient. A common pain point about JDBC is it's verbosity, when it comes to read/write data to/from the _entity_ objects ([DTO](https://en.wikipedia.org/wiki/Data_transfer_object)). 
+ 
+ The purpose of the `facilejdbc` library is to make the usage of SQL/JDBC less verbose. Not more or less. `facilejdbc` is heavily inspired by the Scala [Anorm](https://playframework.github.io/anorm/) library, which finds a good balance between simplicity and expressiveness.
+
+> #### `facilejdbc` is not
+>
+> * OR-Mapper: `facilejdbc` is not an Object Relational Mapper, like [Hiberenate](https://hibernate.org/) or [JPA](https://docs.oracle.com/javaee/7/tutorial/partpersist.htm).
+> * Query language: [SQL]() is still used as query language. It is not tried to make it type safe or _abstract_ it away, like [jOOQ](https://www.jooq.org/).
+
 
 ## Executing SQL queries
 
