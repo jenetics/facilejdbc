@@ -26,7 +26,7 @@ import java.util.List;
 
 import static io.jenetics.facilejdbc.Db.transaction;
 import static io.jenetics.facilejdbc.Dctor.field;
-import static io.jenetics.facilejdbc.SqlParam.value;
+import static io.jenetics.facilejdbc.Param.value;
 
 public class PersonAccess {
 	private PersonAccess() {}

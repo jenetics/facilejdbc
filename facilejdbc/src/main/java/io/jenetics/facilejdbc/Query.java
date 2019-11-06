@@ -63,7 +63,7 @@ public class Query {
 	 * @param params the query parameters
 	 * @return a new parameter query
 	 */
-	public Query on(final SqlParam... params) {
+	public Query on(final Param... params) {
 		return on(asList(params));
 	}
 
@@ -73,7 +73,7 @@ public class Query {
 	 * @param params the query parameters
 	 * @return a new parameter query
 	 */
-	public Query on(final List<SqlParam> params) {
+	public Query on(final List<Param> params) {
 		final Query query;
 		if (params.isEmpty()) {
 			query = this;

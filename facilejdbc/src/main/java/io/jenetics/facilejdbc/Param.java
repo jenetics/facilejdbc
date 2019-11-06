@@ -31,7 +31,7 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * @version !__version__!
  * @since !__version__!
  */
-public interface SqlParam {
+public interface Param {
 
 	/**
 	 * Return the parameter name.
@@ -52,11 +52,11 @@ public interface SqlParam {
 	 * Static factory methods.
 	 * ************************************************************************/
 
-	public static SqlParam of(final String name, final SqlParamValue value) {
+	public static Param of(final String name, final SqlParamValue value) {
 		requireNonNull(name);
 		requireNonNull(value);
 
-		return new SqlParam() {
+		return new Param() {
 			@Override
 			public String name() {
 				return name;
@@ -81,13 +81,13 @@ public interface SqlParam {
 	 * @throws NullPointerException if the given parameter {@code name} is
 	 *         {@code null}
 	 */
-	public static SqlParam value(final String name, final Object value) {
-		return SqlParam.of(name, (stmt, index) -> stmt.setObject(index, value));
+	public static Param value(final String name, final Object value) {
+		return Param.of(name, (stmt, index) -> stmt.setObject(index, value));
 	}
 
-	public static SqlParam lazy(final String name, final SqlSupplier<?> value) {
+	public static Param lazy(final String name, final SqlSupplier<?> value) {
 		requireNonNull(value);
-		return SqlParam.of(name, (stmt, index) -> stmt.setObject(index, value.get()));
+		return Param.of(name, (stmt, index) -> stmt.setObject(index, value.get()));
 	}
 
 }

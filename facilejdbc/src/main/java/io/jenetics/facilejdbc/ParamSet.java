@@ -33,9 +33,9 @@ import java.util.OptionalInt;
  */
 final class ParamSet implements SqlParamValues {
 
-	private final List<SqlParam> _params;
+	private final List<Param> _params;
 
-	ParamSet(final List<SqlParam> params) {
+	ParamSet(final List<Param> params) {
 		_params = requireNonNull(params);
 	}
 
@@ -43,7 +43,7 @@ final class ParamSet implements SqlParamValues {
 	public void set(final PreparedStatement stmt, final SqlParamIndices indices)
 		throws SQLException
 	{
-		for (SqlParam param : _params) {
+		for (Param param : _params) {
 			final OptionalInt index = indices.index(param.name());
 			if (index.isPresent()) {
 				param.value().set(stmt, index.orElseThrow());
