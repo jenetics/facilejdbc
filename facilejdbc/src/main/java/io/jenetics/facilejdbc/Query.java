@@ -78,7 +78,7 @@ public class Query {
 		if (params.isEmpty()) {
 			query = this;
 		} else {
-			final ParamValues preparer = new ParamSet(params);
+			final ParamValues preparer = new Params(params);
 			query = new Query(_sql, _preparer.andThen(preparer));
 		}
 

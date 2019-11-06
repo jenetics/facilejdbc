@@ -31,11 +31,11 @@ import java.util.OptionalInt;
  * @version !__version__!
  * @since !__version__!
  */
-final class ParamSet implements ParamValues {
+final class Params implements ParamValues {
 
 	private final List<Param> _params;
 
-	ParamSet(final List<Param> params) {
+	Params(final List<Param> params) {
 		_params = requireNonNull(params);
 	}
 
