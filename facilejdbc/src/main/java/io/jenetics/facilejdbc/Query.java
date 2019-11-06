@@ -41,11 +41,11 @@ import java.util.Optional;
 public class Query {
 
 	private final Sql _sql;
-	private final ParamValues _preparer;
+	private final ParamValues _values;
 
-	Query(final Sql sql, final ParamValues preparer) {
+	Query(final Sql sql, final ParamValues values) {
 		_sql = requireNonNull(sql);
-		_preparer = requireNonNull(preparer);
+		_values = requireNonNull(values);
 	}
 
 	/**
@@ -61,7 +61,8 @@ public class Query {
 	 * Return a new query object with the given query parameter values.
 	 *
 	 * @param params the query parameters
-	 * @return a new parameter query
+	 * @return a new query object with the set parameters
+	 * @throws NullPointerException if the given {@code params} is {@code null}
 	 */
 	public Query on(final Param... params) {
 		return on(asList(params));
@@ -71,18 +72,39 @@ public class Query {
 	 * Return a new query object with the given query parameter values.
 	 *
 	 * @param params the query parameters
-	 * @return a new parameter query
+	 * @return a new query object with the set parameters
+	 * @throws NullPointerException if the given {@code params} is {@code null}
 	 */
 	public Query on(final List<Param> params) {
 		final Query query;
 		if (params.isEmpty()) {
 			query = this;
 		} else {
-			final ParamValues preparer = new Params(params);
-			query = new Query(_sql, _preparer.andThen(preparer));
+			final ParamValues values = new Params(params);
+			query = new Query(_sql, _values.andThen(values));
 		}
 
 		return query;
+	}
+
+	/**
+	 * Return a new query object with the given query parameter values.
+	 *
+	 * @param params the query parameters
+	 * @param dctor the deconstructor used to <em>split</em> the parameters
+	 * @param <T> the parameter record type
+	 * @return a new query object with the set parameters
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 */
+	public <T> Query on(final T params, final Dctor<T> dctor) {
+		requireNonNull(params);
+		requireNonNull(dctor);
+
+		final ParamValues values = (stmt, indexes) -> dctor
+			.apply(params, stmt.getConnection())
+			.set(stmt, indexes);
+
+		return new Query(_sql, _values.andThen(values));
 	}
 
 	/**
@@ -104,7 +126,7 @@ public class Query {
 		throws SQLException
 	{
 		try (PreparedStatement stmt = statement(conn)) {
-			_preparer.set(stmt, _sql.paramIndexes());
+			_values.set(stmt, _sql.paramIndexes());
 
 			try (ResultSet rs = stmt.executeQuery()) {
 				return parser.parse(rs);
@@ -129,7 +151,7 @@ public class Query {
 	 */
 	public boolean execute(final Connection conn) throws SQLException  {
 		try (PreparedStatement stmt = statement(conn)) {
-			_preparer.set(stmt, _sql.paramIndexes());
+			_values.set(stmt, _sql.paramIndexes());
 			return stmt.execute();
 		}
 	}
@@ -156,7 +178,7 @@ public class Query {
 		throws SQLException
 	{
 		try (PreparedStatement stmt = statement(conn)) {
-			_preparer.set(stmt, _sql.paramIndexes());
+			_values.set(stmt, _sql.paramIndexes());
 
 			for (var preparer : batch) {
 				preparer.apply(conn).set(stmt, _sql.paramIndexes());
