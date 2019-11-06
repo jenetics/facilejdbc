@@ -77,7 +77,7 @@ This query is then executed as follows.
 final List<Person> persons = transaction(ds, conn ->
     SELECT_PERSON
         .on(value("name", "Franz"))
-        .as(PEERSON_PARSER.list(), conn)
+        .as(PERSON_PARSER.list(), conn)
 );
 ```
 
