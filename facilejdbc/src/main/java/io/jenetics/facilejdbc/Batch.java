@@ -21,38 +21,60 @@ package io.jenetics.facilejdbc;
 
 import java.sql.Connection;
 import java.util.Iterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-import io.jenetics.facilejdbc.function.SqlFunction;
-import io.jenetics.facilejdbc.function.SqlFunction2;
+/**
+ * Represents a whole batch of SQL query parameters.
+ *
+ * @param <T> the record (row) type of the batch.
+ *
+ * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @version !__version__!
+ * @since !__version__!
+ */
+public interface Batch<T> extends Iterable<Batch.Entry> {
 
-public class Batch<T> implements Iterable<SqlFunction<Connection, Preparer>> {
+	/**
+	 * An batch entry is actually a factory function, which is able to create a
+	 * <em>row</em> {@link SqlParamValues} from parameter indices and a connection.
+	 */
+	@FunctionalInterface
+	public static interface Entry {
 
-	private final Iterable<T> _rows;
-	private SqlFunction2<? super T, Connection, ? extends Preparer> _deconstructor;
-
-	public Batch(
-		final Iterable<T> rows,
-		final SqlFunction2<? super T, Connection, ? extends Preparer> deconstructor
-	) {
-		_rows = rows;
-		_deconstructor = deconstructor;
+		/**
+		 * Creates a <em>row</em> {@link SqlParamValues} from the given arguments.
+		 *
+		 * @param conn the connection used for created the preparer, if needed
+		 * @return a <em>row</em> {@link SqlParamValues}
+		 */
+		public SqlParamValues apply(final Connection conn);
 	}
 
-	@Override
-	public Iterator<SqlFunction<Connection, Preparer>> iterator() {
-		return new Iterator<>() {
-			private final Iterator<T> rows = _rows.iterator();
+	/**
+	 * Return a stream with the the given batch entries (rows).
+	 *
+	 * @return a stream with the the given batch entries (rows)
+	 */
+	public default Stream<Entry> stream() {
+		return StreamSupport.stream(spliterator(), false);
+	}
+
+	public static <T> Batch<T> of(final Iterable<T> rows, final Dctor<T> dctor) {
+		return () -> new Iterator<>() {
+			private final Iterator<T> it = rows.iterator();
 
 			@Override
 			public boolean hasNext() {
-				return rows.hasNext();
+				return it.hasNext();
 			}
 
 			@Override
-			public SqlFunction<Connection, Preparer> next() {
-				final T row = rows.next();
-				return conn -> _deconstructor.apply(row, conn);
+			public Entry next() {
+				final T row = it.next();
+				return conn -> dctor.apply(row, conn);
 			}
 		};
 	}
+
 }

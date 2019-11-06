@@ -30,6 +30,7 @@ import java.sql.SQLException;
  * @version !__version__!
  * @since !__version__!
  */
+@FunctionalInterface
 public interface SqlFunction2<T, U, R> {
 
 	/**

@@ -24,17 +24,31 @@ import static java.util.Objects.requireNonNull;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.OptionalInt;
 
-public final class ParamSet implements Preparer {
+/**
+ * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @version !__version__!
+ * @since !__version__!
+ */
+final class ParamSet implements SqlParamValues {
 
-	private final List<Param> _params;
+	private final List<SqlParam> _params;
 
-	ParamSet(final List<Param> params) {
+	ParamSet(final List<SqlParam> params) {
 		_params = requireNonNull(params);
 	}
 
 	@Override
-	public void prepare(final PreparedStatement stmt) throws SQLException {
+	public void set(final PreparedStatement stmt, final SqlParamIndices indices)
+		throws SQLException
+	{
+		for (SqlParam param : _params) {
+			final OptionalInt index = indices.index(param.name());
+			if (index.isPresent()) {
+				param.value().set(stmt, index.orElseThrow());
+			}
+		}
 	}
 
 }

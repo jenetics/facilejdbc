@@ -17,31 +17,29 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc.function;
+package io.jenetics.facilejdbc;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
- * Represents a supplier of results. There is no requirement that a new or
- * distinct result be returned each time the supplier is invoked.
- *
- * This is a functional interface whose functional method is {@link #get()}.
- *
- * @param <T> the result type
+ * Represents a SQL value which can be set to a prepared statement.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
  * @since !__version__!
  */
 @FunctionalInterface
-public interface SqlSupplier<T> {
+public interface SqlParamValue {
 
 	/**
-	 * Return a result
+	 * Fills the parameter value to the given statement.
 	 *
-	 * @return a result
-	 * @throws SQLException if fetching the result fails
+	 * @param stmt the prepared statement to fill (set)
+	 * @param index the index of the value to set
+	 * @throws SQLException if the preparation fails
 	 */
-	public T get() throws SQLException;
+	public void set(final PreparedStatement stmt, final int index)
+		throws SQLException;
 
 }

@@ -19,15 +19,20 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.util.Collections.unmodifiableList;
-import static java.util.Objects.requireNonNull;
-
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.util.Collections.unmodifiableList;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Internal representation of an SQL query string. This parses the structure of
@@ -39,7 +44,8 @@ import java.util.regex.Pattern;
  * @version !__version__!
  * @since !__version__!
  */
-final class Sql implements Serializable {
+public final class Sql implements Serializable {
+	private static final long serialVersionUID = 1L;
 
 	private static final Pattern PARAM_PATTERN = Pattern.compile("(\\s+:[\\w]+)");
 
@@ -57,7 +63,7 @@ final class Sql implements Serializable {
 	 *
 	 * @return the prepared SQL string
 	 */
-	String string() {
+	public String string() {
 		return _string;
 	}
 
@@ -67,11 +73,34 @@ final class Sql implements Serializable {
 	 *
 	 * @return the parsed parameter names
 	 */
-	List<String> paramNames() {
+	public List<String> paramNames() {
 		return _paramNames;
 	}
 
-	OptionalInt paramIndex(final String name) {
+	/**
+	 * Return the parameter indexes of {@code this} SQL query.
+	 *
+	 * @return the parameter indexes of {@code this} SQL query
+	 */
+	public SqlParamIndices paramIndices() {
+		return this::paramIndex;
+	}
+
+	/**
+	 * Return the parameter index of the given parameter name, if available. The
+	 * returned index is <em>one</em>-based and can directly used in prepared
+	 * statements.
+	 *
+	 * @param name the parameter name
+	 * @return the parameter index of the given parameter name
+	 * @throws NullPointerException if the given {@code name} is {@code null}
+	 */
+	public OptionalInt paramIndex(final String name) {
+		for (int i = 0; i < _paramNames.size(); ++i) {
+			if (name.equals(_paramNames.get(i))) {
+				return OptionalInt.of(i + 1);
+			}
+		}
 		return OptionalInt.empty();
 	}
 
@@ -126,6 +155,29 @@ final class Sql implements Serializable {
 		matcher.appendTail(parsedQuery);
 
 		return new Sql(parsedQuery.toString(), names);
+	}
+
+
+	/* *************************************************************************
+	 *  Java object serialization
+	 * ************************************************************************/
+
+	private Object writeReplace() {
+		return new Serial(Serial.SQL, this);
+	}
+
+	private void readObject(final ObjectInputStream stream)
+		throws InvalidObjectException
+	{
+		throw new InvalidObjectException("Serialization proxy required.");
+	}
+
+	void write(final DataOutput out) throws IOException {
+		IO.writeString(_string, out);
+	}
+
+	static Sql read(final DataInput in) throws IOException {
+		return Sql.of(IO.readString(in));
 	}
 
 }

@@ -19,15 +19,14 @@
  */
 package io.jenetics.facilejdbc;
 
-import static io.jenetics.facilejdbc.Db.transaction;
-import static io.jenetics.facilejdbc.Param.value;
-
+import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-import javax.sql.DataSource;
-
-import io.jenetics.facilejdbc.Dctor.Field;
+import static io.jenetics.facilejdbc.Db.transaction;
+import static io.jenetics.facilejdbc.Dctor.field;
+import static io.jenetics.facilejdbc.SqlParam.value;
 
 public class PersonAccess {
 	private PersonAccess() {}
@@ -63,12 +62,18 @@ public class PersonAccess {
 		row.getString("link")
 	);
 
-	private static final Query INSERT_QUERY = Query.of(
-		"INSERT INTO person(name, email, link) " +
-		"VALUES({name}, {email}, {link});"
+	private static final Dctor<Person> DCTOR = Dctor.of(
+		field("name", Person::name),
+		field("email", Person::email),
+		field("link_id", (p, c) -> insertLink(p.link(), c))
 	);
 
-	private static final Query SELECT_QUERY = Query.of(
+	private static final Query INSERT_PERSON = Query.of(
+		"INSERT INTO person(name, email, link) " +
+		"VALUES(:name, :email, :link);"
+	);
+
+	private static final Query SELECT_PERSON = Query.of(
 		"SELECT name, email, link " +
 		"FROM person " +
 		"WHERE name = :name"
@@ -77,41 +82,39 @@ public class PersonAccess {
 	public static void main(final String[] args) throws SQLException {
 		final DataSource ds = null;
 
+		// SELECT
 		final List<Person> persons = transaction(ds, conn ->
-			SELECT_QUERY
+			SELECT_PERSON
 				.on(value("name", "Franz"))
 				.as(PARSER.list(), conn)
 		);
-//
-//		SELECT_QUERY
-//			.with(ds.getConnection())
-//			.select();
 
-		INSERT_QUERY
-			.on(
-				value("name", "foo"),
-				value("email", "foo@gmail.com"),
-				value("link", "http://google.com"))
-			.execute(ds.getConnection());
+		// INSERT
+		final boolean inserted = transaction(ds, conn ->
+			INSERT_PERSON
+				.on(
+					value("name", "foo"),
+					value("email", "foo@gmail.com"),
+					value("link", "http://google.com"))
+				.execute(conn)
+		);
 
-//		INSERT_QUERY
-//			.with(ds.getConnection())
-//			.insert(persons, DCTOR);
+		// BATCH execution
+		final Batch<Person> batch = Batch.of(persons, DCTOR);
+		final int count = transaction(ds, conn ->
+			INSERT_PERSON.execute(batch, conn)
+		);
+
 	}
 
-	private static final Dctor<Person> DCTOR = Dctor.of(
-		Field.of("name", Person::name),
-		Field.of("email", Person::email),
-		Field.of("link", Person::email)
-		//Field.of("link_id", (p, c) -> LinkAccess.insert(p.getLink().orElse(null), c))
-	);
-//
-//	public static Long insert(final Person person, final Connection conn)
-//		throws SQLException
-//	{
-//		return person != null && !person.isEmpty()
-//			? INSERT_QUERY.insert(person, DCTOR, conn)
-//			: null;
-//	}
+
+
+
+	static Long insertLink(final String link, final Connection conn)
+		throws SQLException
+	{
+		// Doing some sub-inserts.
+		return null;
+	}
 
 }

@@ -19,26 +19,17 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.lang.String.format;
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.util.Objects.requireNonNull;
-
-import java.net.URI;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.NoSuchElementException;
+import java.util.List;
 import java.util.Optional;
 
-import io.jenetics.facilejdbc.Param.Value;
-import io.jenetics.facilejdbc.function.SqlFunction;
-import io.jenetics.facilejdbc.function.SqlFunction2;
-import io.jenetics.facilejdbc.function.SqlFunction3;
+import static java.sql.Statement.RETURN_GENERATED_KEYS;
+import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
 
 /**
  * A {@code Query} represents an executable piece of SQL text.
@@ -50,10 +41,11 @@ import io.jenetics.facilejdbc.function.SqlFunction3;
 public class Query {
 
 	private final Sql _sql;
-	private final Preparer _preparer = null;
+	private final SqlParamValues _preparer;
 
-	Query(final Sql sql) {
+	Query(final Sql sql, final SqlParamValues preparer) {
 		_sql = requireNonNull(sql);
+		_preparer = requireNonNull(preparer);
 	}
 
 	/**
@@ -71,10 +63,26 @@ public class Query {
 	 * @param params the query parameters
 	 * @return a new parameter query
 	 */
-	public Query on(final Param... params) {
-		return params.length == 0
-			? this
-			: PreparedQuery.of(this, params);
+	public Query on(final SqlParam... params) {
+		return on(asList(params));
+	}
+
+	/**
+	 * Return a new query object with the given query parameter values.
+	 *
+	 * @param params the query parameters
+	 * @return a new parameter query
+	 */
+	public Query on(final List<SqlParam> params) {
+		final Query query;
+		if (params.isEmpty()) {
+			query = this;
+		} else {
+			final SqlParamValues preparer = new ParamSet(params);
+			query = new Query(_sql, _preparer.andThen(preparer));
+		}
+
+		return query;
 	}
 
 	/**
@@ -96,17 +104,11 @@ public class Query {
 		throws SQLException
 	{
 		try (PreparedStatement stmt = statement(conn)) {
-			prepare(stmt);
+			_preparer.set(stmt, _sql.paramIndices());
 
 			try (ResultSet rs = stmt.executeQuery()) {
 				return parser.parse(rs);
 			}
-		}
-	}
-
-	private void prepare(final PreparedStatement stmt) throws SQLException {
-		if (_preparer != null) {
-			_preparer.prepare(stmt);
 		}
 	}
 
@@ -127,6 +129,7 @@ public class Query {
 	 */
 	public boolean execute(final Connection conn) throws SQLException  {
 		try (PreparedStatement stmt = statement(conn)) {
+			_preparer.set(stmt, _sql.paramIndices());
 			return stmt.execute();
 		}
 	}
@@ -135,25 +138,56 @@ public class Query {
 		return conn.prepareStatement(_sql.string(), RETURN_GENERATED_KEYS);
 	}
 
-
-
-	public void execute(
-		final Iterable<SqlFunction<Connection, Preparer>> batch,
+	/**
+	 * Executes the given {@code batch} for this query.
+	 *
+	 * @param batch the batch to execute
+	 * @param conn the DB connection where {@code this} query is executed on
+	 * @return 1
+	 * @throws SQLException if a database access error occurs
+	 * @throws java.sql.SQLTimeoutException when the driver has determined that
+	 *         the timeout value has been exceeded
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 */
+	public int execute(
+		final Batch<?> batch,
 		final Connection conn
 	)
 		throws SQLException
 	{
 		try (PreparedStatement stmt = statement(conn)) {
+			_preparer.set(stmt, _sql.paramIndices());
+
 			for (var preparer : batch) {
-				preparer.apply(conn).prepare(stmt);
+				preparer.apply(conn).set(stmt, _sql.paramIndices());
 				stmt.executeUpdate();
+			}
+		}
+		return 0;
+	}
+
+	private static Optional<Long> readID(final Statement stmt)
+		throws SQLException
+	{
+		try (ResultSet keys = stmt.getGeneratedKeys()) {
+			if (keys.next()) {
+				return Optional.of(keys.getLong(1));
+			} else {
+				return Optional.empty();
 			}
 		}
 	}
 
 
+	/* *************************************************************************
+	 * Static factory methods.
+	 * ************************************************************************/
 
+	public static Query of(final String sql) {
+		return new Query(Sql.of(sql), SqlParamValues.EMPTY);
+	}
 
+}
 
 
 
@@ -202,7 +236,7 @@ public class Query {
 //
 //	public <T> Long insert(
 //		final T row,
-//		final SqlFunction2<? super T, Connection, ? extends Preparer> f,
+//		final SqlFunction2<? super T, Connection, ? extends SqlParamValues> f,
 //		final Connection conn
 //	)
 //		throws SQLException
@@ -300,28 +334,3 @@ public class Query {
 //		}
 //	}
 //
-
-
-
-
-	private static Optional<Long> readID(final Statement stmt)
-		throws SQLException
-	{
-		try (ResultSet keys = stmt.getGeneratedKeys()) {
-			if (keys.next()) {
-				return Optional.of(keys.getLong(1));
-			} else {
-				return Optional.empty();
-			}
-		}
-	}
-
-
-	/* *************************************************************************
-	 * Static factory methods.
-	 * ************************************************************************/
-
-	public static Query of(final String sql) {
-		return new Query(Sql.of(sql));
-	}
-}

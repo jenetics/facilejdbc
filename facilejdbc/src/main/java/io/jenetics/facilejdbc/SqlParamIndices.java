@@ -17,31 +17,28 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc.function;
+package io.jenetics.facilejdbc;
 
-import java.sql.SQLException;
+import java.util.OptionalInt;
 
 /**
- * Represents a supplier of results. There is no requirement that a new or
- * distinct result be returned each time the supplier is invoked.
- *
- * This is a functional interface whose functional method is {@link #get()}.
- *
- * @param <T> the result type
+ * Partial function for getting the index of a given SQL parameter name.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
  * @since !__version__!
  */
 @FunctionalInterface
-public interface SqlSupplier<T> {
+public interface SqlParamIndices {
 
 	/**
-	 * Return a result
+	 * Return the index of a given SQL parameter.
 	 *
-	 * @return a result
-	 * @throws SQLException if fetching the result fails
+	 * @param name the parameter name
+	 * @return the index of the parameter, if found
+	 * @throws NullPointerException if the given parameter {@code name} is
+	 *        {@code null}
 	 */
-	public T get() throws SQLException;
+	public OptionalInt index(final String name);
 
 }

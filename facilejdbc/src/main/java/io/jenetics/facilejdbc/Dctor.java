@@ -19,74 +19,48 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.unmodifiableList;
-import static java.util.Objects.requireNonNull;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Function;
-
-import io.jenetics.facilejdbc.Param.Value;
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
-import io.jenetics.facilejdbc.function.SqlFunction3;
+
+import java.sql.Connection;
+import java.util.List;
+import java.util.OptionalInt;
+
+import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
 
 /**
- * This class represents a <em>deconstructor</em> for a given (record) class. It
- * allows to extract the fields, inclusively names, from a given record.
+ * This interface is responsible for creating a <em>row</em> {@link SqlParamValues}
+ * from a given record.
+ *
+ * @param <T> the (deconstructed) record type
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
  * @since !__version__!
  */
-public final class Dctor<T>
-	implements SqlFunction2<T, Connection, Preparer>
-{
+@FunctionalInterface
+public interface Dctor<T> {
 
-	/**
-	 * Deconstructed field from a record class of type {@code T}.
-	 *
-	 * @param <T> the record type this field belongs to
-	 */
-	public static final class Field<T, R>
-		implements SqlFunction2<T, Connection, R>
-	{
-		private final String _name;
-		private final SqlFunction2<? super T, Connection, ? extends R> _value;
-
-		private Field(
-			final String name,
-			final SqlFunction2<? super T, Connection, ? extends R> value
-		) {
-			_name = requireNonNull(name);
-			_value = requireNonNull(value);
-		}
+	public static interface Field<T> {
 
 		/**
 		 * Return the name of the record field.
 		 *
 		 * @return the field name
 		 */
-		public String name() {
-			return _name;
-		}
+		public String name();
 
 		/**
-		 * Return the field value from the given {@code record} instance.
+		 * Return the SQL value for the give {@code row} field.
 		 *
-		 * @param record the record from where to fetch the field value
-		 * @return the record field value
+		 * @param row the actual row (record)
+		 * @param conn the connection used for producing the SQL value, if needed
+		 * @return the SQL value for the give {@code row} field
+		 * @throws NullPointerException if the given {@code conn} is {@code null}
 		 */
-		@Override
-		public R apply(final T record, final Connection conn)
-			throws SQLException
-		{
-			return _value.apply(record, conn);
-		}
+		public SqlParamValue value(final T row, final Connection conn);
+
 
 		/**
 		 * Create a new record field with the given {@code name} and field
@@ -95,69 +69,79 @@ public final class Dctor<T>
 		 * @param name the field name
 		 * @param value the field accessor
 		 * @param <T> the record type
-		 * @param <R> the field type
 		 * @return a new record field
 		 */
-		public static <T, R> Field<T, R> of(
+		public static <T> Field<T> of(
 			final String name,
-			final SqlFunction2<? super T, Connection, ? extends R> value
+			final SqlFunction2<? super T, Connection, Object> value
 		) {
-			return new Field<>(name, value);
-		}
+			requireNonNull(name);
+			requireNonNull(value);
 
-		public static <A, T, R> Field<A, R> of(
-			final String name,
-			final Function<? super A, ? extends T> mapper,
-			final SqlFunction2<? super T, Connection, ? extends R> value
-		) {
-			return new Field<>(name, (r, c) -> value.apply(mapper.apply(r), c));
-		}
-
-		public static <T, R> Field<T, R> of(
-			final String name,
-			final SqlFunction<? super T, ? extends R> value
-		) {
-			return new Field<>(name, (record, conn) -> value.apply(record));
-		}
-
-		public static <T, R> Field<T, R> ofValue(
-			final String name,
-			final R value
-		) {
-			return new Field<>(name, (record, conn) -> value);
+			return new Field<T>() {
+				@Override
+				public String name() {
+					return name;
+				}
+				@Override
+				public SqlParamValue value(final T row, final Connection conn) {
+					return (stmt, index) ->
+						stmt.setObject(index, value.apply(row, conn));
+				}
+			};
 		}
 	}
 
-	private final List<Field<T, ?>> _fields;
 
-	private Dctor(final List<Field<T, ?>> fields) {
-		_fields = unmodifiableList(fields);
-	}
-
-	public List<Field<T, ?>> fields() {
-		return _fields;
-	}
-
-	@Override
-	public Preparer apply(final T record, final Connection conn)
-		throws SQLException
-	{
-		for (Field<T, ?> field : _fields) {
-			//if (Objects.equals(name, field.name())) {
-			//	return null; //Value.of(field.apply(record, conn));
-			//}
-		}
-
-		return null;
-	}
+	/**
+	 * Return the SQL parameter values for the given {@code record}.
+	 *
+	 * @param record the deconstructed record
+	 * @param conn the DB connection used for record deconstruction, if needed
+	 * @return a new row preparer
+	 */
+	public SqlParamValues apply(final T record, final Connection conn);
 
 	@SafeVarargs
-	public static <T> Dctor<T> of(final Field<T, ?>... fields) {
-		return new Dctor<>(asList(fields));
+	public static <T> Dctor<T> of(final Field<T>... fields) {
+		return of(asList(fields));
 	}
 
-	public static <T> Dctor<T> of(final List<Field<T, ?>> fields) {
-		return new Dctor<>(new ArrayList<>(fields));
+	public static <T> Dctor<T> of(final List<Field<T>> fields) {
+		final List<Field<T>> fls = List.copyOf(fields);
+
+		return (record, conn) -> (stmt, indices) -> {
+			for (Field<T> field : fls) {
+				final OptionalInt index = indices.index(field.name());
+				if (index.isPresent()) {
+					final int i = index.orElseThrow();
+					field.value(record, conn).set(stmt, i);
+				}
+			}
+		};
+	}
+
+	/**
+	 * Create a new record field with the given {@code name} and field
+	 * {@code accessor}.
+	 *
+	 * @param name the field name
+	 * @param value the field accessor
+	 * @param <T> the record type
+	 * @return a new record field
+	 */
+	public static <T> Field<T> field(
+		final String name,
+		final SqlFunction2<? super T, Connection, Object> value
+	) {
+		return Field.of(name, value);
+	}
+
+	public static <T, R> Field<T> field(
+		final String name,
+		final SqlFunction<? super T, Object> value
+	) {
+		return Field.of(name, (record, conn) -> value.apply(record));
 	}
 
 }
