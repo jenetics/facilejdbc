@@ -82,7 +82,7 @@ public final class Sql implements Serializable {
 	 *
 	 * @return the parameter indexes of {@code this} SQL query
 	 */
-	public SqlParamIndices paramIndices() {
+	public ParamIndexes paramIndices() {
 		return this::paramIndex;
 	}
 

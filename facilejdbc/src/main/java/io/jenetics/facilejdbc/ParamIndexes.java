@@ -29,7 +29,7 @@ import java.util.OptionalInt;
  * @since !__version__!
  */
 @FunctionalInterface
-public interface SqlParamIndices {
+public interface ParamIndexes {
 
 	/**
 	 * Return the index of a given SQL parameter.

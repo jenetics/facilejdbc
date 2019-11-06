@@ -45,7 +45,7 @@ public interface SqlParamValues {
 	 * @throws SQLException if the preparation fails
 	 * @throws NullPointerException if the given {@code stmt} is {@code null}
 	 */
-	public void set(final PreparedStatement stmt, final SqlParamIndices indices)
+	public void set(final PreparedStatement stmt, final ParamIndexes indices)
 		throws SQLException;
 
 	/**

@@ -40,7 +40,7 @@ final class ParamSet implements SqlParamValues {
 	}
 
 	@Override
-	public void set(final PreparedStatement stmt, final SqlParamIndices indices)
+	public void set(final PreparedStatement stmt, final ParamIndexes indices)
 		throws SQLException
 	{
 		for (Param param : _params) {
