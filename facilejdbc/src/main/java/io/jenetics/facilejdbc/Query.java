@@ -41,9 +41,9 @@ import java.util.Optional;
 public class Query {
 
 	private final Sql _sql;
-	private final SqlParamValues _preparer;
+	private final ParamValues _preparer;
 
-	Query(final Sql sql, final SqlParamValues preparer) {
+	Query(final Sql sql, final ParamValues preparer) {
 		_sql = requireNonNull(sql);
 		_preparer = requireNonNull(preparer);
 	}
@@ -78,7 +78,7 @@ public class Query {
 		if (params.isEmpty()) {
 			query = this;
 		} else {
-			final SqlParamValues preparer = new ParamSet(params);
+			final ParamValues preparer = new ParamSet(params);
 			query = new Query(_sql, _preparer.andThen(preparer));
 		}
 
@@ -184,7 +184,7 @@ public class Query {
 	 * ************************************************************************/
 
 	public static Query of(final String sql) {
-		return new Query(Sql.of(sql), SqlParamValues.EMPTY);
+		return new Query(Sql.of(sql), ParamValues.EMPTY);
 	}
 
 }

@@ -37,18 +37,18 @@ public interface Batch<T> extends Iterable<Batch.Entry> {
 
 	/**
 	 * An batch entry is actually a factory function, which is able to create a
-	 * <em>row</em> {@link SqlParamValues} from parameter indices and a connection.
+	 * <em>row</em> {@link ParamValues} from parameter indices and a connection.
 	 */
 	@FunctionalInterface
 	public static interface Entry {
 
 		/**
-		 * Creates a <em>row</em> {@link SqlParamValues} from the given arguments.
+		 * Creates a <em>row</em> {@link ParamValues} from the given arguments.
 		 *
 		 * @param conn the connection used for created the preparer, if needed
-		 * @return a <em>row</em> {@link SqlParamValues}
+		 * @return a <em>row</em> {@link ParamValues}
 		 */
-		public SqlParamValues apply(final Connection conn);
+		public ParamValues apply(final Connection conn);
 	}
 
 	/**

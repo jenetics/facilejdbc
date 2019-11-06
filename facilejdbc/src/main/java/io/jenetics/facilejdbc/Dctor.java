@@ -30,7 +30,7 @@ import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
 
 /**
- * This interface is responsible for creating a <em>row</em> {@link SqlParamValues}
+ * This interface is responsible for creating a <em>row</em> {@link ParamValues}
  * from a given record.
  *
  * @param <T> the (deconstructed) record type
@@ -100,7 +100,7 @@ public interface Dctor<T> {
 	 * @param conn the DB connection used for record deconstruction, if needed
 	 * @return a new row preparer
 	 */
-	public SqlParamValues apply(final T record, final Connection conn);
+	public ParamValues apply(final T record, final Connection conn);
 
 	@SafeVarargs
 	public static <T> Dctor<T> of(final Field<T>... fields) {

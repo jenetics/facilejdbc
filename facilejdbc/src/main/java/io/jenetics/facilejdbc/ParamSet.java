@@ -31,7 +31,7 @@ import java.util.OptionalInt;
  * @version !__version__!
  * @since !__version__!
  */
-final class ParamSet implements SqlParamValues {
+final class ParamSet implements ParamValues {
 
 	private final List<Param> _params;
 

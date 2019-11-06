@@ -30,12 +30,12 @@ import java.sql.SQLException;
  * @since !__version__!
  */
 @FunctionalInterface
-public interface SqlParamValues {
+public interface ParamValues {
 
 	/**
 	 * Represents an empty parameter value set.
 	 */
-	public static final SqlParamValues EMPTY = (stmt, indices) -> {};
+	public static final ParamValues EMPTY = (stmt, indices) -> {};
 
 	/**
 	 * Fills the parameters of the given statement.
@@ -58,9 +58,9 @@ public interface SqlParamValues {
 	 * @param after the preparer to perform after {@code this} preparer
 	 * @return a composed preparer
 	 */
-	public default SqlParamValues andThen(final SqlParamValues after) {
+	public default ParamValues andThen(final ParamValues after) {
 		return (stmt, indices) -> {
-			SqlParamValues.this.set(stmt, indices);
+			ParamValues.this.set(stmt, indices);
 			after.set(stmt, indices);
 		};
 	}
