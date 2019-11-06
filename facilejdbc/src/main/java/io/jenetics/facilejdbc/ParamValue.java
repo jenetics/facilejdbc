@@ -30,7 +30,7 @@ import java.sql.SQLException;
  * @since !__version__!
  */
 @FunctionalInterface
-public interface SqlParamValue {
+public interface ParamValue {
 
 	/**
 	 * Fills the parameter value to the given statement.

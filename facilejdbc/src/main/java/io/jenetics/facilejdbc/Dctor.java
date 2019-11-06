@@ -59,7 +59,7 @@ public interface Dctor<T> {
 		 * @return the SQL value for the give {@code row} field
 		 * @throws NullPointerException if the given {@code conn} is {@code null}
 		 */
-		public SqlParamValue value(final T row, final Connection conn);
+		public ParamValue value(final T row, final Connection conn);
 
 
 		/**
@@ -84,7 +84,7 @@ public interface Dctor<T> {
 					return name;
 				}
 				@Override
-				public SqlParamValue value(final T row, final Connection conn) {
+				public ParamValue value(final T row, final Connection conn) {
 					return (stmt, index) ->
 						stmt.setObject(index, value.apply(row, conn));
 				}

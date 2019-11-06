@@ -45,14 +45,14 @@ public interface Param {
 	 *
 	 * @return the parameter values
 	 */
-	public SqlParamValue value();
+	public ParamValue value();
 
 
 	/* *************************************************************************
 	 * Static factory methods.
 	 * ************************************************************************/
 
-	public static Param of(final String name, final SqlParamValue value) {
+	public static Param of(final String name, final ParamValue value) {
 		requireNonNull(name);
 		requireNonNull(value);
 
@@ -62,7 +62,7 @@ public interface Param {
 				return name;
 			}
 			@Override
-			public SqlParamValue value() {
+			public ParamValue value() {
 				return value;
 			}
 			public String toString() {
