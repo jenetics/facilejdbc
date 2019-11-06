@@ -35,7 +35,7 @@ import io.jenetics.facilejdbc.util.IO;
 
 public class PersonTest {
 
-	private final H2DB db = H2DB.INSTANCE; 
+	private final H2DB db = H2DB.INSTANCE;
 
 	@BeforeClass
 	public void setup() throws IOException, SQLException {
