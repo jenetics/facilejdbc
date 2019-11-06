@@ -82,7 +82,7 @@ public final class Sql implements Serializable {
 	 *
 	 * @return the parameter indexes of {@code this} SQL query
 	 */
-	public ParamIndexes paramIndexes() {
+	ParamIndexes paramIndexes() {
 		return this::paramIndex;
 	}
 
@@ -95,7 +95,7 @@ public final class Sql implements Serializable {
 	 * @return the parameter index of the given parameter name
 	 * @throws NullPointerException if the given {@code name} is {@code null}
 	 */
-	public OptionalInt paramIndex(final String name) {
+	private OptionalInt paramIndex(final String name) {
 		for (int i = 0; i < _paramNames.size(); ++i) {
 			if (name.equals(_paramNames.get(i))) {
 				return OptionalInt.of(i + 1);
