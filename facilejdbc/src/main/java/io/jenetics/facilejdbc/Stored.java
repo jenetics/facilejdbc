@@ -42,7 +42,7 @@ import java.util.function.Function;
  * @version !__version__!
  * @since !__version__!
  */
-public final class Stored<T> {
+final class Stored<T> {
 
 	private final long _id;
 	private final T _value;
