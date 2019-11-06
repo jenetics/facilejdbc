@@ -19,9 +19,9 @@
  */
 package io.jenetics.facilejdbc;
 
-import io.jenetics.facilejdbc.function.SqlSupplier;
-
 import static java.util.Objects.requireNonNull;
+
+import io.jenetics.facilejdbc.function.SqlSupplier;
 
 /**
  * Represents a query parameter with <em>name</em> and <em>value</em>. The

@@ -19,6 +19,10 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.sql.Statement.RETURN_GENERATED_KEYS;
+import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,10 +30,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
-
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.util.Arrays.asList;
-import static java.util.Objects.requireNonNull;
 
 /**
  * A {@code Query} represents an executable piece of SQL text.

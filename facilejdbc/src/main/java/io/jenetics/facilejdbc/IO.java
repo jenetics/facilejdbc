@@ -19,11 +19,11 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Helper methods needed for implementing the Java serializations.

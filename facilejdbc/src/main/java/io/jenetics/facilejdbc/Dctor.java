@@ -19,15 +19,15 @@
  */
 package io.jenetics.facilejdbc;
 
-import io.jenetics.facilejdbc.function.SqlFunction;
-import io.jenetics.facilejdbc.function.SqlFunction2;
+import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
 
 import java.sql.Connection;
 import java.util.List;
 import java.util.OptionalInt;
 
-import static java.util.Arrays.asList;
-import static java.util.Objects.requireNonNull;
+import io.jenetics.facilejdbc.function.SqlFunction;
+import io.jenetics.facilejdbc.function.SqlFunction2;
 
 /**
  * This interface is responsible for creating a <em>row</em> {@link SqlParamValues}

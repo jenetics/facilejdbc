@@ -19,6 +19,9 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.util.Collections.unmodifiableList;
+import static java.util.Objects.requireNonNull;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -30,9 +33,6 @@ import java.util.List;
 import java.util.OptionalInt;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static java.util.Collections.unmodifiableList;
-import static java.util.Objects.requireNonNull;
 
 /**
  * Internal representation of an SQL query string. This parses the structure of
