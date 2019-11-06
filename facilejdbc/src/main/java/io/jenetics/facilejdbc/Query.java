@@ -104,7 +104,7 @@ public class Query {
 		throws SQLException
 	{
 		try (PreparedStatement stmt = statement(conn)) {
-			_preparer.set(stmt, _sql.paramIndices());
+			_preparer.set(stmt, _sql.paramIndexes());
 
 			try (ResultSet rs = stmt.executeQuery()) {
 				return parser.parse(rs);
@@ -129,7 +129,7 @@ public class Query {
 	 */
 	public boolean execute(final Connection conn) throws SQLException  {
 		try (PreparedStatement stmt = statement(conn)) {
-			_preparer.set(stmt, _sql.paramIndices());
+			_preparer.set(stmt, _sql.paramIndexes());
 			return stmt.execute();
 		}
 	}
@@ -156,10 +156,10 @@ public class Query {
 		throws SQLException
 	{
 		try (PreparedStatement stmt = statement(conn)) {
-			_preparer.set(stmt, _sql.paramIndices());
+			_preparer.set(stmt, _sql.paramIndexes());
 
 			for (var preparer : batch) {
-				preparer.apply(conn).set(stmt, _sql.paramIndices());
+				preparer.apply(conn).set(stmt, _sql.paramIndexes());
 				stmt.executeUpdate();
 			}
 		}
