@@ -115,7 +115,7 @@ If you have a collection of `Person`s, you can insert it in one batch.
 
 ```java
 final List<Person> persons = ...;
-final Batch<Person> batch = Batch.of(persons, DCTOR);
+final Batch batch = Batch.of(persons, DCTOR);
 final int[] counts = INSERT.executeUpdate(batch, conn);
 ```
 
