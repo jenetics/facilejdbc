@@ -77,7 +77,8 @@ public final class Query {
 	/**
 	 * Return the list of parsed parameter names. The list may be empty or
 	 * contain duplicate entries, depending on the input string. The list are
-	 * in exactly the order they appeared in the SQL string.
+	 * in exactly the order they appeared in the SQL string and can be used for
+	 * determining the parameter index for the {@link PreparedStatement}.
 	 *
 	 * @return the parsed parameter names
 	 */
