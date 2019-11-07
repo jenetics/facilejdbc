@@ -27,6 +27,8 @@ import java.sql.SQLException;
  * representing the parameter value directly, a value is defined by it's
  * <em>insertion</em> strategy.
  *
+ * @see Param
+ *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
  * @since !__version__!

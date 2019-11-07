@@ -25,7 +25,10 @@ import java.util.List;
 
 /**
  * This represents a whole Sql row (parameter set). Instead of representing the
- * row directly, it's <em>insertion</em> strategy.
+ * row directly, a row is defined it's <em>insertion</em> strategy.
+ *
+ * @see Param
+ * @see ParamValue
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
