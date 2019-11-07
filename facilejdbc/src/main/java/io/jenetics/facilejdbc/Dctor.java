@@ -36,6 +36,14 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * This interface is responsible for creating (deconstructing) a <em>row</em>
  * ({@link ParamValues}) from a given record.
  *
+ * @apiNote
+ * A {@code Dctor} (deconstructor) is responsible for splitting a given record
+ * into a set of fields (columns), which can be written into the DB. The
+ * counterpart of this interface is the {@link RowParser}, which builds a
+ * record of a DB result row.
+ *
+ * @see RowParser
+ *
  * @param <T> the (deconstructed) record type
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>

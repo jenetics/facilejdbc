@@ -39,6 +39,12 @@ import java.util.Optional;
  * }</pre>
  *
  * @see ResultSetParser
+ * @see Dctor
+ *
+ * @apiNote
+ * The {@code RowParser} is the counterpart of the {@link Dctor} interface. In
+ * contrast of splitting a record into a set of <em>fields</em>, it creates a
+ * record from a selected DB row.
  *
  * @param <T> the row type
  *

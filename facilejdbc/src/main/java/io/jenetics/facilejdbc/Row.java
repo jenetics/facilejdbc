@@ -25,7 +25,7 @@ import java.util.Map;
  * <em>update</em> methods. It just allows you to access the data of the current
  * row.
  *
- * @implNote
+ * @apiNote
  * This class is intended only to be used in the {@link RowParser} interfaces.
  * Client code should not hold references of this class outside of this narrow
  * scope, since the wrapped {@link ResultSet} is move forward and calling the
