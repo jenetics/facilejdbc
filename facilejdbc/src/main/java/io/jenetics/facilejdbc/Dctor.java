@@ -19,6 +19,7 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
@@ -29,8 +30,8 @@ import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
 
 /**
- * This interface is responsible for creating a <em>row</em> {@link ParamValues}
- * from a given record.
+ * This interface is responsible for creating (deconstructing) a <em>row</em>
+ * ({@link ParamValues}) from a given record.
  *
  * @param <T> the (deconstructed) record type
  *
@@ -41,6 +42,11 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
 @FunctionalInterface
 public interface Dctor<T> {
 
+	/**
+	 * Represents a <em>deconstructed</em> record field.
+	 *
+	 * @param <T> the record type
+	 */
 	public static interface Field<T> {
 
 		/**
@@ -56,7 +62,6 @@ public interface Dctor<T> {
 		 * @param row the actual row (record)
 		 * @param conn the connection used for producing the SQL value, if needed
 		 * @return the SQL value for the give {@code row} field
-		 * @throws NullPointerException if the given {@code conn} is {@code null}
 		 */
 		public ParamValue value(final T row, final Connection conn);
 
@@ -86,6 +91,10 @@ public interface Dctor<T> {
 				public ParamValue value(final T row, final Connection conn) {
 					return (index, stmt) ->
 						stmt.setObject(index, value.apply(row, conn));
+				}
+				@Override
+				public String toString() {
+					return format("Field[%s]", name);
 				}
 			};
 		}
@@ -141,7 +150,7 @@ public interface Dctor<T> {
 	 */
 	@SafeVarargs
 	public static <T> Dctor<T> of(final Field<T>... fields) {
-		return of(asList(fields));
+		return Dctor.of(asList(fields));
 	}
 
 	private static <T> Field<T> get(final String name, final List<Field<T>> fields) {

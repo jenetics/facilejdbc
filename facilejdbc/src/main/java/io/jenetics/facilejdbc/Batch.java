@@ -26,7 +26,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * Represents a whole batch of SQL query parameters.
+ * Represents a whole batch of SQL query parameters. A <em>batch</em> is
+ * essentially an {@link Iterable} of rows/records.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
