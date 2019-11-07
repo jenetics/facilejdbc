@@ -154,6 +154,7 @@ public final class Query {
 		return new Query(_sql, _values.andThen(values));
 	}
 
+
 	/* *************************************************************************
 	 * Executing query.
 	 * ************************************************************************/
@@ -178,10 +179,10 @@ public final class Query {
 	public <T> T as(final ResultSetParser<T> parser, final Connection conn)
 		throws SQLException
 	{
-		try (PreparedStatement stmt = prepare(conn)) {
-			try (ResultSet rs = stmt.executeQuery()) {
-				return parser.parse(rs);
-			}
+		try (PreparedStatement stmt = prepare(conn);
+			ResultSet rs = stmt.executeQuery())
+		{
+			return parser.parse(rs);
 		}
 	}
 
