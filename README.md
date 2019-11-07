@@ -1,5 +1,3 @@
-**_UNDER DEVELOPMENT_**
-
 [![Build Status](https://travis-ci.org/jenetics/facilejdbc.svg?branch=master)](https://travis-ci.org/jenetics/facilejdbc)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.jenetics/facilejdbc/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22jpx%22)
 [![Javadoc](https://www.javadoc.io/badge/io.jenetics/facilejdbc.svg)](http://www.javadoc.io/doc/io.jenetics/facilejdbc)
@@ -38,11 +36,8 @@ Since the `Query` class doesn't store any mutable state, it is possible to defin
 SQL queries are executed via the `Query` class. All what it needs is a JDBC `Connection`.
 
 ```java
-final DataSource ds = ...;
 final Query query = Query.of("SELECT 1");
-final boolean result = Db.transaction(ds, conn -> 
-    query.execute(conn)
-);
+final boolean result = query.execute(conn)
 ```
 
 The `execute` method returns a `boolean` value, as specified in the [`PreparedStatement.execute()`](https://docs.oracle.com/en/java/javase/11/docs/api/java.sql/java/sql/PreparedStatement.html#execute()) method.
@@ -52,23 +47,20 @@ The `execute` method returns a `boolean` value, as specified in the [`PreparedSt
 Usually you will have a DTO where a table row is stored.
 
 ```java
+@Value
+@Builder(builderClassName = "Builder", toBuilder = true)
+@Accessors(fluent = true)
 public final class Person { 
-    private final String _name;
-    private final String _email;
-    private final String _link;
-    public Person(String name, String email, String link) { 
-    	_name = name; _email = email; _link = link; 
-    }
-    public String name() { return _name; }
-    public String email() { return _email; }
-    public String link() { return _link; }
+    private final String name;
+    private final String email;
+    private final String link;
 }
 ```
 
 If you want to select all persons with a given name, you can use the following query.
 
 ```java
-static final Query SELECT_PERSON = Query.of(
+static final Query SELECT = Query.of(
     "SELECT name, email, link " +
     "FROM person " +
     "WHERE name = :name"
@@ -78,21 +70,19 @@ static final Query SELECT_PERSON = Query.of(
 This query is then executed as follows.
 
 ```java
-final List<Person> persons = transaction(ds, conn ->
-    SELECT_PERSON
-        .on(value("name", "Franz"))
-        .as(PERSON_PARSER.list(), conn)
-);
+final List<Person> persons = SELECT
+    .on(value("name", "Franz"))
+    .as(PARSER.list(), conn);
 ```
 
 For converting the result into the `Person` DTO, you have to create a proper `RowParser`. The row parser is responsible for creating the DTOs from the query results.
 
 ```java
-static final RowParser<Person> PERSON_PARSER = row -> new Person(
-    row.getString("name"),
-    row.getString("email"),
-    row.getString("link")
-);
+static final RowParser<Person> PARSER = row -> Person.builder()
+    .name(row.getString("name"))
+    .email(row.getString("email"))
+    .link(row.getString("link"))
+    .build();
 ```
 
 ### Insert single objects
@@ -100,7 +90,7 @@ static final RowParser<Person> PERSON_PARSER = row -> new Person(
 For inserting one new `Person` into the DB, you have to define an insertion query. 
 
 ```java
-static final Query INSERT_PERSON = Query.of(
+static final Query INSERT = Query.of(
     "INSERT INTO person(name, email, link) " +
     "VALUES(:name, :email, :link);"
 );
@@ -109,14 +99,12 @@ static final Query INSERT_PERSON = Query.of(
 Then you have to set all query parameters and execute the query.
 
 ```java
-final boolean inserted = transaction(ds, conn ->
-    INSERT_PERSON
-        .on(
-            value("name", "foo"),
-            value("email", "foo@gmail.com"),
-            value("link", "http://google.com"))
-        .execute(conn)
-);
+final boolean inserted = INSERT
+    .on(
+        value("name", "foo"),
+        value("email", "foo@gmail.com"),
+        value("link", "http://google.com"))
+    .execute(conn);
 ```
 
 ### Batch insertion
@@ -126,10 +114,7 @@ If you have a collection of `Person`s, you can insert it in one batch.
 ```java
 final List<Person> persons = ...;
 final Batch<Person> batch = Batch.of(persons, DCTOR);
-final int count = transaction(ds, conn ->
-    INSERT_PERSON
-        .execute(batch, conn)
-);
+final int[] counts = INSERT.executeUpdate(batch, conn);
 ```
 
 Analog to the record parser, you need a _deconstructor_ for splitting the DTO in its components/parameters.
@@ -141,3 +126,25 @@ private static final Dctor<Person> DCTOR = Dctor.of(
     field("link", Person::link)
 );
 ```
+
+## License
+
+The library is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
+
+    Copyright 2019 Franz Wilhelmstötter
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+
+
+## Release notes
+
+* Initial release(s).
