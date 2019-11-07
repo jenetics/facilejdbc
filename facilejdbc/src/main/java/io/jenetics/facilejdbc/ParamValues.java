@@ -21,6 +21,7 @@ package io.jenetics.facilejdbc;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * This represents a whole Sql row (parameter set).
@@ -35,17 +36,20 @@ public interface ParamValues {
 	/**
 	 * Represents an empty parameter value set.
 	 */
-	public static final ParamValues EMPTY = (stmt, indices) -> {};
+	public static final ParamValues EMPTY = (params, stmt) -> {};
 
 	/**
 	 * Fills the parameters of the given statement.
 	 *
+	 * @param paramNames the list of parameter names which should be set, if
+	 *        available by this {@code ParamValues} object. The list of parameter
+	 *        names is exhaustive and can be used for determining the parameter
+	 *        index in the prepared statement.
 	 * @param stmt the prepared statement to fill (set)
-	 * @param indices the parameter indices
 	 * @throws SQLException if the preparation fails
 	 * @throws NullPointerException if the given {@code stmt} is {@code null}
 	 */
-	public void set(final PreparedStatement stmt, final ParamIndexes indices)
+	public void set(final List<String> paramNames, final PreparedStatement stmt)
 		throws SQLException;
 
 	/**
@@ -59,9 +63,9 @@ public interface ParamValues {
 	 * @return a composed preparer
 	 */
 	public default ParamValues andThen(final ParamValues after) {
-		return (stmt, indices) -> {
-			ParamValues.this.set(stmt, indices);
-			after.set(stmt, indices);
+		return (params, stmt) -> {
+			ParamValues.this.set(params, stmt);
+			after.set(params, stmt);
 		};
 	}
 

@@ -27,8 +27,6 @@ import org.testng.annotations.Test;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
  */
 public class SqlTest {
 
@@ -51,6 +49,7 @@ public class SqlTest {
 			{" ", List.of(), " "},
 			{"a ", List.of(), "a "},
 			{"VALUES(:a, :b)", List.of("a", "b"), "VALUES(?, ?)"},
+			{"VALUES(:a, :a)", List.of("a", "a"), "VALUES(?, ?)"},
 			{"a = :name1", List.of("name1"), "a = ?"},
 			{"a :name1", List.of("name1"), "a ?"},
 			{"a :name1 :name2  :name1", List.of("name1", "name2", "name1"), "a ? ?  ?"},

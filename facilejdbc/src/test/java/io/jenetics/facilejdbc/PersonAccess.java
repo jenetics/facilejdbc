@@ -24,7 +24,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-import static io.jenetics.facilejdbc.Db.transaction;
+import static io.jenetics.facilejdbc.util.Db.transaction;
 import static io.jenetics.facilejdbc.Dctor.field;
 import static io.jenetics.facilejdbc.Param.value;
 
@@ -100,9 +100,9 @@ public class PersonAccess {
 		);
 
 		// BATCH execution
-		final Batch<Person> batch = Batch.of(persons, DCTOR);
-		final int count = transaction(ds, conn ->
-			INSERT_PERSON.execute(batch, conn)
+		final Batch batch = Batch.of(persons, DCTOR);
+		final int[] counts = transaction(ds, conn ->
+			INSERT_PERSON.executeUpdate(batch, conn)
 		);
 
 	}

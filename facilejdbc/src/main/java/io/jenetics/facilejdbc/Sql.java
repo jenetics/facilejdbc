@@ -19,9 +19,6 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.util.Collections.unmodifiableList;
-import static java.util.Objects.requireNonNull;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -30,9 +27,11 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.OptionalInt;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.util.Collections.unmodifiableList;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Internal representation of an SQL query string. This parses the structure of
@@ -40,11 +39,26 @@ import java.util.regex.Pattern;
  * starts with a colon ':' and contains of one or more Word-Character, as
  * defined by \W ([a-zA-Z_0-9]) in the Regex syntax.
  *
+ * <pre>{@code
+ * private static final Sql SELECT = Sql.of(
+ *     "SELECT * FROM person " +
+ *     "WHERE forename like :forename " +
+ *     "ORDER BY surname;"
+ * );
+ *
+ * private static final Sql INSERT = Sql.of(
+ *     "INSERT INTO person(forename, surname, birthday, email) " +
+ *     "VALUES(:forename, :surname, :birthday, :email);"
+ * );
+ * }</pre>
+ *
+ * @see Query
+ *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
  * @since !__version__!
  */
-public final class Sql implements Serializable {
+final class Sql implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private static final Pattern PARAM_PATTERN = Pattern.compile("([\\s+|\\(]:[\\w]+)");
@@ -69,39 +83,13 @@ public final class Sql implements Serializable {
 
 	/**
 	 * Return the list of parsed parameter names. The list may be empty or
-	 * contain duplicate entries, depending on the input string.
+	 * contain duplicate entries, depending on the input string. The list are
+	 * in exactly the order they appeared in the SQL string.
 	 *
 	 * @return the parsed parameter names
 	 */
 	public List<String> paramNames() {
 		return _paramNames;
-	}
-
-	/**
-	 * Return the parameter indexes of {@code this} SQL query.
-	 *
-	 * @return the parameter indexes of {@code this} SQL query
-	 */
-	ParamIndexes paramIndexes() {
-		return this::paramIndex;
-	}
-
-	/**
-	 * Return the parameter index of the given parameter name, if available. The
-	 * returned index is <em>one</em>-based and can directly used in prepared
-	 * statements.
-	 *
-	 * @param name the parameter name
-	 * @return the parameter index of the given parameter name
-	 * @throws NullPointerException if the given {@code name} is {@code null}
-	 */
-	private OptionalInt paramIndex(final String name) {
-		for (int i = 0; i < _paramNames.size(); ++i) {
-			if (name.equals(_paramNames.get(i))) {
-				return OptionalInt.of(i + 1);
-			}
-		}
-		return OptionalInt.empty();
 	}
 
 	@Override

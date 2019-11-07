@@ -52,6 +52,19 @@ public interface Param {
 	 * Static factory methods.
 	 * ************************************************************************/
 
+	/**
+	 * Create a new query parameter object from the given {@code name} and
+	 * {@code value}.
+	 *
+	 * @see #value(String, Object)
+	 * @see #lazy(String, SqlSupplier)
+	 *
+	 * @param name the parameter name
+	 * @param value the parameter values
+	 * @return a new query parameter object
+	 * @throws NullPointerException if the given parameter {@code name} is
+	 *         {@code null}
+	 */
 	public static Param of(final String name, final ParamValue value) {
 		requireNonNull(name);
 		requireNonNull(value);
@@ -82,12 +95,22 @@ public interface Param {
 	 *         {@code null}
 	 */
 	public static Param value(final String name, final Object value) {
-		return Param.of(name, (stmt, index) -> stmt.setObject(index, value));
+		return Param.of(name, (index, stmt) -> stmt.setObject(index, value));
 	}
 
+	/**
+	 * Create a new query parameter object from the given {@code name} and
+	 * lazily evaluated {@code value}.
+	 *
+	 * @param name the parameter name
+	 * @param value the lazily evaluated parameter values
+	 * @return a new query parameter object
+	 * @throws NullPointerException if the given parameter {@code name} is
+	 *         {@code null}
+	 */
 	public static Param lazy(final String name, final SqlSupplier<?> value) {
 		requireNonNull(value);
-		return Param.of(name, (stmt, index) -> stmt.setObject(index, value.get()));
+		return Param.of(name, (index, stmt) -> stmt.setObject(index, value.get()));
 	}
 
 }

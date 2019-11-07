@@ -23,6 +23,29 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
+ * This interface is responsible for parsing a {@link ResultSet} to a record of
+ * type {@code T}. The usual way for creating a result set parser is via an
+ * existing {@link RowParser}.
+ *
+ * <pre>{@code
+ * final RowParser<Person> parser = row -> new Person(
+ *     row.getString("name"),
+ *     row.getString("email"),
+ *     row.getString("link")
+ * );
+ *
+ * final ResultSetParser<Person> rsp1 = parser.single();
+ * final ResultSetParser<Optional<Person>> rsp2 = parser.singleOpt();
+ * final ResultSetParser<List<Person>> rsp3 = parser.list();
+ * }</pre>
+ *
+ * @see RowParser
+ *
+ * @param <T> the row type
+ *
+ * @apiNote
+ * {@code ResultSetParser} are created via {@code RowParser} objects.
+ *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
  * @since !__version__!

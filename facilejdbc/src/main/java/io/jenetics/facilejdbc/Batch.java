@@ -21,26 +21,25 @@ package io.jenetics.facilejdbc;
 
 import java.sql.Connection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
  * Represents a whole batch of SQL query parameters.
  *
- * @param <T> the record (row) type of the batch.
- *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
  * @since !__version__!
  */
-public interface Batch<T> extends Iterable<Batch.Entry> {
+public interface Batch extends Iterable<Batch.Row> {
 
 	/**
 	 * An batch entry is actually a factory function, which is able to create a
 	 * <em>row</em> {@link ParamValues} from parameter indices and a connection.
 	 */
 	@FunctionalInterface
-	public static interface Entry {
+	public static interface Row {
 
 		/**
 		 * Creates a <em>row</em> {@link ParamValues} from the given arguments.
@@ -48,7 +47,7 @@ public interface Batch<T> extends Iterable<Batch.Entry> {
 		 * @param conn the connection used for created the preparer, if needed
 		 * @return a <em>row</em> {@link ParamValues}
 		 */
-		public ParamValues apply(final Connection conn);
+		public ParamValues get(final Connection conn);
 	}
 
 	/**
@@ -56,11 +55,25 @@ public interface Batch<T> extends Iterable<Batch.Entry> {
 	 *
 	 * @return a stream with the the given batch entries (rows)
 	 */
-	public default Stream<Entry> stream() {
+	public default Stream<Row> stream() {
 		return StreamSupport.stream(spliterator(), false);
 	}
 
-	public static <T> Batch<T> of(final Iterable<T> rows, final Dctor<T> dctor) {
+
+	/* *************************************************************************
+	 * Static factory methods.
+	 * ************************************************************************/
+
+	/**
+	 * Create a new batch from the given records (rows) and the deconstructor.
+	 *
+	 * @param rows the rows to be inserted by the created batch
+	 * @param dctor the record deconstructor
+	 * @param <T> the row type
+	 * @return a new batch from the given arguments
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 */
+	public static <T> Batch of(final Iterable<T> rows, final Dctor<T> dctor) {
 		return () -> new Iterator<>() {
 			private final Iterator<T> it = rows.iterator();
 
@@ -70,9 +83,33 @@ public interface Batch<T> extends Iterable<Batch.Entry> {
 			}
 
 			@Override
-			public Entry next() {
+			public Row next() {
 				final T row = it.next();
 				return conn -> dctor.apply(row, conn);
+			}
+		};
+	}
+
+	/**
+	 * Create a new batch from the given rows.
+	 *
+	 * @param rows the rows to be inserted by the created batch
+	 * @return a new batch from the given arguments
+	 * @throws NullPointerException if the given {@code row} is {@code null}
+	 */
+	public static Batch of(final List<List<Param>> rows) {
+		return () -> new Iterator<>() {
+			private final Iterator<List<Param>> it = rows.iterator();
+
+			@Override
+			public boolean hasNext() {
+				return it.hasNext();
+			}
+
+			@Override
+			public Row next() {
+				final List<Param> row = it.next();
+				return conn -> new Params(row);
 			}
 		};
 	}

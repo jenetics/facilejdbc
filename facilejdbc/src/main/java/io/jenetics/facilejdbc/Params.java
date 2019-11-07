@@ -19,14 +19,15 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.util.Objects.requireNonNull;
-
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.OptionalInt;
+
+import static java.util.Objects.requireNonNull;
 
 /**
+ * Collects a list of {@link Param} object into a {@link ParamValues} object.
+ *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
  * @since !__version__!
@@ -40,15 +41,26 @@ final class Params implements ParamValues {
 	}
 
 	@Override
-	public void set(final PreparedStatement stmt, final ParamIndexes indices)
+	public void set(final List<String> paramNames, final PreparedStatement stmt)
 		throws SQLException
 	{
-		for (Param param : _params) {
-			final OptionalInt index = indices.index(param.name());
-			if (index.isPresent()) {
-				param.value().set(stmt, index.orElseThrow());
+		int index = 0;
+		for (String name : paramNames) {
+			++index;
+			final Param param = get(name);
+			if (param != null) {
+				param.value().set(index, stmt);
 			}
 		}
+	}
+
+	private Param get(final String name) {
+		for (Param param : _params) {
+			if (param.name().equals(name)) {
+				return param;
+			}
+		}
+		return null;
 	}
 
 }

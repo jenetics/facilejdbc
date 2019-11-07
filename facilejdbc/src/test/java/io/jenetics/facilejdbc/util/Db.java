@@ -17,15 +17,13 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc;
+package io.jenetics.facilejdbc.util;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import io.jenetics.facilejdbc.function.SqlFunction;
 
 import javax.sql.DataSource;
-
-import io.jenetics.facilejdbc.function.SqlConsumer;
-import io.jenetics.facilejdbc.function.SqlFunction;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * This class contains some helper functions for DB transaction handling.
@@ -94,18 +92,5 @@ public final class Db {
 			return transaction(conn, block);
 		}
 	}
-
-	/*
-	public static <T> void transaction(
-		final DataSource ds,
-		final SqlConsumer<? super Connection> block
-	)
-		throws SQLException
-	{
-		try (var conn = ds.getConnection()) {
-			transaction(conn, c -> {block.accept(c); return null;});
-		}
-	}
-	 */
 
 }

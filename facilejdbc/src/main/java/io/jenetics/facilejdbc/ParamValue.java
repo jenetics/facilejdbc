@@ -35,11 +35,11 @@ public interface ParamValue {
 	/**
 	 * Fills the parameter value to the given statement.
 	 *
-	 * @param stmt the prepared statement to fill (set)
 	 * @param index the index of the value to set
+	 * @param stmt the prepared statement to fill (set)
 	 * @throws SQLException if the preparation fails
 	 */
-	public void set(final PreparedStatement stmt, final int index)
+	public void set(final int index, final PreparedStatement stmt)
 		throws SQLException;
 
 }

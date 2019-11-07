@@ -19,15 +19,14 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.util.Arrays.asList;
-import static java.util.Objects.requireNonNull;
+import io.jenetics.facilejdbc.function.SqlFunction;
+import io.jenetics.facilejdbc.function.SqlFunction2;
 
 import java.sql.Connection;
 import java.util.List;
-import java.util.OptionalInt;
 
-import io.jenetics.facilejdbc.function.SqlFunction;
-import io.jenetics.facilejdbc.function.SqlFunction2;
+import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
 
 /**
  * This interface is responsible for creating a <em>row</em> {@link ParamValues}
@@ -73,7 +72,7 @@ public interface Dctor<T> {
 		 */
 		public static <T> Field<T> of(
 			final String name,
-			final SqlFunction2<? super T, Connection, Object> value
+			final SqlFunction2<? super T, Connection, ?> value
 		) {
 			requireNonNull(name);
 			requireNonNull(value);
@@ -85,7 +84,7 @@ public interface Dctor<T> {
 				}
 				@Override
 				public ParamValue value(final T row, final Connection conn) {
-					return (stmt, index) ->
+					return (index, stmt) ->
 						stmt.setObject(index, value.apply(row, conn));
 				}
 			};
@@ -102,28 +101,63 @@ public interface Dctor<T> {
 	 */
 	public ParamValues apply(final T record, final Connection conn);
 
-	@SafeVarargs
-	public static <T> Dctor<T> of(final Field<T>... fields) {
-		return of(asList(fields));
-	}
 
+	/* *************************************************************************
+	 * Static factory methods.
+	 * ************************************************************************/
+
+	/**
+	 * Create a new deconstructor from the given field definitions.
+	 *
+	 * @see #of(Field[])
+	 *
+	 * @param fields the fields which describe the deconstruction
+	 * @param <T> the type of the record to be deconstructed
+	 * @return a new deconstructor from the given field definitions
+	 */
 	public static <T> Dctor<T> of(final List<Field<T>> fields) {
 		final List<Field<T>> fls = List.copyOf(fields);
 
-		return (record, conn) -> (stmt, indices) -> {
-			for (Field<T> field : fls) {
-				final OptionalInt index = indices.index(field.name());
-				if (index.isPresent()) {
-					final int i = index.orElseThrow();
-					field.value(record, conn).set(stmt, i);
+		return (record, conn) -> (params, stmt) -> {
+			int index = 0;
+			for (String name : params) {
+				++index;
+				final Field<T> field = get(name, fls);
+				if (field != null) {
+					field.value(record, conn).set(index, stmt);
 				}
 			}
 		};
 	}
 
 	/**
+	 * Create a new deconstructor from the given field definitions.
+	 *
+	 * @see #of(List)
+	 *
+	 * @param fields the fields which describe the deconstruction
+	 * @param <T> the type of the record to be deconstructed
+	 * @return a new deconstructor from the given field definitions
+	 */
+	@SafeVarargs
+	public static <T> Dctor<T> of(final Field<T>... fields) {
+		return of(asList(fields));
+	}
+
+	private static <T> Field<T> get(final String name, final List<Field<T>> fields) {
+		for (Field<T> field : fields) {
+			if (field.name().equals(name)) {
+				return field;
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Create a new record field with the given {@code name} and field
 	 * {@code accessor}.
+	 *
+	 * @see #field(String, SqlFunction)
 	 *
 	 * @param name the field name
 	 * @param value the field accessor
@@ -132,14 +166,25 @@ public interface Dctor<T> {
 	 */
 	public static <T> Field<T> field(
 		final String name,
-		final SqlFunction2<? super T, Connection, Object> value
+		final SqlFunction2<? super T, Connection, ?> value
 	) {
 		return Field.of(name, value);
 	}
 
-	public static <T, R> Field<T> field(
+	/**
+	 * Create a new record field with the given {@code name} and field
+	 * {@code accessor}.
+	 *
+	 * @see #field(String, SqlFunction2)
+	 *
+	 * @param name the field name
+	 * @param value the field accessor
+	 * @param <T> the record type
+	 * @return a new record field
+	 */
+	public static <T> Field<T> field(
 		final String name,
-		final SqlFunction<? super T, Object> value
+		final SqlFunction<? super T, ?> value
 	) {
 		return Field.of(name, (record, conn) -> value.apply(record));
 	}

@@ -30,7 +30,17 @@ import java.util.Optional;
  * Converts one row from the given {@link ResultSet} into a data object from
  * the given type.
  *
- * @param <T> the data object type
+ * <pre>{@code
+ * final RowParser<Person> parser = row -> new Person(
+ *     row.getString("name"),
+ *     row.getString("email"),
+ *     row.getString("link")
+ * );
+ * }</pre>
+ *
+ * @see ResultSetParser
+ *
+ * @param <T> the row type
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
@@ -56,7 +66,7 @@ public interface RowParser<T> {
 	public default ResultSetParser<T> single() {
 		return rs -> {
 			if (rs.next()) {
-				return parse(Row.of(rs));
+				return parse(ResultSetRow.of(rs));
 			}
 			throw new NoSuchElementException();
 		};
@@ -69,7 +79,7 @@ public interface RowParser<T> {
 	 */
 	public default ResultSetParser<Optional<T>> singleOpt() {
 		return rs -> rs.next()
-			? Optional.ofNullable(parse(Row.of(rs)))
+			? Optional.ofNullable(parse(ResultSetRow.of(rs)))
 			: Optional.empty();
 	}
 
@@ -80,7 +90,7 @@ public interface RowParser<T> {
 	 */
 	public default ResultSetParser<List<T>> list() {
 		return rs -> {
-			final Row row = Row.of(rs);
+			final ResultSetRow row = ResultSetRow.of(rs);
 			final List<T> result = new ArrayList<>();
 			while (rs.next()) {
 				result.add(parse(row));
@@ -95,16 +105,64 @@ public interface RowParser<T> {
 	 * Static factory methods.
 	 * ************************************************************************/
 
+	/**
+	 * Return a row parser for long values for the given column name.
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
 	public static RowParser<Long> int64(final String name) {
 		return row -> row.getLong(name);
 	}
 
-	public static RowParser<String> string(final String name) {
-		throw new UnsupportedOperationException();
+	/**
+	 * Return a row parser for long values for the given column index.
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	public static RowParser<Long> int64(final int index) {
+		return row -> row.getLong(index);
 	}
 
+	/**
+	 * Return a row parser for int values for the given column name.
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	public static RowParser<Integer> int32(final String name) {
+		return row -> row.getInt(name);
+	}
+
+	/**
+	 * Return a row parser for int values for the given column index.
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	public static RowParser<Integer> int32(final int index) {
+		return row -> row.getInt(index);
+	}
+
+	/**
+	 * Return a row parser for long values for the given column name.
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	public static RowParser<String> string(final String name) {
+		return row -> row.getString(name);
+	}
+
+	/**
+	 * Return a row parser for string values for the given column index.
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
 	public static RowParser<String> string(final int index) {
-		throw new UnsupportedOperationException();
+		return row -> row.getString(index);
 	}
 
 }
