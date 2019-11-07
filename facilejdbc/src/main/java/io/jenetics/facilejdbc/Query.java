@@ -103,15 +103,9 @@ public final class Query {
 	 * @throws NullPointerException if the given {@code params} is {@code null}
 	 */
 	public Query on(final List<Param> params) {
-		final Query query;
-		if (params.isEmpty()) {
-			query = this;
-		} else {
-			final ParamValues values = new Params(params);
-			query = new Query(_sql, _values.andThen(values));
-		}
-
-		return query;
+		return params.isEmpty()
+			? this
+			: new Query(_sql, _values.andThen(new Params(params)));
 	}
 
 	/**

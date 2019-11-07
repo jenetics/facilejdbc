@@ -19,11 +19,14 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.reducing;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Collects a list of {@link Param} object into a {@link ParamValues} object.
@@ -34,10 +37,19 @@ import java.util.List;
  */
 final class Params implements ParamValues {
 
-	private final List<Param> _params;
+	private final Map<String, Param> _params;
+
+	private Params(final Map<String, Param> params) {
+		_params = params;
+	}
 
 	Params(final List<Param> params) {
-		_params = requireNonNull(params);
+		this(
+			params.isEmpty()
+				? Map.of()
+				: params.stream().collect(
+					groupingBy(Param::name, reducing(null, (a, b) -> b)))
+		);
 	}
 
 	@Override
@@ -47,20 +59,24 @@ final class Params implements ParamValues {
 		int index = 0;
 		for (String name : paramNames) {
 			++index;
-			final Param param = get(name);
+			final Param param = _params.get(name);
 			if (param != null) {
 				param.value().set(index, stmt);
 			}
 		}
 	}
 
-	private Param get(final String name) {
-		for (Param param : _params) {
-			if (param.name().equals(name)) {
-				return param;
-			}
-		}
-		return null;
+	@Override
+	public ParamValues andThen(final ParamValues after) {
+		return after instanceof Params
+			? andThen((Params)after)
+			: ParamValues.super.andThen(after);
+	}
+
+	private Params andThen(final Params after) {
+		final Map<String, Param> params = new HashMap<>(_params);
+		params.putAll(after._params);
+		return new Params(params);
 	}
 
 }
