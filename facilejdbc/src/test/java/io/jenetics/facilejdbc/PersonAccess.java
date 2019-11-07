@@ -28,6 +28,9 @@ import static io.jenetics.facilejdbc.util.Db.transaction;
 import static io.jenetics.facilejdbc.Dctor.field;
 import static io.jenetics.facilejdbc.Param.value;
 
+/**
+ * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ */
 public class PersonAccess {
 	private PersonAccess() {}
 

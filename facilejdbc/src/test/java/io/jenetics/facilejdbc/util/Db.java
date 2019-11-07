@@ -29,8 +29,6 @@ import java.sql.SQLException;
  * This class contains some helper functions for DB transaction handling.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
  */
 public final class Db {
 	private Db() {
