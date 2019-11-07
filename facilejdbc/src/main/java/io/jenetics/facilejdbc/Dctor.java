@@ -22,9 +22,12 @@ package io.jenetics.facilejdbc;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.reducing;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
@@ -125,13 +128,16 @@ public interface Dctor<T> {
 	 * @return a new deconstructor from the given field definitions
 	 */
 	public static <T> Dctor<T> of(final List<Field<T>> fields) {
-		final List<Field<T>> fls = List.copyOf(fields);
+		final Map<String, Field<T>> map = fields.isEmpty()
+			? Map.of()
+			: fields.stream().collect(
+				groupingBy(Field::name, reducing(null, (a, b) -> b)));
 
 		return (record, conn) -> (params, stmt) -> {
 			int index = 0;
 			for (String name : params) {
 				++index;
-				final Field<T> field = get(name, fls);
+				final Field<T> field = map.get(name);
 				if (field != null) {
 					field.value(record, conn).set(index, stmt);
 				}
@@ -151,15 +157,6 @@ public interface Dctor<T> {
 	@SafeVarargs
 	public static <T> Dctor<T> of(final Field<T>... fields) {
 		return Dctor.of(asList(fields));
-	}
-
-	private static <T> Field<T> get(final String name, final List<Field<T>> fields) {
-		for (Field<T> field : fields) {
-			if (field.name().equals(name)) {
-				return field;
-			}
-		}
-		return null;
 	}
 
 	/**
