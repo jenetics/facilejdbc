@@ -19,11 +19,11 @@
  */
 package io.jenetics.facilejdbc.util;
 
-import io.jenetics.facilejdbc.function.SqlFunction;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+
+import io.jenetics.facilejdbc.function.SqlFunction;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>

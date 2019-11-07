@@ -19,9 +19,9 @@
  */
 package io.jenetics.facilejdbc;
 
-import org.testng.annotations.Test;
-
 import java.sql.SQLException;
+
+import org.testng.annotations.Test;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>

@@ -19,11 +19,8 @@
  */
 package io.jenetics.facilejdbc;
 
-import io.jenetics.facilejdbc.testmodel.Person;
-import io.jenetics.facilejdbc.util.IO;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import static io.jenetics.facilejdbc.Param.value;
+import static io.jenetics.facilejdbc.util.HSQLDB.transaction;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -36,8 +33,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static io.jenetics.facilejdbc.Param.value;
-import static io.jenetics.facilejdbc.util.HSQLDB.transaction;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import io.jenetics.facilejdbc.testmodel.Person;
+import io.jenetics.facilejdbc.util.IO;
 
 public class QueryExecutionTest {
 
