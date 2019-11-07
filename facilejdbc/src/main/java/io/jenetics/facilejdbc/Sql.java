@@ -19,19 +19,13 @@
  */
 package io.jenetics.facilejdbc;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.InvalidObjectException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Objects.requireNonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static java.util.Collections.unmodifiableList;
-import static java.util.Objects.requireNonNull;
 
 /**
  * Internal representation of an SQL query string. This parses the structure of
@@ -58,9 +52,7 @@ import static java.util.Objects.requireNonNull;
  * @version !__version__!
  * @since !__version__!
  */
-final class Sql implements Serializable {
-	private static final long serialVersionUID = 1L;
-
+final class Sql {
 	private static final Pattern PARAM_PATTERN = Pattern.compile("([\\s+|\\(|\\,]:[\\w]+)");
 
 	private final String _string;
@@ -143,29 +135,6 @@ final class Sql implements Serializable {
 		matcher.appendTail(parsedQuery);
 
 		return new Sql(parsedQuery.toString(), names);
-	}
-
-
-	/* *************************************************************************
-	 *  Java object serialization
-	 * ************************************************************************/
-
-	private Object writeReplace() {
-		return new Serial(Serial.SQL, this);
-	}
-
-	private void readObject(final ObjectInputStream stream)
-		throws InvalidObjectException
-	{
-		throw new InvalidObjectException("Serialization proxy required.");
-	}
-
-	void write(final DataOutput out) throws IOException {
-		IO.writeString(_string, out);
-	}
-
-	static Sql read(final DataInput in) throws IOException {
-		return Sql.of(IO.readString(in));
 	}
 
 }
