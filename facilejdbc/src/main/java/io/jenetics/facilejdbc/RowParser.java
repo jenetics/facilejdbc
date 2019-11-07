@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Converts one row from the given {@link ResultSet} into a data object from
@@ -63,6 +64,20 @@ public interface RowParser<T> {
 	 * @throws SQLException if reading of the current row fails
 	 */
 	public T parse(final Row row) throws SQLException;
+
+	/**
+	 * Returns a parser that will apply given {@code mapper} to the result of
+	 * {@code this} first parser. If the current parser is not successful, the
+	 * new one will return encountered exception.
+	 *
+	 * @param mapper the mapping function to apply to the parsing result
+	 * @param <U> the type of the value returned from the mapping function
+	 * @return a new row parser with the mapped type
+	 */
+	public default <U> RowParser<U>
+	map(final Function<? super T, ? extends U> mapper) {
+		return row -> mapper.apply(parse(row));
+	}
 
 	/**
 	 * Return a new parser which expects at least one result.
