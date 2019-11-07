@@ -24,7 +24,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * This represents a whole Sql row (parameter set).
+ * This represents a whole Sql row (parameter set). Instead of representing the
+ * row directly, it's <em>insertion</em> strategy.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
@@ -47,7 +48,6 @@ public interface ParamValues {
 	 *        index in the prepared statement.
 	 * @param stmt the prepared statement to fill (set)
 	 * @throws SQLException if the preparation fails
-	 * @throws NullPointerException if the given {@code stmt} is {@code null}
 	 */
 	public void set(final List<String> paramNames, final PreparedStatement stmt)
 		throws SQLException;

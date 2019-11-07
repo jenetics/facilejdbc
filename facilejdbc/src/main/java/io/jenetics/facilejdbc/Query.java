@@ -351,18 +351,6 @@ public final class Query {
 	 * ************************************************************************/
 
 	/**
-	 * Create a new query object from the given {@link Sql} object.
-	 *
-	 * @see #of(String)
-	 *
-	 * @param sql the {@link Sql} object
-	 * @return a new query object from the given {@link Sql} object
-	 */
-	static Query of(final Sql sql) {
-		return new Query(sql, ParamValues.EMPTY);
-	}
-
-	/**
 	 * Create a new query object from the given SQL string.
 	 * <pre>{@code
 	 * private static final Query SELECT = Query.of(
@@ -377,13 +365,12 @@ public final class Query {
 	 * );
 	 * }</pre>
 	 *
-	 * @see #of(Sql)
-	 *
 	 * @param sql the SQL string of the created query
 	 * @return a new query object from the given SQL string
+	 * @throws NullPointerException if the given SQL string is {@code null}
 	 */
 	public static Query of(final String sql) {
-		return Query.of(Sql.of(sql));
+		return new Query(Sql.of(sql), ParamValues.EMPTY);
 	}
 
 }

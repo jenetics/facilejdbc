@@ -23,7 +23,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
- * Represents a SQL value which can be set to a prepared statement.
+ * Represents a SQL value which can be set to a prepared statement. Instead of
+ * representing the parameter value directly, a value is defined by it's
+ * <em>insertion</em> strategy.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
