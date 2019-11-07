@@ -160,4 +160,28 @@ public class QueryExecutionTest {
 			.build();
 	}
 
+	@Test
+	public void overrideParam() throws SQLException {
+		transaction(conn ->
+			INSERT
+				.on(
+					value("forename", "Werner"),
+					value("surname", "Feimann"),
+					value("birthday", LocalDate.now()),
+					value("email", "some.email@gmail.com"),
+					value("surname", "Kurz"))
+				.on(value("forename", "Hubert"))
+				.execute(conn)
+		);
+
+		final Person selected = transaction(conn ->
+			SELECT
+				.on(value("forename", "Hubert"))
+				.as(Person.PARSER.single(), conn)
+		);
+
+		Assert.assertEquals(selected.forename(), "Hubert");
+		Assert.assertEquals(selected.surname(), "Kurz");
+	}
+
 }
