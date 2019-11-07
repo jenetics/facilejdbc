@@ -61,7 +61,7 @@ import static java.util.Objects.requireNonNull;
 final class Sql implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private static final Pattern PARAM_PATTERN = Pattern.compile("([\\s+|\\(]:[\\w]+)");
+	private static final Pattern PARAM_PATTERN = Pattern.compile("([\\s+|\\(|\\,]:[\\w]+)");
 
 	private final String _string;
 	private final List<String> _paramNames;
