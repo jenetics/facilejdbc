@@ -94,3 +94,106 @@ jar {
 		)
 	}
 }
+
+/ ******************************************************************************
+ * Artifact publishing code.
+ ******************************************************************************/
+
+afterEvaluate { project ->
+	uploadArchives {
+		repositories {
+			mavenDeployer {
+				beforeDeployment {
+					MavenDeployment deployment -> signing.signPom(deployment)
+				}
+
+				pom.groupId = project.group
+				pom.artifactId = project.name
+				pom.version = project.version
+
+				repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
+					authentication(
+						userName: project.hasProperty('nexus_username')
+							? project.property('nexus_username')
+							: 'nexus_username',
+						password: project.hasProperty('nexus_password')
+							? project.property('nexus_password')
+							: 'nexus_password'
+					)
+				}
+				snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+					authentication(
+						userName: project.hasProperty('nexus_username')
+							? project.property('nexus_username')
+							: 'nexus_username',
+						password: project.hasProperty('nexus_password')
+							? project.property('nexus_password')
+							: 'nexus_password'
+					)
+				}
+
+				pom.project {
+					name 'FacileJDBC'
+					packaging 'pom'
+					description 'Facile JDBC Library'
+					url 'https://github.com/jenetics/facilejdbc'
+					inceptionYear '2019'
+
+					scm {
+						url 'https://github.com/jenetics/facilejdbc'
+						connection 'scm:git:https://github.com/jenetics/facilejdbc.git'
+						developerConnection 'scm:git:https://github.com/jenetics/facilejdbc.git'
+					}
+
+					licenses {
+						license {
+							name 'The Apache Software License, Version 2.0'
+							url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+							distribution 'repo'
+						}
+					}
+
+					developers {
+						developer {
+							id 'jenetics'
+							name 'Franz Wilhelmstötter'
+							email 'franz.wilhelmstoetter@gmail.com'
+						}
+					}
+				}
+			}
+		}
+	}
+
+	task sourcesJar(type: Jar) {
+		classifier = 'sources'
+		from project.sourceSets.main.allSource
+		filter(ReplaceTokens, tokens: [
+			__identifier__: project.name + '-' + project.version,
+			__year__: project.copyrightYear
+		])
+	}
+
+	task javadocJar(type: Jar, dependsOn: javadoc) {
+		classifier = 'javadoc'
+		from project.javadoc
+		filter(ReplaceTokens, tokens: [
+			__identifier__: project.name + '-' + project.version,
+			__year__: project.copyrightYear
+		])
+	}
+
+	signing {
+		required {
+			!project.version.endsWith('SNAPSHOT') &&
+				gradle.taskGraph.hasTask("uploadArchives")
+		}
+		sign configurations.archives
+	}
+
+	artifacts {
+		archives sourcesJar
+		archives javadocJar
+	}
+
+}
