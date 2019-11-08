@@ -32,38 +32,30 @@ import java.util.stream.Collectors;
 final class SqlTypeMapperHolder {
 	static final SqlTypeMapperHolder INSTANCE = new SqlTypeMapperHolder();
 
-	private final List<SqlTypeMapper> converters;
 	private final Function<Object, Object> mapper;
 
 	private SqlTypeMapperHolder() {
-		converters = converters();
+		final List<SqlTypeMapper> converters =
+			ServiceLoader.load(SqlTypeMapper.class).stream()
+				.map(Provider::get)
+				.collect(Collectors.toList());
 
 		if (converters.isEmpty()) {
-			mapper = SqlTypeMapperHolder::identity;
+			mapper = Function.identity();
+		} else if (converters.size() == 1) {
+			mapper = converters.get(0)::convert;
 		} else {
-			mapper = this::convert;
+			mapper = value -> {
+				for (var converter : converters) {
+					final Object nv = converter.convert(value);
+					if (nv != value) {
+						return nv;
+					}
+				}
+
+				return value;
+			};
 		}
-	}
-
-	private static List<SqlTypeMapper> converters() {
-		return ServiceLoader.load(SqlTypeMapper.class).stream()
-			.map(Provider::get)
-			.collect(Collectors.toList());
-	}
-
-	private static Object identity(final Object value) {
-		return value;
-	}
-
-	private Object convert(final Object value) {
-		for (var converter : converters) {
-			final Object nv = converter.convert(value);
-			if (nv != value) {
-				return nv;
-			}
-		}
-
-		return value;
 	}
 
 	Object map(final Object value) {
