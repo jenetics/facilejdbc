@@ -19,11 +19,11 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.util.Objects.requireNonNull;
+
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * This represents a whole Sql row (parameter set). Instead of representing the

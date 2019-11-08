@@ -19,14 +19,14 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
+
 import java.sql.Connection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import static java.util.Arrays.asList;
-import static java.util.Objects.requireNonNull;
 
 /**
  * Represents a whole batch of SQL query parameters. A <em>batch</em> is
