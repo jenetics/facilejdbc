@@ -19,11 +19,6 @@
  */
 package io.jenetics.facilejdbc.spi;
 
-import java.util.List;
-import java.util.ServiceLoader;
-import java.util.ServiceLoader.Provider;
-import java.util.stream.Collectors;
-
 /**
  * SQL type conversion service.
  *
@@ -31,17 +26,23 @@ import java.util.stream.Collectors;
  * @version !__version__!
  * @since !__version__!
  */
-public abstract class SqlTypeConverter {
+public abstract class SqlTypeMapper {
 
-	protected SqlTypeConverter() {
+	protected SqlTypeMapper() {
 	}
 
+	/**
+	 * The conversion method to be implemented by the SPI implementor.
+	 *
+	 * @param value the value to be converted
+	 * @return the converted value or the input {@code value}, if no conversion
+	 *         is necessary
+	 */
 	public abstract Object convert(final Object value);
 
-	public static List<SqlTypeConverter> converters() {
-		return ServiceLoader.load(SqlTypeConverter.class).stream()
-			.map(Provider::get)
-			.collect(Collectors.toList());
+	public static Object map(final Object value) {
+		return SqlTypeMapperHolder.INSTANCE.map(value);
 	}
 
 }
+

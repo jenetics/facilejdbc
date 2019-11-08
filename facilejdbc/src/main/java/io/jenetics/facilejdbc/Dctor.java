@@ -24,7 +24,6 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.reducing;
-import static io.jenetics.facilejdbc.SqlValues.toSqlValue;
 
 import java.sql.Connection;
 import java.util.List;
@@ -32,6 +31,7 @@ import java.util.Map;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
+import io.jenetics.facilejdbc.spi.SqlTypeMapper;
 
 /**
  * This interface is responsible for <em>deconstructing</em> a given record, of
@@ -104,7 +104,7 @@ public interface Dctor<T> {
 				public ParamValue value(final T row, final Connection conn) {
 					return (index, stmt) -> stmt.setObject(
 						index,
-						toSqlValue(value.apply(row, conn))
+						SqlTypeMapper.map(value.apply(row, conn))
 					);
 				}
 				@Override
