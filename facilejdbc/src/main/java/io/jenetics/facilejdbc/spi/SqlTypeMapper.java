@@ -20,7 +20,60 @@
 package io.jenetics.facilejdbc.spi;
 
 /**
- * SQL type conversion service.
+ * The purpose of this SPI is to map simple <em>domain</em> values into the
+ * proper type of the used DB. This may lead to a more readable insertion code.
+ *
+ * Usually, it is not possible to insert an {@code URI} field directly into the
+ * DB. You have to convert it into a string object first.
+ * <pre>{@code
+ * public static final class Person {
+ *     private final String name;
+ *     private final URI link;
+ * }
+ *
+ * static final Dctor<Person> DCTOR = Dctor.of(
+ *     field("name", Person::name),
+ *     field("email", p -> p.link().toString())
+ * );
+ * }</pre>
+ *
+ * If a mapper for the {@code URI} class is defined, it is possible to write the
+ * deconstructor more concise.
+ * <pre>{@code
+ * static final Dctor<Person> DCTOR = Dctor.of(
+ *     field("name", Person::name),
+ *     field("email", Person::link)
+ * );
+ * }</pre>
+ *
+ * The implementation of such a mapping is quite simple and will look like showed
+ * in the following code snippet.
+ * <pre>{@code
+ * public class MyTypeMapper extends SqlTypeMapper {
+ *     public Object convert(final Object value) {
+ *         if (value instanceof URI) return value.toString();
+ *         return value;
+ *     }
+ * }
+ * }</pre>
+ *
+ * Add the following line
+ * <pre>{@code
+ * org.foobar.MyTypeMapper
+ * }</pre>
+ *
+ * to the service definition file
+ *
+ * <pre>{@code
+ * META-INF/services/io.jenetics.facilejdbc.spi.SqlTypeMapper
+ * }</pre>
+ *
+ * and you are done.
+ *
+ * @implNote
+ * All values are converted by this <em>mapper</em> before inserted into the DB.
+ * If more than one mapper <em>service</em> is available, the mapping is stopped
+ * after the first conversion.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
@@ -40,6 +93,13 @@ public abstract class SqlTypeMapper {
 	 */
 	public abstract Object convert(final Object value);
 
+	/**
+	 * This method performs the type mapping with the registered mapper services.
+	 *
+	 * @param value the value to map
+	 * @return the mapped value of the original {@code value}, if no mapping
+	 *         is applied
+	 */
 	public static Object map(final Object value) {
 		return SqlTypeMapperHolder.INSTANCE.map(value);
 	}
