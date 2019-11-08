@@ -24,6 +24,7 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.reducing;
+import static io.jenetics.facilejdbc.SqlValues.toSqlValue;
 
 import java.sql.Connection;
 import java.util.List;
@@ -101,8 +102,10 @@ public interface Dctor<T> {
 				}
 				@Override
 				public ParamValue value(final T row, final Connection conn) {
-					return (index, stmt) ->
-						stmt.setObject(index, value.apply(row, conn));
+					return (index, stmt) -> stmt.setObject(
+						index,
+						toSqlValue(value.apply(row, conn))
+					);
 				}
 				@Override
 				public String toString() {

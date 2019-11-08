@@ -20,6 +20,7 @@
 package io.jenetics.facilejdbc;
 
 import static java.util.Objects.requireNonNull;
+import static io.jenetics.facilejdbc.SqlValues.toSqlValue;
 
 import io.jenetics.facilejdbc.function.SqlSupplier;
 
@@ -105,7 +106,8 @@ public interface Param {
 	 *         {@code null}
 	 */
 	public static Param value(final String name, final Object value) {
-		return Param.of(name, (index, stmt) -> stmt.setObject(index, value));
+		return Param.of(name, (index, stmt) ->
+			stmt.setObject(index, toSqlValue(value)));
 	}
 
 	/**
@@ -120,7 +122,8 @@ public interface Param {
 	 */
 	public static Param lazy(final String name, final SqlSupplier<?> value) {
 		requireNonNull(value);
-		return Param.of(name, (index, stmt) -> stmt.setObject(index, value.get()));
+		return Param.of(name, (index, stmt) ->
+			stmt.setObject(index, toSqlValue(value.get())));
 	}
 
 }
