@@ -23,6 +23,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * This represents a whole Sql row (parameter set). Instead of representing the
  * row directly, a row is defined it's <em>insertion</em> strategy.
@@ -64,12 +66,19 @@ public interface ParamValues {
 	 *
 	 * @param after the preparer to perform after {@code this} preparer
 	 * @return a composed preparer
+	 * @throws NullPointerException if the {@code after} parameter is {@code null}
 	 */
 	public default ParamValues andThen(final ParamValues after) {
-		return (params, stmt) -> {
-			ParamValues.this.set(params, stmt);
-			after.set(params, stmt);
-		};
+		requireNonNull(after);
+
+		if (this == EMPTY) {
+			return after;
+		} else {
+			return (params, stmt) -> {
+				ParamValues.this.set(params, stmt);
+				after.set(params, stmt);
+			};
+		}
 	}
 
 }

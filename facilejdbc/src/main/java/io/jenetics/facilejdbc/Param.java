@@ -25,7 +25,16 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
 
 /**
  * Represents a query parameter with <em>name</em> and <em>value</em>. The
- * parameter value is evaluated lazily.
+ * parameter value is evaluated lazily. But it is also possible to create
+ * {@code Param} objects with eagerly evaluated values.
+ *
+ * <pre>{@code
+ * INSERT_QUERY
+ *     .on(
+ *         Param.value("forename", "Werner"),
+ *         Param.value("birthday", LocalDate.now()),
+ *         Param.value("email", "some.email@gmail.com"))
+ * }</pre>
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
@@ -90,7 +99,7 @@ public interface Param {
 	 * {@code value}.
 	 *
 	 * @param name the parameter name
-	 * @param value the parameter values
+	 * @param value the parameter values, which may be {@code null}
 	 * @return a new query parameter object
 	 * @throws NullPointerException if the given parameter {@code name} is
 	 *         {@code null}

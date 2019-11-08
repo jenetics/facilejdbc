@@ -50,6 +50,9 @@ import java.util.stream.IntStream;
  * );
  * }</pre>
  *
+ * @apiNote
+ * This class is immutable and thread-safe.
+ *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
  * @since !__version__!
@@ -179,9 +182,7 @@ public final class Query {
 	public <T> T as(final ResultSetParser<T> parser, final Connection conn)
 		throws SQLException
 	{
-		try (PreparedStatement stmt = prepare(conn);
-			ResultSet rs = stmt.executeQuery())
-		{
+		try (var stmt = prepare(conn); var rs = stmt.executeQuery()) {
 			return parser.parse(rs);
 		}
 	}
@@ -337,7 +338,7 @@ public final class Query {
 		final IntStream.Builder counts = IntStream.builder();
 		try (PreparedStatement stmt = prepare(conn)) {
 			for (var row : batch) {
-				row.get(conn).set(_sql.paramNames(), stmt);
+				row.get(conn).set(paramNames(), stmt);
 				final int count = stmt.executeUpdate();
 				counts.add(count);
 			}

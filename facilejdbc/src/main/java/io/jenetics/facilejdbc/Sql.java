@@ -85,18 +85,6 @@ final class Sql {
 	}
 
 	@Override
-	public int hashCode() {
-		return _string.hashCode();
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		return obj == this ||
-			obj instanceof Sql &&
-			_string.equals(((Sql) obj)._string);
-	}
-
-	@Override
 	public String toString() {
 		return _string;
 	}

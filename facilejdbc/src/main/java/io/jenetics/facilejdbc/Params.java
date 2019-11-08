@@ -19,6 +19,7 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.reducing;
 
@@ -40,7 +41,7 @@ final class Params implements ParamValues {
 	private final Map<String, Param> _params;
 
 	private Params(final Map<String, Param> params) {
-		_params = params;
+		_params = requireNonNull(params);
 	}
 
 	Params(final List<Param> params) {

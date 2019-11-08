@@ -33,8 +33,8 @@ import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
 
 /**
- * This interface is responsible for creating (deconstructing) a <em>row</em>
- * ({@link ParamValues}) from a given record.
+ * This interface is responsible for <em>deconstructing</em> a given record, of
+ * type {@code T}, to a DB-<em>row</em> ({@link ParamValues}).
  *
  * @apiNote
  * A {@code Dctor} (deconstructor) is responsible for splitting a given record
@@ -44,7 +44,7 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  *
  * @see RowParser
  *
- * @param <T> the (deconstructed) record type
+ * @param <T> the record type to be deconstructed
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
@@ -85,10 +85,11 @@ public interface Dctor<T> {
 		 * @param value the field accessor
 		 * @param <T> the record type
 		 * @return a new record field
+		 * @throws NullPointerException if one of the arguments is {@code null}
 		 */
 		public static <T> Field<T> of(
 			final String name,
-			final SqlFunction2<? super T, Connection, ?> value
+			final SqlFunction2<? super T, ? super Connection, ?> value
 		) {
 			requireNonNull(name);
 			requireNonNull(value);
@@ -177,10 +178,11 @@ public interface Dctor<T> {
 	 * @param value the field accessor
 	 * @param <T> the record type
 	 * @return a new record field
+	 * @throws NullPointerException if one of the given arguments is {@code null}
 	 */
 	public static <T> Field<T> field(
 		final String name,
-		final SqlFunction2<? super T, Connection, ?> value
+		final SqlFunction2<? super T, ? super Connection, ?> value
 	) {
 		return Field.of(name, value);
 	}
@@ -195,12 +197,28 @@ public interface Dctor<T> {
 	 * @param value the field accessor
 	 * @param <T> the record type
 	 * @return a new record field
+	 * @throws NullPointerException if one of the given arguments is {@code null}
 	 */
 	public static <T> Field<T> field(
 		final String name,
 		final SqlFunction<? super T, ?> value
 	) {
 		return Field.of(name, (record, conn) -> value.apply(record));
+	}
+
+	/**
+	 * Create a new record field with the given {@code name} and field value.
+	 *
+	 * @see #field(String, SqlFunction2)
+	 *
+	 * @param name the field name
+	 * @param value the field value
+	 * @param <T> the record type
+	 * @return a new record field
+	 * @throws NullPointerException if the {@code name} is {@code null}
+	 */
+	public static <T> Field<T> fieldValue(final String name, final Object value) {
+		return Field.of(name, (record, conn) -> value);
 	}
 
 }
