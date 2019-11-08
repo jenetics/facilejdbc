@@ -96,7 +96,20 @@ public interface RowParser<T> {
 	/**
 	 * Return a new parser which parses a single selection result.
 	 *
-	 * @return a new parser which parses a single selection result
+	 * @return a new parser which parses a single selection result or
+	 *         {@code null} if not available
+	 */
+	public default ResultSetParser<T> singleNullable() {
+		return rs -> rs.next()
+			? parse(ResultSetRow.of(rs))
+			: null;
+	}
+
+	/**
+	 * Return a new parser which parses a single selection result.
+	 *
+	 * @return a new parser which parses a single selection result or
+	 *         {@link Optional#empty()} if not available
 	 */
 	public default ResultSetParser<Optional<T>> singleOpt() {
 		return rs -> rs.next()
