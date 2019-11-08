@@ -1,5 +1,5 @@
 /*
- * Java Genetic Algorithm Library (@__identifier__@).
+ * Facile JDBC Library (@__identifier__@).
  * Copyright (c) @__year__@ Franz Wilhelmstötter
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,35 +19,76 @@
  */
 package io.jenetics.facilejdbc;
 
-import java.net.URI;
-import java.net.URL;
-import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+
+import io.jenetics.facilejdbc.spi.SqlTypeConverter;
 
 /**
+ * Helper class for doing SQL type conversion.
+ *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
  * @since !__version__!
  */
 final class SqlValues {
+
+	/**
+	 * Converter holder class for lazy loading.
+	 */
+	private static final class ConvertHolder {
+		static final ConvertHolder INSTANCE = new ConvertHolder();
+
+		private final List<SqlTypeConverter> converters;
+		private final Function<Object, Object> mapper;
+
+		private ConvertHolder() {
+			converters = SqlTypeConverter.converters();
+
+			if (converters.isEmpty()) {
+				mapper = ConvertHolder::identity;
+			} else {
+				mapper = this::map;
+			}
+		}
+
+		private static Object identity(final Object value) {
+			return value;
+		}
+
+		private Object map(final Object value) {
+			for (var converter : converters) {
+				final Object nv = converter.convert(value);
+				if (nv != value) {
+					return nv;
+				}
+			}
+
+			return value;
+		}
+	}
+
 	private SqlValues() {
 	}
 
+	/**
+	 * This method is called by the {@link ParamValue} and {@link Dctor.Field}
+	 * field classes, for converting values to the proper SQL type.
+	 *
+	 * @param value the <em>raw</em>-value to convert
+	 * @return the converted value
+	 */
 	static Object toSqlValue(final Object value) {
-		Object result = value;
+		final Object nullable = toNullable(value);
+		return ConvertHolder.INSTANCE.mapper.apply(nullable);
+	}
 
+	private static Object toNullable(final Object value) {
+		Object result = value;
 		while (result instanceof Optional) {
 			result = ((Optional<?>)result).orElse(null);
 		}
-
-		if (result instanceof URI) {
-			result = result.toString();
-		} else if (result instanceof URL) {
-			result = result.toString();
-		} else if (result instanceof ZonedDateTime) {
-			result = ((ZonedDateTime)result).toOffsetDateTime();
-		}
-
 		return result;
 	}
 
