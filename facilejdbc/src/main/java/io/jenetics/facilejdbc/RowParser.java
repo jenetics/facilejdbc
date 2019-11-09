@@ -19,6 +19,7 @@
  */
 package io.jenetics.facilejdbc;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -60,10 +61,11 @@ public interface RowParser<T> {
 	 * Converts the row on the current cursor position into a data object.
 	 *
 	 * @param row the data source
+	 * @param conn the connection used for producing the record, if needed
 	 * @return the stored data object
 	 * @throws SQLException if reading of the current row fails
 	 */
-	public T parse(final Row row) throws SQLException;
+	public T parse(final Row row, final Connection conn) throws SQLException;
 
 	/**
 	 * Returns a parser that will apply given {@code mapper} to the result of
@@ -76,7 +78,7 @@ public interface RowParser<T> {
 	 */
 	public default <U> RowParser<U>
 	map(final Function<? super T, ? extends U> mapper) {
-		return row -> mapper.apply(parse(row));
+		return (row, conn) -> mapper.apply(parse(row, conn));
 	}
 
 	/**
@@ -85,9 +87,9 @@ public interface RowParser<T> {
 	 * @return a new parser which expects at least one result
 	 */
 	public default ResultSetParser<T> single() {
-		return rs -> {
+		return (rs, conn) -> {
 			if (rs.next()) {
-				return parse(ResultSetRow.of(rs));
+				return parse(ResultSetRow.of(rs), conn);
 			}
 			throw new NoSuchElementException();
 		};
@@ -100,8 +102,8 @@ public interface RowParser<T> {
 	 *         {@code null} if not available
 	 */
 	public default ResultSetParser<T> singleNullable() {
-		return rs -> rs.next()
-			? parse(ResultSetRow.of(rs))
+		return (rs, conn) -> rs.next()
+			? parse(ResultSetRow.of(rs), conn)
 			: null;
 	}
 
@@ -112,8 +114,8 @@ public interface RowParser<T> {
 	 *         {@link Optional#empty()} if not available
 	 */
 	public default ResultSetParser<Optional<T>> singleOpt() {
-		return rs -> rs.next()
-			? Optional.ofNullable(parse(ResultSetRow.of(rs)))
+		return (rs, conn) -> rs.next()
+			? Optional.ofNullable(parse(ResultSetRow.of(rs), conn))
 			: Optional.empty();
 	}
 
@@ -123,11 +125,11 @@ public interface RowParser<T> {
 	 * @return a new parser witch parses a the whole selection result
 	 */
 	public default ResultSetParser<List<T>> list() {
-		return rs -> {
+		return (rs, conn) -> {
 			final ResultSetRow row = ResultSetRow.of(rs);
 			final List<T> result = new ArrayList<>();
 			while (rs.next()) {
-				result.add(parse(row));
+				result.add(parse(row, conn));
 			}
 
 			return result;
@@ -146,7 +148,7 @@ public interface RowParser<T> {
 	 * @return the row-parser for the given column
 	 */
 	public static RowParser<Long> int64(final String name) {
-		return row -> row.getLong(name);
+		return (row, conn) -> row.getLong(name);
 	}
 
 	/**
@@ -156,7 +158,7 @@ public interface RowParser<T> {
 	 * @return the row-parser for the given column
 	 */
 	public static RowParser<Long> int64(final int index) {
-		return row -> row.getLong(index);
+		return (row, conn) -> row.getLong(index);
 	}
 
 	/**
@@ -166,7 +168,7 @@ public interface RowParser<T> {
 	 * @return the row-parser for the given column
 	 */
 	public static RowParser<Integer> int32(final String name) {
-		return row -> row.getInt(name);
+		return (row, conn) -> row.getInt(name);
 	}
 
 	/**
@@ -176,7 +178,7 @@ public interface RowParser<T> {
 	 * @return the row-parser for the given column
 	 */
 	public static RowParser<Integer> int32(final int index) {
-		return row -> row.getInt(index);
+		return (row, conn) -> row.getInt(index);
 	}
 
 	/**
@@ -186,7 +188,7 @@ public interface RowParser<T> {
 	 * @return the row-parser for the given column
 	 */
 	public static RowParser<String> string(final String name) {
-		return row -> row.getString(name);
+		return (row, conn) -> row.getString(name);
 	}
 
 	/**
@@ -196,7 +198,7 @@ public interface RowParser<T> {
 	 * @return the row-parser for the given column
 	 */
 	public static RowParser<String> string(final int index) {
-		return row -> row.getString(index);
+		return (row, conn) -> row.getString(index);
 	}
 
 }

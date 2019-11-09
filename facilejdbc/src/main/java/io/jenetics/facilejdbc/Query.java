@@ -183,7 +183,7 @@ public final class Query {
 		throws SQLException
 	{
 		try (var stmt = prepare(conn); var rs = stmt.executeQuery()) {
-			return parser.parse(rs);
+			return parser.parse(rs, conn);
 		}
 	}
 
@@ -263,7 +263,7 @@ public final class Query {
 	{
 		try (PreparedStatement stmt = prepareInsert(conn)) {
 			stmt.executeUpdate();
-			return readId(keyParser, stmt);
+			return readId(keyParser, stmt, conn);
 		}
 	}
 
@@ -281,12 +281,13 @@ public final class Query {
 
 	private static <K> Optional<K> readId(
 		final RowParser<K> keyParser,
-		final Statement stmt
+		final Statement stmt,
+		final Connection conn
 	)
 		throws SQLException
 	{
 		try (ResultSet keys = stmt.getGeneratedKeys()) {
-			return keyParser.singleOpt().parse(keys);
+			return keyParser.singleOpt().parse(keys, conn);
 		}
 	}
 
