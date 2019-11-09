@@ -20,6 +20,7 @@
 package io.jenetics.facilejdbc;
 
 import static io.jenetics.facilejdbc.Param.value;
+import static io.jenetics.facilejdbc.RowParser.scalar;
 import static io.jenetics.facilejdbc.util.HSQLDB.transaction;
 
 import java.io.IOException;
@@ -182,6 +183,46 @@ public class QueryExecutionTest {
 
 		Assert.assertEquals(selected.forename(), "Hubert");
 		Assert.assertEquals(selected.surname(), "Kurz");
+	}
+
+	@Test
+	public void nullSelectParam() throws SQLException {
+		transaction(conn ->
+			INSERT
+				.on(
+					value("forename", "Peter"),
+					value("surname", null),
+					value("birthday", LocalDate.now()),
+					value("email", "peter.email@gmail.com"))
+				.execute(conn)
+		);
+
+		final Person selected = transaction(conn ->
+			Query.of("SELECT * FROM person WHERE surname is null")
+				.as(Person.PARSER.single(), conn)
+		);
+
+		Assert.assertEquals(selected.forename(), "Peter");
+		Assert.assertNull(selected.surname());
+	}
+
+	@Test
+	public void scalaRowParser() throws SQLException {
+		transaction(conn ->
+			INSERT
+				.on(
+					value("forename", "Michael"),
+					value("surname", "Wiener"),
+					value("birthday", LocalDate.now()),
+					value("email", "peter.email@gmail.com"))
+				.execute(conn)
+		);
+
+		final long count = transaction(conn ->
+			Query.of("SELECT count(*) FROM person")
+				.as(scalar(Long.class).single(), conn)
+		);
+		Assert.assertTrue(count > 0);
 	}
 
 }
