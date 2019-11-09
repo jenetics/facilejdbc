@@ -60,7 +60,7 @@ public class PersonAccess {
 
 	}
 
-	private static final RowParser<Person> PARSER = (row, __) -> new Person(
+	private static final RowParser<Person> PARSER = (row, $) -> new Person(
 		row.getString("name"),
 		row.getString("email"),
 		row.getString("link")

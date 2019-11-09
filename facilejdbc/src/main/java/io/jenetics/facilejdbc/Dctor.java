@@ -123,7 +123,7 @@ public interface Dctor<T> {
 	 * @param conn the DB connection used for record deconstruction, if needed
 	 * @return a new row preparer
 	 */
-	public ParamValues apply(final T record, final Connection conn);
+	public ParamValues deconstruct(final T record, final Connection conn);
 
 
 	/* *************************************************************************
@@ -139,7 +139,7 @@ public interface Dctor<T> {
 	 * @param <T> the type of the record to be deconstructed
 	 * @return a new deconstructor from the given field definitions
 	 */
-	public static <T> Dctor<T> of(final List<Field<T>> fields) {
+	public static <T> Dctor<T> of(final List<? extends Field<T>> fields) {
 		final Map<String, Field<T>> map = fields.isEmpty()
 			? Map.of()
 			: fields.stream().collect(
