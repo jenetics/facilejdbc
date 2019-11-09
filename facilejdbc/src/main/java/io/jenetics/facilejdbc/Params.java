@@ -33,8 +33,8 @@ import java.util.Map;
  * Collects a list of {@link Param} object into a {@link ParamValues} object.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
+ * @version 1.0
+ * @since 1.0
  */
 final class Params implements ParamValues {
 

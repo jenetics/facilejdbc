@@ -49,8 +49,8 @@ import java.util.regex.Pattern;
  * @see Query
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
+ * @version 1.0
+ * @since 1.0
  */
 final class Sql {
 	private static final Pattern PARAM_PATTERN = Pattern.compile("([\\s+|\\(|\\,]:[\\w]+)");
