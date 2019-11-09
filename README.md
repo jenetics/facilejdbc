@@ -99,7 +99,7 @@ final List<Person> persons = SELECT
 For converting the result into the `Person` DTO, you have to create a proper `RowParser`. The row parser is responsible for creating the DTOs from the query results.
 
 ```java
-static final RowParser<Person> PARSER = row -> Person.builder()
+static final RowParser<Person> PARSER = (row, conn) -> Person.builder()
     .name(row.getString("name"))
     .email(row.getString("email"))
     .link(row.getString("link"))
