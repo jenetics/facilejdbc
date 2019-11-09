@@ -162,6 +162,24 @@ public interface RowParser<T> {
 	 * ************************************************************************/
 
 	/**
+	 * Returns a parser for a scalar not-null value.
+	 *
+	 * <pre>{@code
+	 * final String name = Query.of("SELECT name FROM person WHERE id = :id")
+	 *     .on(value("id", 23))
+	 *     .as(scalar(String.class).single(), conn);
+	 * }</pre>
+	 *
+	 * @param type the type class of the scala
+	 * @param <T> the scalar type
+	 * @return a parser for a scalar not-null value
+	 * @throws NullPointerException if the give {@code type} is {@code null}
+	 */
+	public static <T> RowParser<T> scalar(final Class<T> type) {
+		return (row, conn) -> row.getObject(1, type);
+	}
+
+	/**
 	 * Return a row parser for long values for the given column name.
 	 *
 	 * @param name the column name
