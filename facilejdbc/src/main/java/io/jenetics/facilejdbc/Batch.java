@@ -25,8 +25,6 @@ import static java.util.Objects.requireNonNull;
 import java.sql.Connection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * Represents a whole batch of SQL query parameters. A <em>batch</em> is
@@ -52,15 +50,6 @@ public interface Batch extends Iterable<Batch.Row> {
 		 * @return a <em>row</em> {@link ParamValues}
 		 */
 		public ParamValues get(final Connection conn);
-	}
-
-	/**
-	 * Return a stream with the the given batch entries (rows).
-	 *
-	 * @return a stream with the the given batch entries (rows)
-	 */
-	public default Stream<Row> stream() {
-		return StreamSupport.stream(spliterator(), false);
 	}
 
 
