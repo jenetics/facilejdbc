@@ -48,8 +48,7 @@ final class SqlTypeMapperHolder {
 			mapper = converters[0]::convert;
 		} else {
 			mapper = value -> {
-				for (int i = 0; i < converters.length; ++i) {
-					final var converter = converters[i];
+				for (final SqlTypeMapper converter : converters) {
 					final Object convertedValue = converter.convert(value);
 					if (convertedValue != value) {
 						return convertedValue;
