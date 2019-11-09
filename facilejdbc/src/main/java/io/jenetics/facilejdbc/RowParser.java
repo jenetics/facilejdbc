@@ -26,7 +26,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.function.Function;
+
+import io.jenetics.facilejdbc.function.SqlFunction;
+import io.jenetics.facilejdbc.function.SqlFunction2;
 
 /**
  * Converts one row from the given {@link ResultSet} into a data object from
@@ -72,13 +74,31 @@ public interface RowParser<T> {
 	 * {@code this} first parser. If the current parser is not successful, the
 	 * new one will return encountered exception.
 	 *
+	 * @see #map(SqlFunction2)
+	 *
 	 * @param mapper the mapping function to apply to the parsing result
 	 * @param <U> the type of the value returned from the mapping function
 	 * @return a new row parser with the mapped type
 	 */
 	public default <U> RowParser<U>
-	map(final Function<? super T, ? extends U> mapper) {
+	map(final SqlFunction<? super T, ? extends U> mapper) {
 		return (row, conn) -> mapper.apply(parse(row, conn));
+	}
+
+	/**
+	 * Returns a parser that will apply given {@code mapper} to the result of
+	 * {@code this} first parser. If the current parser is not successful, the
+	 * new one will return encountered exception.
+	 *
+	 * @see #map(SqlFunction)
+	 *
+	 * @param mapper the mapping function to apply to the parsing result
+	 * @param <U> the type of the value returned from the mapping function
+	 * @return a new row parser with the mapped type
+	 */
+	public default <U> RowParser<U>
+	map(final SqlFunction2<? super T, ? super Connection, ? extends U> mapper) {
+		return (row, conn) -> mapper.apply(parse(row, conn), conn);
 	}
 
 	/**
