@@ -71,11 +71,11 @@ public interface Dctor<T> {
 		/**
 		 * Return the SQL value for the give {@code row} field.
 		 *
-		 * @param row the actual row (record)
+		 * @param record the actual record
 		 * @param conn the connection used for producing the SQL value, if needed
 		 * @return the SQL value for the give {@code row} field
 		 */
-		public ParamValue value(final T row, final Connection conn);
+		public ParamValue value(final T record, final Connection conn);
 
 
 		/**
@@ -101,10 +101,10 @@ public interface Dctor<T> {
 					return name;
 				}
 				@Override
-				public ParamValue value(final T row, final Connection conn) {
+				public ParamValue value(final T record, final Connection conn) {
 					return (index, stmt) -> stmt.setObject(
 						index,
-						SqlTypeMapper.map(value.apply(row, conn))
+						SqlTypeMapper.map(value.apply(record, conn))
 					);
 				}
 				@Override
