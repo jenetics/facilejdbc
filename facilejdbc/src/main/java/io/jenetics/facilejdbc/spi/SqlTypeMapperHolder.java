@@ -42,9 +42,9 @@ final class SqlTypeMapperHolder {
 				.map(Provider::get)
 				.toArray(SqlTypeMapper[]::new);
 
-		if (converters.isEmpty()) {
+		if (converters.length == 0) {
 			mapper = Function.identity();
-		} else if (converters.size() == 1) {
+		} else if (converters.length == 1) {
 			mapper = converters[0]::convert;
 		} else {
 			mapper = value -> {
