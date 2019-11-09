@@ -28,6 +28,10 @@ import java.util.stream.Collectors;
 
 /**
  * Converter holder class for lazy loading.
+ *
+ * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @version !__version__!
+ * @since !__version__!
  */
 final class SqlTypeMapperHolder {
 	static final SqlTypeMapperHolder INSTANCE = new SqlTypeMapperHolder();
