@@ -44,7 +44,7 @@ final class Params implements ParamValues {
 		_params = requireNonNull(params);
 	}
 
-	Params(final List<Param> params) {
+	Params(final List<? extends Param> params) {
 		this(
 			params.isEmpty()
 				? Map.of()

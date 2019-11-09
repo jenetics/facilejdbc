@@ -105,7 +105,7 @@ public final class Query {
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if the given {@code params} is {@code null}
 	 */
-	public Query on(final List<Param> params) {
+	public Query on(final List<? extends Param> params) {
 		return params.isEmpty()
 			? this
 			: new Query(_sql, _values.andThen(new Params(params)));
