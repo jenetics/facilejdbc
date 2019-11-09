@@ -19,18 +19,17 @@
  */
 package io.jenetics.facilejdbc.util;
 
-import io.jenetics.facilejdbc.function.SqlFunction;
-
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import javax.sql.DataSource;
+
+import io.jenetics.facilejdbc.function.SqlFunction;
 
 /**
  * This class contains some helper functions for DB transaction handling.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
  */
 public final class Db {
 	private Db() {

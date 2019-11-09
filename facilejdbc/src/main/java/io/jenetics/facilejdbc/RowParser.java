@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Converts one row from the given {@link ResultSet} into a data object from
@@ -39,6 +40,12 @@ import java.util.Optional;
  * }</pre>
  *
  * @see ResultSetParser
+ * @see Dctor
+ *
+ * @apiNote
+ * The {@code RowParser} is the counterpart of the {@link Dctor} interface. In
+ * contrast of splitting a record into a set of <em>fields</em>, it creates a
+ * record from a selected DB row.
  *
  * @param <T> the row type
  *
@@ -59,6 +66,20 @@ public interface RowParser<T> {
 	public T parse(final Row row) throws SQLException;
 
 	/**
+	 * Returns a parser that will apply given {@code mapper} to the result of
+	 * {@code this} first parser. If the current parser is not successful, the
+	 * new one will return encountered exception.
+	 *
+	 * @param mapper the mapping function to apply to the parsing result
+	 * @param <U> the type of the value returned from the mapping function
+	 * @return a new row parser with the mapped type
+	 */
+	public default <U> RowParser<U>
+	map(final Function<? super T, ? extends U> mapper) {
+		return row -> mapper.apply(parse(row));
+	}
+
+	/**
 	 * Return a new parser which expects at least one result.
 	 *
 	 * @return a new parser which expects at least one result
@@ -75,7 +96,20 @@ public interface RowParser<T> {
 	/**
 	 * Return a new parser which parses a single selection result.
 	 *
-	 * @return a new parser which parses a single selection result
+	 * @return a new parser which parses a single selection result or
+	 *         {@code null} if not available
+	 */
+	public default ResultSetParser<T> singleNullable() {
+		return rs -> rs.next()
+			? parse(ResultSetRow.of(rs))
+			: null;
+	}
+
+	/**
+	 * Return a new parser which parses a single selection result.
+	 *
+	 * @return a new parser which parses a single selection result or
+	 *         {@link Optional#empty()} if not available
 	 */
 	public default ResultSetParser<Optional<T>> singleOpt() {
 		return rs -> rs.next()

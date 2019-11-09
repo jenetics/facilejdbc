@@ -17,12 +17,12 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc.function;
 
-import java.sql.SQLException;
-
-public interface SqlConsumer<T> {
-
-	public void accept(final T t) throws SQLException;
-
-}
+/**
+ * Contains SPI for mapping the values to proper SQL values, if needed.
+ *
+ * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @version !__version__!
+ * @since !__version__!
+ */
+package io.jenetics.facilejdbc.spi;

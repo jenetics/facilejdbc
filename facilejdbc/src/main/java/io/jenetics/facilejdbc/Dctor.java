@@ -19,20 +19,33 @@
  */
 package io.jenetics.facilejdbc;
 
-import io.jenetics.facilejdbc.function.SqlFunction;
-import io.jenetics.facilejdbc.function.SqlFunction2;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.reducing;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
 
-import static java.util.Arrays.asList;
-import static java.util.Objects.requireNonNull;
+import io.jenetics.facilejdbc.function.SqlFunction;
+import io.jenetics.facilejdbc.function.SqlFunction2;
+import io.jenetics.facilejdbc.spi.SqlTypeMapper;
 
 /**
- * This interface is responsible for creating a <em>row</em> {@link ParamValues}
- * from a given record.
+ * This interface is responsible for <em>deconstructing</em> a given record, of
+ * type {@code T}, to a DB-<em>row</em> ({@link ParamValues}).
  *
- * @param <T> the (deconstructed) record type
+ * @apiNote
+ * A {@code Dctor} (deconstructor) is responsible for splitting a given record
+ * into a set of fields (columns), which can be written into the DB. The
+ * counterpart of this interface is the {@link RowParser}, which builds a
+ * record of a DB result row.
+ *
+ * @see RowParser
+ *
+ * @param <T> the record type to be deconstructed
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
@@ -41,6 +54,11 @@ import static java.util.Objects.requireNonNull;
 @FunctionalInterface
 public interface Dctor<T> {
 
+	/**
+	 * Represents a <em>deconstructed</em> record field.
+	 *
+	 * @param <T> the record type
+	 */
 	public static interface Field<T> {
 
 		/**
@@ -56,7 +74,6 @@ public interface Dctor<T> {
 		 * @param row the actual row (record)
 		 * @param conn the connection used for producing the SQL value, if needed
 		 * @return the SQL value for the give {@code row} field
-		 * @throws NullPointerException if the given {@code conn} is {@code null}
 		 */
 		public ParamValue value(final T row, final Connection conn);
 
@@ -69,10 +86,11 @@ public interface Dctor<T> {
 		 * @param value the field accessor
 		 * @param <T> the record type
 		 * @return a new record field
+		 * @throws NullPointerException if one of the arguments is {@code null}
 		 */
 		public static <T> Field<T> of(
 			final String name,
-			final SqlFunction2<? super T, Connection, ?> value
+			final SqlFunction2<? super T, ? super Connection, ?> value
 		) {
 			requireNonNull(name);
 			requireNonNull(value);
@@ -84,8 +102,14 @@ public interface Dctor<T> {
 				}
 				@Override
 				public ParamValue value(final T row, final Connection conn) {
-					return (index, stmt) ->
-						stmt.setObject(index, value.apply(row, conn));
+					return (index, stmt) -> stmt.setObject(
+						index,
+						SqlTypeMapper.map(value.apply(row, conn))
+					);
+				}
+				@Override
+				public String toString() {
+					return format("Field[%s]", name);
 				}
 			};
 		}
@@ -116,13 +140,16 @@ public interface Dctor<T> {
 	 * @return a new deconstructor from the given field definitions
 	 */
 	public static <T> Dctor<T> of(final List<Field<T>> fields) {
-		final List<Field<T>> fls = List.copyOf(fields);
+		final Map<String, Field<T>> map = fields.isEmpty()
+			? Map.of()
+			: fields.stream().collect(
+				groupingBy(Field::name, reducing(null, (a, b) -> b)));
 
 		return (record, conn) -> (params, stmt) -> {
 			int index = 0;
 			for (String name : params) {
 				++index;
-				final Field<T> field = get(name, fls);
+				final Field<T> field = map.get(name);
 				if (field != null) {
 					field.value(record, conn).set(index, stmt);
 				}
@@ -141,16 +168,7 @@ public interface Dctor<T> {
 	 */
 	@SafeVarargs
 	public static <T> Dctor<T> of(final Field<T>... fields) {
-		return of(asList(fields));
-	}
-
-	private static <T> Field<T> get(final String name, final List<Field<T>> fields) {
-		for (Field<T> field : fields) {
-			if (field.name().equals(name)) {
-				return field;
-			}
-		}
-		return null;
+		return Dctor.of(asList(fields));
 	}
 
 	/**
@@ -163,10 +181,11 @@ public interface Dctor<T> {
 	 * @param value the field accessor
 	 * @param <T> the record type
 	 * @return a new record field
+	 * @throws NullPointerException if one of the given arguments is {@code null}
 	 */
 	public static <T> Field<T> field(
 		final String name,
-		final SqlFunction2<? super T, Connection, ?> value
+		final SqlFunction2<? super T, ? super Connection, ?> value
 	) {
 		return Field.of(name, value);
 	}
@@ -181,12 +200,28 @@ public interface Dctor<T> {
 	 * @param value the field accessor
 	 * @param <T> the record type
 	 * @return a new record field
+	 * @throws NullPointerException if one of the given arguments is {@code null}
 	 */
 	public static <T> Field<T> field(
 		final String name,
 		final SqlFunction<? super T, ?> value
 	) {
 		return Field.of(name, (record, conn) -> value.apply(record));
+	}
+
+	/**
+	 * Create a new record field with the given {@code name} and field value.
+	 *
+	 * @see #field(String, SqlFunction2)
+	 *
+	 * @param name the field name
+	 * @param value the field value
+	 * @param <T> the record type
+	 * @return a new record field
+	 * @throws NullPointerException if the {@code name} is {@code null}
+	 */
+	public static <T> Field<T> fieldValue(final String name, final Object value) {
+		return Field.of(name, (record, conn) -> value);
 	}
 
 }

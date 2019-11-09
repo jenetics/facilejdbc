@@ -17,30 +17,13 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc.util;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-
-import io.jenetics.facilejdbc.function.SqlFunction;
 
 /**
+ * This is the base package of the JDBC wrapper and contains all needed
+ * interfaces and the {@link io.jenetics.facilejdbc.Query} class.
+ *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @version !__version__!
+ * @since !__version__!
  */
-public final class HSQLDB {
-	private HSQLDB() {
-	}
-
-	private static Connection conn() throws SQLException {
-		return DriverManager.getConnection("jdbc:hsqldb:mem:testdb", "SA", "");
-	}
-
-	public static <T> T
-	transaction(final SqlFunction<? super Connection, ? extends T> block)
-		throws SQLException
-	{
-		return Db.transaction(conn(), block);
-	}
-
-}
+package io.jenetics.facilejdbc;

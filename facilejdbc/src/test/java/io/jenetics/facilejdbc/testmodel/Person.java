@@ -19,15 +19,16 @@
  */
 package io.jenetics.facilejdbc.testmodel;
 
-import io.jenetics.facilejdbc.Dctor;
-import io.jenetics.facilejdbc.RowParser;
+import static io.jenetics.facilejdbc.Dctor.field;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDate;
 
-import static io.jenetics.facilejdbc.Dctor.field;
+import io.jenetics.facilejdbc.Dctor;
+import io.jenetics.facilejdbc.RowParser;
 
 @Value
 @Builder(builderClassName = "Builder", toBuilder = true)

@@ -19,12 +19,18 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.util.Objects.requireNonNull;
+
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
 /**
- * This represents a whole Sql row (parameter set).
+ * This represents a whole Sql row (parameter set). Instead of representing the
+ * row directly, a row is defined it's <em>insertion</em> strategy.
+ *
+ * @see Param
+ * @see ParamValue
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
@@ -47,7 +53,6 @@ public interface ParamValues {
 	 *        index in the prepared statement.
 	 * @param stmt the prepared statement to fill (set)
 	 * @throws SQLException if the preparation fails
-	 * @throws NullPointerException if the given {@code stmt} is {@code null}
 	 */
 	public void set(final List<String> paramNames, final PreparedStatement stmt)
 		throws SQLException;
@@ -61,12 +66,19 @@ public interface ParamValues {
 	 *
 	 * @param after the preparer to perform after {@code this} preparer
 	 * @return a composed preparer
+	 * @throws NullPointerException if the {@code after} parameter is {@code null}
 	 */
 	public default ParamValues andThen(final ParamValues after) {
-		return (params, stmt) -> {
-			ParamValues.this.set(params, stmt);
-			after.set(params, stmt);
-		};
+		requireNonNull(after);
+
+		if (this == EMPTY) {
+			return after;
+		} else {
+			return (params, stmt) -> {
+				ParamValues.this.set(params, stmt);
+				after.set(params, stmt);
+			};
+		}
 	}
 
 }

@@ -1,10 +1,26 @@
+/*
+ * Facile JDBC Library (@__identifier__@).
+ * Copyright (c) @__year__@ Franz Wilhelmstötter
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Author:
+ *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
+ */
 package io.jenetics.facilejdbc;
 
-import io.jenetics.facilejdbc.testmodel.Person;
-import io.jenetics.facilejdbc.util.IO;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import static io.jenetics.facilejdbc.Param.value;
+import static io.jenetics.facilejdbc.util.HSQLDB.transaction;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -17,8 +33,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static io.jenetics.facilejdbc.Param.value;
-import static io.jenetics.facilejdbc.util.HSQLDB.transaction;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import io.jenetics.facilejdbc.testmodel.Person;
+import io.jenetics.facilejdbc.util.IO;
 
 public class QueryExecutionTest {
 
@@ -138,6 +158,30 @@ public class QueryExecutionTest {
 			.birthday(birthday.plusDays(index))
 			.email("email@gmail.com" + index)
 			.build();
+	}
+
+	@Test
+	public void overrideParam() throws SQLException {
+		transaction(conn ->
+			INSERT
+				.on(
+					value("forename", "Werner"),
+					value("surname", "Feimann"),
+					value("birthday", LocalDate.now()),
+					value("email", "some.email@gmail.com"),
+					value("surname", "Kurz"))
+				.on(value("forename", "Hubert"))
+				.execute(conn)
+		);
+
+		final Person selected = transaction(conn ->
+			SELECT
+				.on(value("forename", "Hubert"))
+				.as(Person.PARSER.single(), conn)
+		);
+
+		Assert.assertEquals(selected.forename(), "Hubert");
+		Assert.assertEquals(selected.surname(), "Kurz");
 	}
 
 }

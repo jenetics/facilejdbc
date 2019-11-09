@@ -19,6 +19,10 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.sql.Statement.RETURN_GENERATED_KEYS;
+import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,10 +33,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.util.Arrays.asList;
-import static java.util.Objects.requireNonNull;
 
 /**
  * A {@code Query} represents an executable piece of SQL text.
@@ -50,7 +50,8 @@ import static java.util.Objects.requireNonNull;
  * );
  * }</pre>
  *
- * @see Sql
+ * @apiNote
+ * This class is immutable and thread-safe.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
@@ -79,7 +80,8 @@ public final class Query {
 	/**
 	 * Return the list of parsed parameter names. The list may be empty or
 	 * contain duplicate entries, depending on the input string. The list are
-	 * in exactly the order they appeared in the SQL string.
+	 * in exactly the order they appeared in the SQL string and can be used for
+	 * determining the parameter index for the {@link PreparedStatement}.
 	 *
 	 * @return the parsed parameter names
 	 */
@@ -104,15 +106,9 @@ public final class Query {
 	 * @throws NullPointerException if the given {@code params} is {@code null}
 	 */
 	public Query on(final List<Param> params) {
-		final Query query;
-		if (params.isEmpty()) {
-			query = this;
-		} else {
-			final ParamValues values = new Params(params);
-			query = new Query(_sql, _values.andThen(values));
-		}
-
-		return query;
+		return params.isEmpty()
+			? this
+			: new Query(_sql, _values.andThen(new Params(params)));
 	}
 
 	/**
@@ -161,6 +157,7 @@ public final class Query {
 		return new Query(_sql, _values.andThen(values));
 	}
 
+
 	/* *************************************************************************
 	 * Executing query.
 	 * ************************************************************************/
@@ -185,10 +182,8 @@ public final class Query {
 	public <T> T as(final ResultSetParser<T> parser, final Connection conn)
 		throws SQLException
 	{
-		try (PreparedStatement stmt = prepare(conn)) {
-			try (ResultSet rs = stmt.executeQuery()) {
-				return parser.parse(rs);
-			}
+		try (var stmt = prepare(conn); var rs = stmt.executeQuery()) {
+			return parser.parse(rs);
 		}
 	}
 
@@ -343,7 +338,7 @@ public final class Query {
 		final IntStream.Builder counts = IntStream.builder();
 		try (PreparedStatement stmt = prepare(conn)) {
 			for (var row : batch) {
-				row.get(conn).set(_sql.paramNames(), stmt);
+				row.get(conn).set(paramNames(), stmt);
 				final int count = stmt.executeUpdate();
 				counts.add(count);
 			}
@@ -356,18 +351,6 @@ public final class Query {
 	/* *************************************************************************
 	 * Static factory methods.
 	 * ************************************************************************/
-
-	/**
-	 * Create a new query object from the given {@link Sql} object.
-	 *
-	 * @see #of(String)
-	 *
-	 * @param sql the {@link Sql} object
-	 * @return a new query object from the given {@link Sql} object
-	 */
-	static Query of(final Sql sql) {
-		return new Query(sql, ParamValues.EMPTY);
-	}
 
 	/**
 	 * Create a new query object from the given SQL string.
@@ -384,13 +367,12 @@ public final class Query {
 	 * );
 	 * }</pre>
 	 *
-	 * @see #of(Sql)
-	 *
 	 * @param sql the SQL string of the created query
 	 * @return a new query object from the given SQL string
+	 * @throws NullPointerException if the given SQL string is {@code null}
 	 */
 	public static Query of(final String sql) {
-		return Query.of(Sql.of(sql));
+		return new Query(Sql.of(sql), ParamValues.EMPTY);
 	}
 
 }

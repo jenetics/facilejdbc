@@ -19,6 +19,9 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
+
 import java.sql.Connection;
 import java.util.Iterator;
 import java.util.List;
@@ -26,7 +29,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * Represents a whole batch of SQL query parameters.
+ * Represents a whole batch of SQL query parameters. A <em>batch</em> is
+ * essentially an {@link Iterable} of rows/records.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
@@ -74,14 +78,15 @@ public interface Batch extends Iterable<Batch.Row> {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
 	public static <T> Batch of(final Iterable<T> rows, final Dctor<T> dctor) {
+		requireNonNull(rows);
+		requireNonNull(dctor);
+
 		return () -> new Iterator<>() {
 			private final Iterator<T> it = rows.iterator();
-
 			@Override
 			public boolean hasNext() {
 				return it.hasNext();
 			}
-
 			@Override
 			public Row next() {
 				final T row = it.next();
@@ -93,25 +98,41 @@ public interface Batch extends Iterable<Batch.Row> {
 	/**
 	 * Create a new batch from the given rows.
 	 *
+	 * @see #of(List[])
+	 *
 	 * @param rows the rows to be inserted by the created batch
 	 * @return a new batch from the given arguments
-	 * @throws NullPointerException if the given {@code row} is {@code null}
+	 * @throws NullPointerException if the given {@code rows} are {@code null}
 	 */
 	public static Batch of(final List<List<Param>> rows) {
+		requireNonNull(rows);
+
 		return () -> new Iterator<>() {
 			private final Iterator<List<Param>> it = rows.iterator();
-
 			@Override
 			public boolean hasNext() {
 				return it.hasNext();
 			}
-
 			@Override
 			public Row next() {
 				final List<Param> row = it.next();
 				return conn -> new Params(row);
 			}
 		};
+	}
+
+	/**
+	 * Create a new batch from the given rows.
+	 *
+	 * @see #of(List)
+	 *
+	 * @param rows the rows to be inserted by the created batch
+	 * @return a new batch from the given arguments
+	 * @throws NullPointerException if the given {@code rows} are {@code null}
+	 */
+	@SafeVarargs
+	public static Batch of(final List<Param>... rows) {
+		return Batch.of(asList(rows));
 	}
 
 }

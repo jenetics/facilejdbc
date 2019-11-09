@@ -22,10 +22,20 @@ package io.jenetics.facilejdbc;
 import static java.util.Objects.requireNonNull;
 
 import io.jenetics.facilejdbc.function.SqlSupplier;
+import io.jenetics.facilejdbc.spi.SqlTypeMapper;
 
 /**
  * Represents a query parameter with <em>name</em> and <em>value</em>. The
- * parameter value is evaluated lazily.
+ * parameter value is evaluated lazily. But it is also possible to create
+ * {@code Param} objects with eagerly evaluated values.
+ *
+ * <pre>{@code
+ * INSERT_QUERY
+ *     .on(
+ *         Param.value("forename", "Werner"),
+ *         Param.value("birthday", LocalDate.now()),
+ *         Param.value("email", "some.email@gmail.com"))
+ * }</pre>
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
@@ -78,6 +88,7 @@ public interface Param {
 			public ParamValue value() {
 				return value;
 			}
+			@Override
 			public String toString() {
 				return ":" + name;
 			}
@@ -89,13 +100,14 @@ public interface Param {
 	 * {@code value}.
 	 *
 	 * @param name the parameter name
-	 * @param value the parameter values
+	 * @param value the parameter values, which may be {@code null}
 	 * @return a new query parameter object
 	 * @throws NullPointerException if the given parameter {@code name} is
 	 *         {@code null}
 	 */
 	public static Param value(final String name, final Object value) {
-		return Param.of(name, (index, stmt) -> stmt.setObject(index, value));
+		return Param.of(name, (index, stmt) ->
+			stmt.setObject(index, SqlTypeMapper.map(value)));
 	}
 
 	/**
@@ -110,7 +122,8 @@ public interface Param {
 	 */
 	public static Param lazy(final String name, final SqlSupplier<?> value) {
 		requireNonNull(value);
-		return Param.of(name, (index, stmt) -> stmt.setObject(index, value.get()));
+		return Param.of(name, (index, stmt) ->
+			stmt.setObject(index, SqlTypeMapper.map(value.get())));
 	}
 
 }

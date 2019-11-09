@@ -18,6 +18,8 @@ SQL is still the best abstraction for querying relational databases. JDBC, as st
 > * Query language: [SQL]() is still used as query language. It is not tried to make it type safe or _abstract_ it away, like [jOOQ](https://www.jooq.org/).
 
 
+**_For building and running the library, Java 11 (or above) is required._**
+
 ## Concepts
 
 The main entry point, when using `facilejdbc`, is the `Query` class. This is the place where you define your SQL string.
@@ -113,7 +115,7 @@ If you have a collection of `Person`s, you can insert it in one batch.
 
 ```java
 final List<Person> persons = ...;
-final Batch<Person> batch = Batch.of(persons, DCTOR);
+final Batch batch = Batch.of(persons, DCTOR);
 final int[] counts = INSERT.executeUpdate(batch, conn);
 ```
 

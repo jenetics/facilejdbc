@@ -19,15 +19,19 @@
  */
 package io.jenetics.facilejdbc;
 
-import javax.sql.DataSource;
+import static io.jenetics.facilejdbc.Dctor.field;
+import static io.jenetics.facilejdbc.Param.value;
+import static io.jenetics.facilejdbc.util.Db.transaction;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-import static io.jenetics.facilejdbc.util.Db.transaction;
-import static io.jenetics.facilejdbc.Dctor.field;
-import static io.jenetics.facilejdbc.Param.value;
+import javax.sql.DataSource;
 
+/**
+ * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ */
 public class PersonAccess {
 	private PersonAccess() {}
 
