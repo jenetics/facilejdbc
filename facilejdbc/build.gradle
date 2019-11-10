@@ -82,7 +82,7 @@ test {
 jar {
 	manifest {
 		attributes(
-			'Implementation-Title': 'Facile JDBC library',
+			'Implementation-Title': 'Facile JDBC wrapper library',
 			'Implementation-Version': "${project.name}-${project.version}",
 			'Implementation-URL': 'https://github.com/jenetics/facilejdbc',
 			'Implementation-Vendor': 'jenetics',
