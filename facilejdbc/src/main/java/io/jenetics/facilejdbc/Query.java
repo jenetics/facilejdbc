@@ -339,7 +339,7 @@ public final class Query {
 		final IntStream.Builder counts = IntStream.builder();
 		try (PreparedStatement stmt = prepare(conn)) {
 			for (var row : batch) {
-				row.get(conn).set(paramNames(), stmt);
+				row.apply(conn).set(paramNames(), stmt);
 				final int count = stmt.executeUpdate();
 				counts.add(count);
 			}
