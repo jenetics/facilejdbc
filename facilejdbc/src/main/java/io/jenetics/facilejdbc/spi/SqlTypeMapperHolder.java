@@ -19,15 +19,17 @@
  */
 package io.jenetics.facilejdbc.spi;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Converter holder class for lazy loading.
+ *
+ * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @version 1.0
+ * @since 1.0
  */
 final class SqlTypeMapperHolder {
 	static final SqlTypeMapperHolder INSTANCE = new SqlTypeMapperHolder();
@@ -35,21 +37,21 @@ final class SqlTypeMapperHolder {
 	private final Function<Object, Object> mapper;
 
 	private SqlTypeMapperHolder() {
-		final List<SqlTypeMapper> converters =
+		final SqlTypeMapper[] converters =
 			ServiceLoader.load(SqlTypeMapper.class).stream()
 				.map(Provider::get)
-				.collect(Collectors.toList());
+				.toArray(SqlTypeMapper[]::new);
 
-		if (converters.isEmpty()) {
+		if (converters.length == 0) {
 			mapper = Function.identity();
-		} else if (converters.size() == 1) {
-			mapper = converters.get(0)::convert;
+		} else if (converters.length == 1) {
+			mapper = converters[0]::convert;
 		} else {
 			mapper = value -> {
-				for (var converter : converters) {
-					final Object nv = converter.convert(value);
-					if (nv != value) {
-						return nv;
+				for (final SqlTypeMapper converter : converters) {
+					final Object convertedValue = converter.convert(value);
+					if (convertedValue != value) {
+						return convertedValue;
 					}
 				}
 

@@ -25,16 +25,14 @@ import static java.util.Objects.requireNonNull;
 import java.sql.Connection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * Represents a whole batch of SQL query parameters. A <em>batch</em> is
  * essentially an {@link Iterable} of rows/records.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
+ * @version 1.0
+ * @since 1.0
  */
 public interface Batch extends Iterable<Batch.Row> {
 
@@ -54,15 +52,6 @@ public interface Batch extends Iterable<Batch.Row> {
 		public ParamValues get(final Connection conn);
 	}
 
-	/**
-	 * Return a stream with the the given batch entries (rows).
-	 *
-	 * @return a stream with the the given batch entries (rows)
-	 */
-	public default Stream<Row> stream() {
-		return StreamSupport.stream(spliterator(), false);
-	}
-
 
 	/* *************************************************************************
 	 * Static factory methods.
@@ -71,26 +60,27 @@ public interface Batch extends Iterable<Batch.Row> {
 	/**
 	 * Create a new batch from the given records (rows) and the deconstructor.
 	 *
-	 * @param rows the rows to be inserted by the created batch
+	 * @param records the rows to be inserted by the created batch
 	 * @param dctor the record deconstructor
 	 * @param <T> the row type
 	 * @return a new batch from the given arguments
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
-	public static <T> Batch of(final Iterable<T> rows, final Dctor<T> dctor) {
-		requireNonNull(rows);
+	public static <T> Batch
+	of(final Iterable<? extends T> records, final Dctor<? super T> dctor) {
+		requireNonNull(records);
 		requireNonNull(dctor);
 
 		return () -> new Iterator<>() {
-			private final Iterator<T> it = rows.iterator();
+			private final Iterator<? extends T> it = records.iterator();
 			@Override
 			public boolean hasNext() {
 				return it.hasNext();
 			}
 			@Override
 			public Row next() {
-				final T row = it.next();
-				return conn -> dctor.apply(row, conn);
+				final T record = it.next();
+				return conn -> dctor.deconstruct(record, conn);
 			}
 		};
 	}
@@ -104,18 +94,19 @@ public interface Batch extends Iterable<Batch.Row> {
 	 * @return a new batch from the given arguments
 	 * @throws NullPointerException if the given {@code rows} are {@code null}
 	 */
-	public static Batch of(final List<List<Param>> rows) {
+	public static Batch of(final List<? extends List<? extends Param>> rows) {
 		requireNonNull(rows);
 
 		return () -> new Iterator<>() {
-			private final Iterator<List<Param>> it = rows.iterator();
+			private final Iterator<? extends List<? extends Param>>
+			it = rows.iterator();
 			@Override
 			public boolean hasNext() {
 				return it.hasNext();
 			}
 			@Override
 			public Row next() {
-				final List<Param> row = it.next();
+				final List<? extends Param> row = it.next();
 				return conn -> new Params(row);
 			}
 		};
@@ -131,7 +122,7 @@ public interface Batch extends Iterable<Batch.Row> {
 	 * @throws NullPointerException if the given {@code rows} are {@code null}
 	 */
 	@SafeVarargs
-	public static Batch of(final List<Param>... rows) {
+	public static Batch of(final List<? extends Param>... rows) {
 		return Batch.of(asList(rows));
 	}
 

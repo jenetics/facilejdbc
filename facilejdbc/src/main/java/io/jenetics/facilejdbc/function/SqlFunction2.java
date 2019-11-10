@@ -27,8 +27,8 @@ import java.sql.SQLException;
  * SQL-function is allowed to throw a {@link SQLException}.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
+ * @version 1.0
+ * @since 1.0
  */
 @FunctionalInterface
 public interface SqlFunction2<T, U, R> {

@@ -19,6 +19,7 @@
  */
 package io.jenetics.facilejdbc;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -41,15 +42,15 @@ import java.sql.SQLException;
  *
  * @see RowParser
  *
- * @param <T> the row type
+ * @param <T> the record/row type
  *
  * @apiNote
  * {@code ResultSetParser} are created via {@code RowParser} objects. There is
  * no need for <em>implementing</em> this interface directly.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
+ * @version 1.0
+ * @since 1.0
  */
 @FunctionalInterface
 public interface ResultSetParser<T> {
@@ -58,9 +59,11 @@ public interface ResultSetParser<T> {
 	 * Converts the row on the current cursor position into a data object.
 	 *
 	 * @param rs the data source
+	 * @param conn the connection used for producing the record, if needed
 	 * @return the stored data object
 	 * @throws SQLException if reading of the current row fails
 	 */
-	public T parse(final ResultSet rs) throws SQLException;
+	public T parse(final ResultSet rs, final Connection conn)
+		throws SQLException;
 
 }

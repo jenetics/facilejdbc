@@ -22,7 +22,7 @@
  * Contains SPI for mapping the values to proper SQL values, if needed.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
+ * @version 1.0
+ * @since 1.0
  */
 package io.jenetics.facilejdbc.spi;

@@ -33,8 +33,8 @@ import java.util.Map;
  * Collects a list of {@link Param} object into a {@link ParamValues} object.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
+ * @version 1.0
+ * @since 1.0
  */
 final class Params implements ParamValues {
 
@@ -44,7 +44,7 @@ final class Params implements ParamValues {
 		_params = requireNonNull(params);
 	}
 
-	Params(final List<Param> params) {
+	Params(final List<? extends Param> params) {
 		this(
 			params.isEmpty()
 				? Map.of()

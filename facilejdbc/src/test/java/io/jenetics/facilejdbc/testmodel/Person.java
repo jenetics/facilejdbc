@@ -39,7 +39,7 @@ public final class Person {
 	private final LocalDate birthday;
 	private final String email;
 
-	public static final RowParser<Person> PARSER = row -> Person.builder()
+	public static final RowParser<Person> PARSER = (row, conn) -> Person.builder()
 		.forename(row.getString("forename"))
 		.surname(row.getString("surname"))
 		.birthday(row.getDate("birthday").toLocalDate())

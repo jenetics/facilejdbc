@@ -49,11 +49,16 @@ import java.util.regex.Pattern;
  * @see Query
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
+ * @version 1.0
+ * @since 1.0
  */
 final class Sql {
-	private static final Pattern PARAM_PATTERN = Pattern.compile("([\\s+|\\(|\\,]:[\\w]+)");
+
+	private static final Pattern PARAM_PATTERN = Pattern.compile(
+		"(?<!\\:):\\w+\\b(?=(?:[^\"'\\\\]*" +
+		"(?:\\\\.|([\"'])(?:(?:(?!\\\\|\\1).)*\\\\.)*" +
+		"(?:(?!\\\\|\\1).)*\\1))*[^\"']*$)"
+	);
 
 	private final String _string;
 	private final List<String> _paramNames;
@@ -69,7 +74,7 @@ final class Sql {
 	 *
 	 * @return the prepared SQL string
 	 */
-	public String string() {
+	String string() {
 		return _string;
 	}
 
@@ -80,7 +85,7 @@ final class Sql {
 	 *
 	 * @return the parsed parameter names
 	 */
-	public List<String> paramNames() {
+	List<String> paramNames() {
 		return _paramNames;
 	}
 
@@ -101,28 +106,19 @@ final class Sql {
 	 * @return the newly created {@code Sql} object
 	 * @throws NullPointerException if the given SQL string is {@code null}
 	 */
-	public static Sql of(final String sql) {
+	static Sql of(final String sql) {
 		final List<String> names = new ArrayList<>();
-		final StringBuffer parsedQuery = new StringBuffer();
+		final StringBuffer parsed = new StringBuffer();
 
 		final Matcher matcher = PARAM_PATTERN.matcher(sql);
 		while (matcher.find()) {
-			final String match = matcher.group(1);
-
-			if (match != null) {
-				final int start = match.indexOf(':');
-
-				final String name = match.substring(start + 1);
-				names.add(name);
-
-				final String replacement = match.substring(0, start) + "?";
-				matcher.appendReplacement(parsedQuery, replacement);
-			}
-
+			final String match = matcher.group();
+			names.add(match.substring(1));
+			matcher.appendReplacement(parsed, "?");
 		}
-		matcher.appendTail(parsedQuery);
+		matcher.appendTail(parsed);
 
-		return new Sql(parsedQuery.toString(), names);
+		return new Sql(parsed.toString(), names);
 	}
 
 }

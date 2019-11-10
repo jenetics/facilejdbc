@@ -2,6 +2,8 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.jenetics/facilejdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.jenetics/facilejdbc)
 [![Javadoc](https://www.javadoc.io/badge/io.jenetics/facilejdbc.svg)](http://www.javadoc.io/doc/io.jenetics/facilejdbc)
 
+**_For building and running the library, Java 11 (or above) is required._**
+
 # Facile JDBC
 
 > _Making the JDBC usage simpler and less verbose._
@@ -15,10 +17,27 @@ SQL is still the best abstraction for querying relational databases. JDBC, as st
 > #### `facilejdbc` is not
 >
 > * OR-Mapper: `facilejdbc` is not an Object Relational Mapper, like [Hiberenate](https://hibernate.org/) or [JPA](https://docs.oracle.com/javaee/7/tutorial/partpersist.htm).
-> * Query language: [SQL]() is still used as query language. It is not tried to make it type safe or _abstract_ it away, like [jOOQ](https://www.jooq.org/).
+> * No typed query language. [SQL]() is still used as query language. It is not tried to make it type safe or _abstract_ it away, like [jOOQ](https://www.jooq.org/).
+> * Query class generator. It's just the library no generated classes or meta-programming (reflection).
 
 
-**_For building and running the library, Java 11 (or above) is required._**
+> #### `facilejdbc` has no
+>
+> * DB-vendor specific code. Uses 100% pure JDBC.
+> * Dynamic query generation. The user is responsible for creating the SQL string dynamically, if needed.
+> * Generated classes or dynamically generated proxies.
+> * Transaction handling. The users are responsible when to create, commit or rollback their connections. 
+> * No connection pooling.
+
+After all this, you may wonder, what is the `facilejdbc` library doing for me?
+
+> #### `facilejdbc` gives you
+>
+> * The possibility to fill query parameters by _name_ instead of its position: Available via the `Param` interface.
+> * Functions for creating (parsing) _entity_ objects from query `ResultSet`s: Available via the `RowParser` interface
+> * Functions for splitting (deconstructing) _entity_ objects to DB columns: Available via the `Dctor` interface.
+> * One `Query` class for putting all things together.
+
 
 ## Concepts
 
@@ -80,7 +99,7 @@ final List<Person> persons = SELECT
 For converting the result into the `Person` DTO, you have to create a proper `RowParser`. The row parser is responsible for creating the DTOs from the query results.
 
 ```java
-static final RowParser<Person> PARSER = row -> Person.builder()
+static final RowParser<Person> PARSER = (row, conn) -> Person.builder()
     .name(row.getString("name"))
     .email(row.getString("email"))
     .link(row.getString("link"))
@@ -149,4 +168,4 @@ The library is licensed under the [Apache License, Version 2.0](http://www.apach
 
 ## Release notes
 
-* Initial release(s).
+* Initial release.

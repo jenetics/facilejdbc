@@ -54,8 +54,8 @@ import java.util.stream.IntStream;
  * This class is immutable and thread-safe.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
+ * @version 1.0
+ * @since 1.0
  */
 public final class Query {
 
@@ -105,7 +105,7 @@ public final class Query {
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if the given {@code params} is {@code null}
 	 */
-	public Query on(final List<Param> params) {
+	public Query on(final List<? extends Param> params) {
 		return params.isEmpty()
 			? this
 			: new Query(_sql, _values.andThen(new Params(params)));
@@ -151,7 +151,7 @@ public final class Query {
 		requireNonNull(dctor);
 
 		final ParamValues values = (params, stmt) -> dctor
-			.apply(record, stmt.getConnection())
+			.deconstruct(record, stmt.getConnection())
 			.set(params, stmt);
 
 		return new Query(_sql, _values.andThen(values));
@@ -183,7 +183,7 @@ public final class Query {
 		throws SQLException
 	{
 		try (var stmt = prepare(conn); var rs = stmt.executeQuery()) {
-			return parser.parse(rs);
+			return parser.parse(rs, conn);
 		}
 	}
 
@@ -263,7 +263,7 @@ public final class Query {
 	{
 		try (PreparedStatement stmt = prepareInsert(conn)) {
 			stmt.executeUpdate();
-			return readId(keyParser, stmt);
+			return readId(keyParser, stmt, conn);
 		}
 	}
 
@@ -281,12 +281,13 @@ public final class Query {
 
 	private static <K> Optional<K> readId(
 		final RowParser<K> keyParser,
-		final Statement stmt
+		final Statement stmt,
+		final Connection conn
 	)
 		throws SQLException
 	{
 		try (ResultSet keys = stmt.getGeneratedKeys()) {
-			return keyParser.singleOpt().parse(keys);
+			return keyParser.singleOpt().parse(keys, conn);
 		}
 	}
 
