@@ -102,7 +102,8 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Return a new parser which expects at least one result.
+	 * Return a new parser which expects at least one result. If no result is
+	 * available, a {@link NoSuchElementException} is thrown by the parser.
 	 *
 	 * @return a new parser which expects at least one result
 	 */
@@ -116,19 +117,21 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Return a new parser which parses a single selection result.
+	 * Return a new parser which parses a single selection result. If no result
+	 * is available, {@code null} is returned by the parse.
 	 *
 	 * @return a new parser which parses a single selection result or
 	 *         {@code null} if not available
 	 */
-	public default ResultSetParser<T> singleNullable() {
+	public default ResultSetParser<T> singleNull() {
 		return (rs, conn) -> rs.next()
 			? parse(ResultSetRow.of(rs), conn)
 			: null;
 	}
 
 	/**
-	 * Return a new parser which parses a single selection result.
+	 * Return a new parser which parses a single selection result. If no result
+	 * is available, {@link Optional#empty()} is returned by the parse.
 	 *
 	 * @return a new parser which parses a single selection result or
 	 *         {@link Optional#empty()} if not available
