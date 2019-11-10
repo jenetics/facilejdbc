@@ -106,10 +106,7 @@ public interface Param {
 	 *         {@code null}
 	 */
 	public static Param value(final String name, final Object value) {
-		return Param.of(
-			name,
-			(index, stmt) -> stmt.setObject(index, map(value))
-		);
+		return lazy(name, () -> value);
 	}
 
 	/**
