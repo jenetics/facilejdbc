@@ -29,7 +29,7 @@ import java.sql.SQLException;
  * existing {@link RowParser}.
  *
  * <pre>{@code
- * final RowParser<Person> parser = row -> new Person(
+ * final RowParser<Person> parser = (row, conn) -> new Person(
  *     row.getString("name"),
  *     row.getString("email"),
  *     row.getString("link")
