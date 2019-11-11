@@ -12,6 +12,8 @@ _Making the JDBC usage simpler and less verbose._
 
 JDBC is the basic API for accessing relational databases. Being basic makes it quite tedious to use directly. This lead to higher level abstractions like [JPA](https://docs.oracle.com/javaee/7/tutorial/partpersist.htm). Using a full grown _Object Relational Mapper_ on the other side might be to heavy weight for many uses cases. _FacileJDBC_ tries to fill the gap by making the low level JDBC access less verbose and tedious. SQL is still used as query language.
 
+> The API of this library has been heavily influenced by the Scala [Anorm](https://playframework.github.io/anorm/) library.
+
 #### _FacileJDBC_ gives you
 
 > * A lightweight wrapper around the JDBC API.
@@ -47,7 +49,7 @@ final Query query = Query.of("SELECT 1");
 final boolean result = query.execute(conn)
 ```
 
-The `execute` method returns a `boolean` value as specified in the [`PreparedStatement.execute()`](https://docs.oracle.com/en/java/javase/11/docs/api/java.sql/java/sql/PreparedStatement.html#execute()) method. _The [Javadoc](https://www.javadoc.io/doc/io.jenetics/facilejdbc) documents the used methods of the `PreparedStatement` for every _execute_ method.
+The `execute` method returns a `boolean` value as specified in the [`PreparedStatement.execute()`](https://docs.oracle.com/en/java/javase/11/docs/api/java.sql/java/sql/PreparedStatement.html#execute()) method. The [Javadoc](https://www.javadoc.io/doc/io.jenetics/facilejdbc) documents the used methods of the `PreparedStatement` for every _execute_ method.
 
 ### Selecting objects
 
