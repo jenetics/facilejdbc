@@ -23,9 +23,15 @@ import static io.jenetics.facilejdbc.Dctor.field;
 import static io.jenetics.facilejdbc.Param.value;
 import static io.jenetics.facilejdbc.util.Db.transaction;
 
+import lombok.Builder;
+import lombok.Value;
+import lombok.experimental.Accessors;
+
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
@@ -35,42 +41,68 @@ import javax.sql.DataSource;
 public class PersonAccess {
 	private PersonAccess() {}
 
+	@Value
+	@Builder(builderClassName = "Builder", toBuilder = true)
+	@Accessors(fluent = true)
 	public static final class Person {
-		private final String _name;
-		private final String _email;
-		private final String _link;
-
-		public Person(final String name, final String email, final String link) {
-			_name = name;
-			_email = email;
-			_link = link;
-		}
-
-		public String name() {
-			return _name;
-		}
-
-		public String email() {
-			return _email;
-		}
-
-		public String link() {
-			return _link;
-		}
-
+		private final String name;
+		private final String email;
+		private final Link link;
 	}
 
-	private static final RowParser<Person> PARSER = (row, $) -> new Person(
+	@Value
+	@Builder(builderClassName = "Builder", toBuilder = true)
+	@Accessors(fluent = true)
+	public static final class Link {
+		private final String name;
+		private final URI url;
+	}
+
+private static final RowParser<Link> LINK_PARSER = (row, conn) -> new Link(
+	row.getString("name"),
+	URI.create(row.getString("url"))
+);
+
+private static final Dctor<Link> LINK_DCTOR = Dctor.of(
+	field("name", Link::name),
+	field("url", l -> l.url.toString())
+);
+
+private static Link selectLink(final Long linkId, final Connection conn)
+	throws SQLException
+{
+	return Query.of("SELECT * FROM link WHERE id = :id")
+		.on(value("id", linkId))
+		.as(LINK_PARSER.singleNull(), conn);
+}
+
+private static Long insertLink(final Link link, final Connection conn)
+	throws SQLException
+{
+	return Query.of("INSERT INTO link(name, url) VALUES(:name, :url")
+		.on(link, LINK_DCTOR)
+		.executeInsert(conn)
+		.orElseThrow();
+}
+
+
+
+
+	private static final RowParser<Person> PERSON_PARSER = (row, conn) -> new Person(
 		row.getString("name"),
 		row.getString("email"),
-		row.getString("link")
+		selectLink(row.getLong("link_id"), conn)
 	);
 
-	private static final Dctor<Person> DCTOR = Dctor.of(
+
+
+	private static final Dctor<Person> PERSON_DCTOR = Dctor.of(
 		field("name", Person::name),
 		field("email", Person::email),
 		field("link_id", (p, c) -> insertLink(p.link(), c))
 	);
+
+
 
 	private static final Query INSERT_PERSON = Query.of(
 		"INSERT INTO person(name, email, link) " +
@@ -90,7 +122,7 @@ public class PersonAccess {
 		final List<Person> persons = transaction(ds, conn ->
 			SELECT_PERSON
 				.on(value("name", "Franz"))
-				.as(PARSER.list(), conn)
+				.as(PERSON_PARSER.list(), conn)
 		);
 
 		// INSERT
@@ -103,22 +135,22 @@ public class PersonAccess {
 				.execute(conn)
 		);
 
+		final Optional<Integer> pk = transaction(ds, conn ->
+			INSERT_PERSON
+				.on(
+					value("name", "foo"),
+					value("email", "foo@gmail.com"),
+					value("link", "http://google.com"))
+				.executeInsert(RowParser.int32(1), conn)
+		);
+
+
 		// BATCH execution
-		final Batch batch = Batch.of(persons, DCTOR);
+		final Batch batch = Batch.of(persons, PERSON_DCTOR);
 		final int[] counts = transaction(ds, conn ->
 			INSERT_PERSON.executeUpdate(batch, conn)
 		);
 
-	}
-
-
-
-
-	static Long insertLink(final String link, final Connection conn)
-		throws SQLException
-	{
-		// Doing some sub-inserts.
-		return null;
 	}
 
 }
