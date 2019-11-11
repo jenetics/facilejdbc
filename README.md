@@ -36,6 +36,11 @@ JDBC is the basic API for accessing relational databases. Being basic makes it q
 > * Transaction handling. The users are responsible when to create, commit or rollback their connections. 
 > * No connection pooling.
 
+
+**Libraries which serve a similar purpose.**
+* [jOOQ](https://www.jooq.org/)
+* [Jdbi](http://jdbi.org/)
+
 ## Examples
 
 The following example show how to use _FacileJDBC_ for different use cases. For a detailed description of the API, also have a look at the [Javadoc](https://www.javadoc.io/doc/io.jenetics/facilejdbc). 
