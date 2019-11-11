@@ -24,14 +24,15 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.reducing;
+import static io.jenetics.facilejdbc.spi.SqlTypeMapper.map;
 
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
-import io.jenetics.facilejdbc.spi.SqlTypeMapper;
 
 /**
  * This interface is responsible for <em>deconstructing</em> a given record, of
@@ -77,20 +78,19 @@ public interface Dctor<T> {
 		 */
 		public ParamValue value(final T record, final Connection conn);
 
-
 		/**
 		 * Create a new record field with the given {@code name} and field
 		 * {@code accessor}.
 		 *
 		 * @param name the field name
-		 * @param value the field accessor
+		 * @param value the field creation function
 		 * @param <T> the record type
 		 * @return a new record field
 		 * @throws NullPointerException if one of the arguments is {@code null}
 		 */
 		public static <T> Field<T> of(
 			final String name,
-			final SqlFunction2<? super T, ? super Connection, ?> value
+			final BiFunction<? super T, ? super Connection, ? extends ParamValue> value
 		) {
 			requireNonNull(name);
 			requireNonNull(value);
@@ -102,10 +102,7 @@ public interface Dctor<T> {
 				}
 				@Override
 				public ParamValue value(final T record, final Connection conn) {
-					return (index, stmt) -> stmt.setObject(
-						index,
-						SqlTypeMapper.map(value.apply(record, conn))
-					);
+					return value.apply(record, conn);
 				}
 				@Override
 				public String toString() {
@@ -113,6 +110,7 @@ public interface Dctor<T> {
 				}
 			};
 		}
+
 	}
 
 
@@ -146,12 +144,14 @@ public interface Dctor<T> {
 				groupingBy(Field::name, reducing(null, (a, b) -> b)));
 
 		return (record, conn) -> (params, stmt) -> {
-			int index = 0;
-			for (String name : params) {
-				++index;
-				final Field<T> field = map.get(name);
-				if (field != null) {
-					field.value(record, conn).set(index, stmt);
+			if (!map.isEmpty()) {
+				int index = 0;
+				for (String name : params) {
+					++index;
+					final Field<T> field = map.get(name);
+					if (field != null) {
+						field.value(record, conn).set(index, stmt);
+					}
 				}
 			}
 		};
@@ -187,7 +187,11 @@ public interface Dctor<T> {
 		final String name,
 		final SqlFunction2<? super T, ? super Connection, ?> value
 	) {
-		return Field.of(name, value);
+		return Field.of(
+			name,
+			(record, conn) -> (index, stmt) ->
+				stmt.setObject(index, map(value.apply(record, conn)))
+		);
 	}
 
 	/**
@@ -206,7 +210,7 @@ public interface Dctor<T> {
 		final String name,
 		final SqlFunction<? super T, ?> value
 	) {
-		return Field.of(name, (record, conn) -> value.apply(record));
+		return field(name, (record, conn) -> value.apply(record));
 	}
 
 	/**
@@ -221,7 +225,7 @@ public interface Dctor<T> {
 	 * @throws NullPointerException if the {@code name} is {@code null}
 	 */
 	public static <T> Field<T> fieldValue(final String name, final Object value) {
-		return Field.of(name, (record, conn) -> value);
+		return field(name, (record, conn) -> value);
 	}
 
 }

@@ -25,32 +25,25 @@ import static java.util.Objects.requireNonNull;
 import java.sql.Connection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 /**
- * Represents a whole batch of SQL query parameters. A <em>batch</em> is
- * essentially an {@link Iterable} of rows/records.
+ * Represents a whole batch of query parameter values. A <em>batch</em> is
+ * essentially an {@link Iterable} of records or row-creation functions. The
+ * available factory functions makes it easy to create a batch from a given
+ * list of records or parameters.
+ *
+ * <pre>{@code
+ * final List<Person> persons = ...;
+ * final Dctor<Person> dctor = ...;
+ * final Batch batch = Batch.of(persons, dctor);
+ * }</pre>
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version 1.0
  * @since 1.0
  */
-public interface Batch extends Iterable<Batch.Row> {
-
-	/**
-	 * An batch entry is actually a factory function, which is able to create a
-	 * <em>row</em> {@link ParamValues} from parameter indices and a connection.
-	 */
-	@FunctionalInterface
-	public static interface Row {
-
-		/**
-		 * Creates a <em>row</em> {@link ParamValues} from the given arguments.
-		 *
-		 * @param conn the connection used for created the preparer, if needed
-		 * @return a <em>row</em> {@link ParamValues}
-		 */
-		public ParamValues get(final Connection conn);
-	}
+public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 
 
 	/* *************************************************************************
@@ -78,7 +71,7 @@ public interface Batch extends Iterable<Batch.Row> {
 				return it.hasNext();
 			}
 			@Override
-			public Row next() {
+			public Function<Connection, ParamValues> next() {
 				final T record = it.next();
 				return conn -> dctor.deconstruct(record, conn);
 			}
@@ -94,7 +87,7 @@ public interface Batch extends Iterable<Batch.Row> {
 	 * @return a new batch from the given arguments
 	 * @throws NullPointerException if the given {@code rows} are {@code null}
 	 */
-	public static Batch of(final List<? extends List<? extends Param>> rows) {
+	public static Batch of(final Iterable<? extends List<? extends Param>> rows) {
 		requireNonNull(rows);
 
 		return () -> new Iterator<>() {
@@ -105,8 +98,8 @@ public interface Batch extends Iterable<Batch.Row> {
 				return it.hasNext();
 			}
 			@Override
-			public Row next() {
-				final List<? extends Param> row = it.next();
+			public Function<Connection, ParamValues> next() {
+				final var row = it.next();
 				return conn -> new Params(row);
 			}
 		};
@@ -115,7 +108,7 @@ public interface Batch extends Iterable<Batch.Row> {
 	/**
 	 * Create a new batch from the given rows.
 	 *
-	 * @see #of(List)
+	 * @see #of(Iterable)
 	 *
 	 * @param rows the rows to be inserted by the created batch
 	 * @return a new batch from the given arguments

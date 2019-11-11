@@ -28,6 +28,8 @@ import java.sql.SQLException;
  * <em>insertion</em> strategy.
  *
  * @see Param
+ * @see ParamValues
+ * @see Dctor.Field
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version 1.0
