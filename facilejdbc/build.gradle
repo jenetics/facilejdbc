@@ -134,7 +134,7 @@ afterEvaluate { project ->
 				pom.project {
 					name 'FacileJDBC'
 					packaging 'pom'
-					description 'FacileJDBC - Lightweight JDBC Library'
+					description 'FacileJDBC - Lightweight JDBC wrapper library'
 					url 'https://github.com/jenetics/facilejdbc'
 					inceptionYear '2019'
 
