@@ -24,8 +24,8 @@ JDBC is the basic API for accessing relational databases. Being basic makes it q
 
 #### _FacileJDBC_ is not
 
-> * An OR-Mapper, like [JPA](https://docs.oracle.com/javaee/7/tutorial/partpersist.htm) or [Hibernate](https://hibernate.org/).
-> * No type safe query language like [jOOQ](https://www.jooq.org/).
+> * An OR-Mapper
+> * No type safe query language
 
 
 #### _FacileJDBC_ has no
@@ -37,7 +37,7 @@ JDBC is the basic API for accessing relational databases. Being basic makes it q
 > * No connection pooling.
 
 
-**Libraries which serve a similar purpose.**
+**Libraries which serve a similar purpose**
 * [jOOQ](https://www.jooq.org/)
 * [Jdbi](http://jdbi.org/)
 
