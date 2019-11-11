@@ -318,12 +318,39 @@ public final class Query {
 	 * ************************************************************************/
 
 	/**
+	 * Executes the given batch on {@code this} query object, which may be any
+	 * kind of SQL statement.
+	 *
+	 * @see PreparedStatement#execute()
+	 * @see #execute(Connection)
+	 * @see #executeUpdate(Batch, Connection)
+	 *
+	 * @param batch the batch to execute
+	 * @param conn the DB connection where {@code this} query is executed on
+	 * @throws SQLException if a database access error occurs
+	 * @throws java.sql.SQLTimeoutException when the driver has determined that
+	 *         the timeout value has been exceeded
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 */
+	public void execute(final Batch batch, final Connection conn)
+		throws SQLException
+	{
+		try (PreparedStatement stmt = prepare(conn)) {
+			for (var row : batch) {
+				row.apply(conn).set(paramNames(), stmt);
+				stmt.execute();
+			}
+		}
+	}
+
+	/**
 	 * Executes the given {@code batch} for this query, which must be an SQL
 	 * Data Manipulation Language (DML) statement, such as {@code INSERT},
 	 * {@code UPDATE} or {@code DELETE}.
 	 *
 	 * @see PreparedStatement#executeUpdate()
 	 * @see #executeUpdate(Connection)
+	 * @see #execute(Batch, Connection)
 	 *
 	 * @param batch the batch to execute
 	 * @param conn the DB connection where {@code this} query is executed on
