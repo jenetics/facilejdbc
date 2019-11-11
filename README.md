@@ -26,6 +26,7 @@ JDBC is the basic API for accessing relational databases. Being basic makes it q
 
 > * An OR-Mapper
 > * A type safe query language
+> * An SQL query builder
 
 
 #### _FacileJDBC_ has no
