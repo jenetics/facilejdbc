@@ -58,32 +58,32 @@ public class PersonAccess {
 		private final URI url;
 	}
 
-private static final RowParser<Link> LINK_PARSER = (row, conn) -> new Link(
-	row.getString("name"),
-	URI.create(row.getString("url"))
-);
+	private static final RowParser<Link> LINK_PARSER = (row, conn) -> new Link(
+		row.getString("name"),
+		URI.create(row.getString("url"))
+	);
 
-private static final Dctor<Link> LINK_DCTOR = Dctor.of(
-	field("name", Link::name),
-	field("url", l -> l.url.toString())
-);
+	private static final Dctor<Link> LINK_DCTOR = Dctor.of(
+		field("name", Link::name),
+		field("url", l -> l.url.toString())
+	);
 
-private static Link selectLink(final Long linkId, final Connection conn)
-	throws SQLException
-{
-	return Query.of("SELECT * FROM link WHERE id = :id")
-		.on(value("id", linkId))
-		.as(LINK_PARSER.singleNull(), conn);
-}
+	private static Link selectLink(final Long linkId, final Connection conn)
+		throws SQLException
+	{
+		return Query.of("SELECT * FROM link WHERE id = :id")
+			.on(value("id", linkId))
+			.as(LINK_PARSER.singleNull(), conn);
+	}
 
-private static Long insertLink(final Link link, final Connection conn)
-	throws SQLException
-{
-	return Query.of("INSERT INTO link(name, url) VALUES(:name, :url")
-		.on(link, LINK_DCTOR)
-		.executeInsert(conn)
-		.orElseThrow();
-}
+	private static Long insertLink(final Link link, final Connection conn)
+		throws SQLException
+	{
+		return Query.of("INSERT INTO link(name, url) VALUES(:name, :url")
+			.on(link, LINK_DCTOR)
+			.executeInsert(conn)
+			.orElseThrow();
+	}
 
 
 
