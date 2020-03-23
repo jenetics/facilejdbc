@@ -42,6 +42,6 @@ public interface SqlSupplier<T> {
 	 * @return a result
 	 * @throws SQLException if fetching the result fails
 	 */
-	public T get() throws SQLException;
+	T get() throws SQLException;
 
 }

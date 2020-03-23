@@ -41,6 +41,6 @@ public interface SqlFunction2<T, U, R> {
 	 * @return the function result
 	 * @throws SQLException if the execution of the SQL-function fails
 	 */
-	public R apply(final T t, final U u) throws SQLException;
+	R apply(final T t, final U u) throws SQLException;
 
 }

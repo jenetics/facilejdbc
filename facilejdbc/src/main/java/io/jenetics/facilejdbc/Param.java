@@ -48,14 +48,14 @@ public interface Param {
 	 *
 	 * @return the parameter name
 	 */
-	public String name();
+	String name();
 
 	/**
 	 * Return the parameter values.
 	 *
 	 * @return the parameter values
 	 */
-	public ParamValue value();
+	ParamValue value();
 
 
 	/* *************************************************************************
@@ -75,7 +75,7 @@ public interface Param {
 	 * @throws NullPointerException if the given parameter {@code name} is
 	 *         {@code null}
 	 */
-	public static Param of(final String name, final ParamValue value) {
+	static Param of(final String name, final ParamValue value) {
 		requireNonNull(name);
 		requireNonNull(value);
 
@@ -105,7 +105,7 @@ public interface Param {
 	 * @throws NullPointerException if the given parameter {@code name} is
 	 *         {@code null}
 	 */
-	public static Param value(final String name, final Object value) {
+	static Param value(final String name, final Object value) {
 		return lazy(name, () -> value);
 	}
 
@@ -119,7 +119,7 @@ public interface Param {
 	 * @throws NullPointerException if the given parameter {@code name} is
 	 *         {@code null}
 	 */
-	public static Param lazy(final String name, final SqlSupplier<?> value) {
+	static Param lazy(final String name, final SqlSupplier<?> value) {
 		requireNonNull(value);
 		return Param.of(
 			name,

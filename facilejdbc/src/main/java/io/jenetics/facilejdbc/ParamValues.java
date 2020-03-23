@@ -42,7 +42,7 @@ public interface ParamValues {
 	/**
 	 * Represents an empty parameter value set.
 	 */
-	public static final ParamValues EMPTY = (params, stmt) -> {};
+	ParamValues EMPTY = (params, stmt) -> {};
 
 	/**
 	 * Fills the parameters of the given statement.
@@ -54,7 +54,7 @@ public interface ParamValues {
 	 * @param stmt the prepared statement to fill (set)
 	 * @throws SQLException if the preparation fails
 	 */
-	public void set(final List<String> paramNames, final PreparedStatement stmt)
+	void set(final List<String> paramNames, final PreparedStatement stmt)
 		throws SQLException;
 
 	/**
@@ -68,7 +68,7 @@ public interface ParamValues {
 	 * @return a composed preparer
 	 * @throws NullPointerException if the {@code after} parameter is {@code null}
 	 */
-	public default ParamValues andThen(final ParamValues after) {
+	default ParamValues andThen(final ParamValues after) {
 		requireNonNull(after);
 
 		if (this == EMPTY) {

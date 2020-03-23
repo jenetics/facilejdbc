@@ -59,7 +59,7 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 	 * @return a new batch from the given arguments
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
-	public static <T> Batch
+	static <T> Batch
 	of(final Iterable<? extends T> records, final Dctor<? super T> dctor) {
 		requireNonNull(records);
 		requireNonNull(dctor);
@@ -87,7 +87,7 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 	 * @return a new batch from the given arguments
 	 * @throws NullPointerException if the given {@code rows} are {@code null}
 	 */
-	public static Batch of(final Iterable<? extends List<? extends Param>> rows) {
+	static Batch of(final Iterable<? extends List<? extends Param>> rows) {
 		requireNonNull(rows);
 
 		return () -> new Iterator<>() {
@@ -115,7 +115,7 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 	 * @throws NullPointerException if the given {@code rows} are {@code null}
 	 */
 	@SafeVarargs
-	public static Batch of(final List<? extends Param>... rows) {
+	static Batch of(final List<? extends Param>... rows) {
 		return Batch.of(asList(rows));
 	}
 

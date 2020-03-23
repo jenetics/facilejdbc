@@ -63,7 +63,7 @@ public interface ResultSetParser<T> {
 	 * @return the stored data object
 	 * @throws SQLException if reading of the current row fails
 	 */
-	public T parse(final ResultSet rs, final Connection conn)
+	T parse(final ResultSet rs, final Connection conn)
 		throws SQLException;
 
 }

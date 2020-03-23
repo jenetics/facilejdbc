@@ -60,14 +60,14 @@ public interface Dctor<T> {
 	 *
 	 * @param <T> the record type
 	 */
-	public static interface Field<T> {
+	interface Field<T> {
 
 		/**
 		 * Return the name of the record field.
 		 *
 		 * @return the field name
 		 */
-		public String name();
+		String name();
 
 		/**
 		 * Return the SQL value for the give {@code row} field.
@@ -76,7 +76,7 @@ public interface Dctor<T> {
 		 * @param conn the connection used for producing the SQL value, if needed
 		 * @return the SQL value for the give {@code row} field
 		 */
-		public ParamValue value(final T record, final Connection conn);
+		ParamValue value(final T record, final Connection conn);
 
 		/**
 		 * Create a new record field with the given {@code name} and field
@@ -88,7 +88,7 @@ public interface Dctor<T> {
 		 * @return a new record field
 		 * @throws NullPointerException if one of the arguments is {@code null}
 		 */
-		public static <T> Field<T> of(
+		static <T> Field<T> of(
 			final String name,
 			final BiFunction<? super T, ? super Connection, ? extends ParamValue> value
 		) {
@@ -121,7 +121,7 @@ public interface Dctor<T> {
 	 * @param conn the DB connection used for record deconstruction, if needed
 	 * @return a new row preparer
 	 */
-	public ParamValues deconstruct(final T record, final Connection conn);
+	ParamValues deconstruct(final T record, final Connection conn);
 
 
 	/* *************************************************************************
@@ -137,7 +137,7 @@ public interface Dctor<T> {
 	 * @param <T> the type of the record to be deconstructed
 	 * @return a new deconstructor from the given field definitions
 	 */
-	public static <T> Dctor<T> of(final List<? extends Field<T>> fields) {
+	static <T> Dctor<T> of(final List<? extends Field<T>> fields) {
 		final Map<String, Field<T>> map = fields.isEmpty()
 			? Map.of()
 			: fields.stream().collect(
@@ -167,7 +167,7 @@ public interface Dctor<T> {
 	 * @return a new deconstructor from the given field definitions
 	 */
 	@SafeVarargs
-	public static <T> Dctor<T> of(final Field<T>... fields) {
+	static <T> Dctor<T> of(final Field<T>... fields) {
 		return Dctor.of(asList(fields));
 	}
 
@@ -183,7 +183,7 @@ public interface Dctor<T> {
 	 * @return a new record field
 	 * @throws NullPointerException if one of the given arguments is {@code null}
 	 */
-	public static <T> Field<T> field(
+	static <T> Field<T> field(
 		final String name,
 		final SqlFunction2<? super T, ? super Connection, ?> value
 	) {
@@ -206,7 +206,7 @@ public interface Dctor<T> {
 	 * @return a new record field
 	 * @throws NullPointerException if one of the given arguments is {@code null}
 	 */
-	public static <T> Field<T> field(
+	static <T> Field<T> field(
 		final String name,
 		final SqlFunction<? super T, ?> value
 	) {
@@ -224,7 +224,7 @@ public interface Dctor<T> {
 	 * @return a new record field
 	 * @throws NullPointerException if the {@code name} is {@code null}
 	 */
-	public static <T> Field<T> fieldValue(final String name, final Object value) {
+	static <T> Field<T> fieldValue(final String name, final Object value) {
 		return field(name, (record, conn) -> value);
 	}
 

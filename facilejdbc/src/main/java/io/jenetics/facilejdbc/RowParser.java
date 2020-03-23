@@ -67,7 +67,7 @@ public interface RowParser<T> {
 	 * @return the stored data object
 	 * @throws SQLException if reading of the current row fails
 	 */
-	public T parse(final Row row, final Connection conn) throws SQLException;
+	T parse(final Row row, final Connection conn) throws SQLException;
 
 	/**
 	 * Returns a parser that will apply given {@code mapper} to the result of
@@ -80,7 +80,7 @@ public interface RowParser<T> {
 	 * @param <U> the type of the value returned from the mapping function
 	 * @return a new row parser with the mapped type
 	 */
-	public default <U> RowParser<U>
+	default <U> RowParser<U>
 	map(final SqlFunction<? super T, ? extends U> mapper) {
 		return (row, conn) -> mapper.apply(parse(row, conn));
 	}
@@ -96,7 +96,7 @@ public interface RowParser<T> {
 	 * @param <U> the type of the value returned from the mapping function
 	 * @return a new row parser with the mapped type
 	 */
-	public default <U> RowParser<U>
+	default <U> RowParser<U>
 	map(final SqlFunction2<? super T, ? super Connection, ? extends U> mapper) {
 		return (row, conn) -> mapper.apply(parse(row, conn), conn);
 	}
@@ -107,7 +107,7 @@ public interface RowParser<T> {
 	 *
 	 * @return a new parser which expects at least one result
 	 */
-	public default ResultSetParser<T> single() {
+	default ResultSetParser<T> single() {
 		return (rs, conn) -> {
 			if (rs.next()) {
 				return parse(ResultSetRow.of(rs), conn);
@@ -123,7 +123,7 @@ public interface RowParser<T> {
 	 * @return a new parser which parses a single selection result or
 	 *         {@code null} if not available
 	 */
-	public default ResultSetParser<T> singleNull() {
+	default ResultSetParser<T> singleNull() {
 		return (rs, conn) -> rs.next()
 			? parse(ResultSetRow.of(rs), conn)
 			: null;
@@ -136,7 +136,7 @@ public interface RowParser<T> {
 	 * @return a new parser which parses a single selection result or
 	 *         {@link Optional#empty()} if not available
 	 */
-	public default ResultSetParser<Optional<T>> singleOpt() {
+	default ResultSetParser<Optional<T>> singleOpt() {
 		return (rs, conn) -> rs.next()
 			? Optional.ofNullable(parse(ResultSetRow.of(rs), conn))
 			: Optional.empty();
@@ -147,7 +147,7 @@ public interface RowParser<T> {
 	 *
 	 * @return a new parser witch parses a the whole selection result
 	 */
-	public default ResultSetParser<List<T>> list() {
+	default ResultSetParser<List<T>> list() {
 		return (rs, conn) -> {
 			final ResultSetRow row = ResultSetRow.of(rs);
 			final List<T> result = new ArrayList<>();
@@ -178,7 +178,7 @@ public interface RowParser<T> {
 	 * @return a parser for a scalar not-null value
 	 * @throws NullPointerException if the give {@code type} is {@code null}
 	 */
-	public static <T> RowParser<T> scalar(final Class<T> type) {
+	static <T> RowParser<T> scalar(final Class<T> type) {
 		return (row, conn) -> row.getObject(1, type);
 	}
 
@@ -188,7 +188,7 @@ public interface RowParser<T> {
 	 * @param name the column name
 	 * @return the row-parser for the given column
 	 */
-	public static RowParser<Long> int64(final String name) {
+	static RowParser<Long> int64(final String name) {
 		return (row, conn) -> row.getLong(name);
 	}
 
@@ -198,7 +198,7 @@ public interface RowParser<T> {
 	 * @param index the column index
 	 * @return the row-parser for the given column
 	 */
-	public static RowParser<Long> int64(final int index) {
+	static RowParser<Long> int64(final int index) {
 		return (row, conn) -> row.getLong(index);
 	}
 
@@ -208,7 +208,7 @@ public interface RowParser<T> {
 	 * @param name the column name
 	 * @return the row-parser for the given column
 	 */
-	public static RowParser<Integer> int32(final String name) {
+	static RowParser<Integer> int32(final String name) {
 		return (row, conn) -> row.getInt(name);
 	}
 
@@ -218,7 +218,7 @@ public interface RowParser<T> {
 	 * @param index the column index
 	 * @return the row-parser for the given column
 	 */
-	public static RowParser<Integer> int32(final int index) {
+	static RowParser<Integer> int32(final int index) {
 		return (row, conn) -> row.getInt(index);
 	}
 
@@ -228,7 +228,7 @@ public interface RowParser<T> {
 	 * @param name the column name
 	 * @return the row-parser for the given column
 	 */
-	public static RowParser<String> string(final String name) {
+	static RowParser<String> string(final String name) {
 		return (row, conn) -> row.getString(name);
 	}
 
@@ -238,7 +238,7 @@ public interface RowParser<T> {
 	 * @param index the column index
 	 * @return the row-parser for the given column
 	 */
-	public static RowParser<String> string(final int index) {
+	static RowParser<String> string(final int index) {
 		return (row, conn) -> row.getString(index);
 	}
 

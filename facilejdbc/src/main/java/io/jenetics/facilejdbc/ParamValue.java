@@ -45,7 +45,7 @@ public interface ParamValue {
 	 * @param stmt the prepared statement to fill (set)
 	 * @throws SQLException if the preparation fails
 	 */
-	public void set(final int index, final PreparedStatement stmt)
+	void set(final int index, final PreparedStatement stmt)
 		throws SQLException;
 
 }
