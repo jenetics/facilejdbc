@@ -165,7 +165,7 @@ afterEvaluate { project ->
 	}
 
 	task sourcesJar(type: Jar) {
-		classifier = 'sources'
+		archiveClassifier = 'sources'
 		from project.sourceSets.main.allSource
 		filter(ReplaceTokens, tokens: [
 			__identifier__: project.name + '-' + project.version,
@@ -174,7 +174,7 @@ afterEvaluate { project ->
 	}
 
 	task javadocJar(type: Jar, dependsOn: javadoc) {
-		classifier = 'javadoc'
+		archiveClassifier = 'javadoc'
 		from project.javadoc
 		filter(ReplaceTokens, tokens: [
 			__identifier__: project.name + '-' + project.version,
