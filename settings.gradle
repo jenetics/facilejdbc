@@ -24,7 +24,7 @@
  * @version 1.0
  */
 
+rootProject.name = 'facilejdbc'
+
 // The JPX projects.
 include 'facilejdbc'
-
-rootProject.name = 'facilejdbc'
