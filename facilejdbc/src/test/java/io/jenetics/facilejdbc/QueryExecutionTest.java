@@ -19,28 +19,6 @@
  */
 package io.jenetics.facilejdbc;
 
-import static io.jenetics.facilejdbc.Param.value;
-import static io.jenetics.facilejdbc.RowParser.scalar;
-import static io.jenetics.facilejdbc.util.HSQLDB.transaction;
-
-import java.io.IOException;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import io.jenetics.facilejdbc.testmodel.Person;
-import io.jenetics.facilejdbc.util.IO;
-
 public class QueryExecutionTest {
 
 //	private static final Query SELECT = Query.of(
