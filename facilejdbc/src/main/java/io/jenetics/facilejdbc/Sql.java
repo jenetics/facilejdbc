@@ -19,7 +19,6 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
@@ -55,17 +54,17 @@ import java.util.regex.Pattern;
 final class Sql {
 
 	private static final Pattern PARAM_PATTERN = Pattern.compile(
-		"(?<!\\:):\\w+\\b(?=(?:[^\"'\\\\]*" +
+		"(?<!:):\\w+\\b(?=(?:[^\"'\\\\]*" +
 		"(?:\\\\.|([\"'])(?:(?:(?!\\\\|\\1).)*\\\\.)*" +
 		"(?:(?!\\\\|\\1).)*\\1))*[^\"']*$)"
 	);
 
-	private final String _string;
-	private final List<String> _paramNames;
+	private final String string;
+	private final List<String> paramNames;
 
 	private Sql(final String string, final List<String> paramNames) {
-		_string = requireNonNull(string);
-		_paramNames = unmodifiableList(paramNames);
+		this.string = requireNonNull(string);
+		this.paramNames = List.copyOf(paramNames);
 	}
 
 	/**
@@ -75,7 +74,7 @@ final class Sql {
 	 * @return the prepared SQL string
 	 */
 	String string() {
-		return _string;
+		return string;
 	}
 
 	/**
@@ -86,12 +85,12 @@ final class Sql {
 	 * @return the parsed parameter names
 	 */
 	List<String> paramNames() {
-		return _paramNames;
+		return paramNames;
 	}
 
 	@Override
 	public String toString() {
-		return _string;
+		return string;
 	}
 
 

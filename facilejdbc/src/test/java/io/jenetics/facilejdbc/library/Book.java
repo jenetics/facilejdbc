@@ -21,6 +21,7 @@ package io.jenetics.facilejdbc.library;
 
 import static java.util.Objects.requireNonNull;
 import static io.jenetics.facilejdbc.Dctor.field;
+import static io.jenetics.facilejdbc.Dctor.fieldValue;
 import static io.jenetics.facilejdbc.Param.value;
 
 import java.sql.Connection;
@@ -141,7 +142,7 @@ public final class Book {
 		final Batch batch = Batch.of(
 			authors,
 			Dctor.of(
-				field("book_id", a -> bookId),
+				fieldValue("book_id", bookId),
 				field("author_id", Author::insert)
 			)
 		);

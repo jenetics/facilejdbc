@@ -38,10 +38,10 @@ import java.util.Map;
  */
 final class Params implements ParamValues {
 
-	private final Map<String, Param> _params;
+	private final Map<String, Param> params;
 
 	private Params(final Map<String, Param> params) {
-		_params = requireNonNull(params);
+		this.params = requireNonNull(params);
 	}
 
 	Params(final List<? extends Param> params) {
@@ -60,7 +60,7 @@ final class Params implements ParamValues {
 		int index = 0;
 		for (String name : paramNames) {
 			++index;
-			final Param param = _params.get(name);
+			final Param param = params.get(name);
 			if (param != null) {
 				param.value().set(index, stmt);
 			}
@@ -75,8 +75,8 @@ final class Params implements ParamValues {
 	}
 
 	private Params andThen(final Params after) {
-		final Map<String, Param> params = new HashMap<>(_params);
-		params.putAll(after._params);
+		final Map<String, Param> params = new HashMap<>(this.params);
+		params.putAll(after.params);
 		return new Params(params);
 	}
 

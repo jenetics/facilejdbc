@@ -59,12 +59,12 @@ import java.util.stream.IntStream;
  */
 public final class Query {
 
-	private final Sql _sql;
-	private final ParamValues _values;
+	private final Sql sql;
+	private final ParamValues values;
 
 	private Query(final Sql sql, final ParamValues values) {
-		_sql = requireNonNull(sql);
-		_values = requireNonNull(values);
+		this.sql = requireNonNull(sql);
+		this.values = requireNonNull(values);
 	}
 
 	/**
@@ -74,7 +74,7 @@ public final class Query {
 	 * @return the prepared SQL string
 	 */
 	public String sql() {
-		return _sql.string();
+		return sql.string();
 	}
 
 	/**
@@ -86,7 +86,7 @@ public final class Query {
 	 * @return the parsed parameter names
 	 */
 	public List<String> paramNames() {
-		return _sql.paramNames();
+		return sql.paramNames();
 	}
 
 
@@ -108,7 +108,7 @@ public final class Query {
 	public Query on(final List<? extends Param> params) {
 		return params.isEmpty()
 			? this
-			: new Query(_sql, _values.andThen(new Params(params)));
+			: new Query(sql, values.andThen(new Params(params)));
 	}
 
 	/**
@@ -154,7 +154,7 @@ public final class Query {
 			.deconstruct(record, stmt.getConnection())
 			.set(params, stmt);
 
-		return new Query(_sql, _values.andThen(values));
+		return new Query(sql, this.values.andThen(values));
 	}
 
 
@@ -191,7 +191,7 @@ public final class Query {
 		throws SQLException
 	{
 		final PreparedStatement stmt = conn.prepareStatement(sql());
-		_values.set(paramNames(), stmt);
+		values.set(paramNames(), stmt);
 		return stmt;
 	}
 
@@ -271,11 +271,11 @@ public final class Query {
 		throws SQLException
 	{
 		final PreparedStatement stmt = conn.prepareStatement(
-			_sql.string(),
+			sql.string(),
 			RETURN_GENERATED_KEYS
 		);
 
-		_values.set(paramNames(), stmt);
+		values.set(paramNames(), stmt);
 		return stmt;
 	}
 
