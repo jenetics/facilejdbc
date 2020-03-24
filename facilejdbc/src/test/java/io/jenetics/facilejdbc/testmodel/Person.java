@@ -21,31 +21,23 @@ package io.jenetics.facilejdbc.testmodel;
 
 import static io.jenetics.facilejdbc.Dctor.field;
 
-import lombok.Builder;
-import lombok.Value;
-import lombok.experimental.Accessors;
-
 import java.time.LocalDate;
 
 import io.jenetics.facilejdbc.Dctor;
 import io.jenetics.facilejdbc.RowParser;
 
-@Value
-@Builder(builderClassName = "Builder", toBuilder = true)
-@Accessors(fluent = true)
 public final class Person {
 	private final String forename;
 	private final String surname;
 	private final LocalDate birthday;
 	private final String email;
 
-	public static final RowParser<Person> PARSER = (row, conn) -> Person.builder()
-		.forename(row.getString("forename"))
-		.surname(row.getString("surname"))
-		.birthday(row.getDate("birthday").toLocalDate())
-		.email(row.getString("email"))
-		.build();
-
+	public static final RowParser<Person> PARSER = (row, conn) -> new Person(
+		row.getString("forename"),
+		row.getString("surname"),
+		row.getDate("birthday").toLocalDate(),
+		row.getString("email")
+	);
 
 	public static final Dctor<Person> DCTOR = Dctor.of(
 		field("forename", Person::forename),
@@ -53,4 +45,32 @@ public final class Person {
 		field("birthday", Person::birthday),
 		field("email", Person::email)
 	);
+
+	public Person(
+		final String forename,
+		final String surname,
+		final LocalDate birthday,
+		final String email
+	) {
+		this.forename = forename;
+		this.surname = surname;
+		this.birthday = birthday;
+		this.email = email;
+	}
+
+	public String forename() {
+		return forename;
+	}
+
+	public String surname() {
+		return surname;
+	}
+
+	public LocalDate birthday() {
+		return birthday;
+	}
+
+	public String email() {
+		return email;
+	}
 }

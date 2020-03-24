@@ -25,13 +25,10 @@ import org.apache.tools.ant.filters.ReplaceTokens
  * @version 1.0
  */
 
-plugins {
-	id "io.franzbecker.gradle-lombok" version "3.2.0"
-}
-
 apply plugin: 'java-library'
 apply plugin: 'maven'
 apply plugin: 'signing'
+apply plugin: 'idea'
 
 description = 'FacileJDBC Library'
 
