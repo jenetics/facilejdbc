@@ -106,7 +106,7 @@ public interface Param {
 	 *         {@code null}
 	 */
 	static Param value(final String name, final Object value) {
-		return lazy(name, () -> value);
+		return Param.lazy(name, () -> value);
 	}
 
 	/**
