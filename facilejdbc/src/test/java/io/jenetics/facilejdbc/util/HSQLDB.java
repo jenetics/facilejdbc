@@ -23,32 +23,14 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import io.jenetics.facilejdbc.function.SqlFunction;
-import io.jenetics.facilejdbc.function.SqlFunction0;
-
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-public final class HSQLDB {
-	private HSQLDB() {
-	}
+public final class HSQLDB implements Transactional {
 
-	private static Connection conn() throws SQLException {
+	@Override
+	public Connection conn() throws SQLException {
 		return DriverManager.getConnection("jdbc:hsqldb:mem:testdb", "SA", "");
-	}
-
-	public static <T> T
-	execute(final SqlFunction<? super Connection, ? extends T> block)
-		throws SQLException
-	{
-		return Transactions.execute(conn(), block);
-	}
-
-	public static void
-	run(final SqlFunction0<? super Connection> block)
-		throws SQLException
-	{
-		Transactions.run(conn(), block);
 	}
 
 }
