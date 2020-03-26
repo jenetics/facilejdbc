@@ -38,8 +38,16 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * This interface is responsible for <em>deconstructing</em> a given record, of
  * type {@code T}, to a DB-<em>row</em> ({@link ParamValues}).
  *
+ * <pre>{@code
+ * final Dctor<Book> dctor = Dctor.of(
+ *     Dctor.field("title", Book::title),
+ *     Dctor.field("isbn", Book::isbn),
+ *     Dctor.field("pages", Book::pages)
+ * );
+ * }</pre>
+ *
  * @apiNote
- * A {@code Dctor} (deconstructor) is responsible for splitting a given record
+ * A {@code Dctor} (de-constructor) is responsible for splitting a given record
  * into a set of fields (columns), which can be written into the DB. The
  * counterpart of this interface is the {@link RowParser}, which builds a
  * record of a DB result row.
