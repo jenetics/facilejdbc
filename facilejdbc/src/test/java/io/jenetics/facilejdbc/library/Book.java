@@ -165,10 +165,9 @@ public final class Book {
 	 * @throws SQLException if a DB error occurs
 	 */
 	public static Set<Book> selectAll(final Connection conn) throws SQLException {
-		return Set.copyOf(
-			Query.of("SELECT * FROM book;")
-				.as(PARSER.list(), conn)
-		);
+		return Query
+			.of("SELECT * FROM book;")
+			.as(PARSER.unmodifiableSet(), conn);
 	}
 
 	/**

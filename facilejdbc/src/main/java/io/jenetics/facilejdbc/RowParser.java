@@ -23,12 +23,19 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Converts one row from the given {@link ResultSet} into a data object from
@@ -148,15 +155,66 @@ public interface RowParser<T> {
 	 * @return a new parser witch parses a the whole selection result
 	 */
 	default ResultSetParser<List<T>> list() {
+		return collection(ArrayList::new, Function.identity());
+	}
+
+	private <C1 extends Collection<T>, C2 extends Collection<T>>
+	ResultSetParser<C2>
+	collection(final Supplier<C1> supplier, final Function<C1, C2> mapper) {
+		requireNonNull(mapper);
+
 		return (rs, conn) -> {
 			final ResultSetRow row = ResultSetRow.of(rs);
-			final List<T> result = new ArrayList<>();
+			final C1 result = supplier.get();
 			while (rs.next()) {
 				result.add(parse(row, conn));
 			}
 
-			return result;
+			return mapper.apply(result);
 		};
+	}
+
+	/**
+	 * Return a new parser witch parses a the whole selection result.
+	 *
+	 * @return a new parser witch parses a the whole selection result, as an
+	 *         unmodifiable list
+	 */
+	default ResultSetParser<List<T>> unmodifiableList() {
+		return collection(
+			ArrayList::new,
+			list -> {
+				@SuppressWarnings("unchecked")
+				final List<T> unmodifiable = (List<T>)List.of(list.toArray());
+				return unmodifiable;
+			}
+		);
+	}
+
+	/**
+	 * Return a new parser witch parses a the whole selection result.
+	 *
+	 * @return a new parser witch parses a the whole selection result
+	 */
+	default ResultSetParser<Set<T>> set() {
+		return collection(HashSet::new, Function.identity());
+	}
+
+	/**
+	 * Return a new parser witch parses a the whole selection result.
+	 *
+	 * @return a new parser witch parses a the whole selection result, as an
+	 *         unmodifiable list
+	 */
+	default ResultSetParser<Set<T>> unmodifiableSet() {
+		return collection(
+			HashSet::new,
+			set -> {
+				@SuppressWarnings("unchecked")
+				final Set<T> unmodifiable = (Set<T>)Set.of(set.toArray());
+				return unmodifiable;
+			}
+		);
 	}
 
 
