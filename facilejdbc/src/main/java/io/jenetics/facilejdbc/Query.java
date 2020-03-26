@@ -214,7 +214,7 @@ public final class Query {
 	 * @throws NullPointerException if the given connection is {@code null}
 	 */
 	public boolean execute(final Connection conn) throws SQLException {
-		try (PreparedStatement stmt = prepare(conn)) {
+		try (var stmt = prepare(conn)) {
 			return stmt.execute();
 		}
 	}
@@ -236,7 +236,7 @@ public final class Query {
 	 * @throws NullPointerException if the given connection is {@code null}
 	 */
 	public int executeUpdate(final Connection conn) throws SQLException {
-		try (PreparedStatement stmt = prepare(conn)) {
+		try (var stmt = prepare(conn)) {
 			return stmt.executeUpdate();
 		}
 	}
@@ -264,7 +264,7 @@ public final class Query {
 	)
 		throws SQLException
 	{
-		try (PreparedStatement stmt = prepareInsert(conn)) {
+		try (var stmt = prepareInsert(conn)) {
 			stmt.executeUpdate();
 			return readId(keyParser, stmt, conn);
 		}
@@ -273,7 +273,7 @@ public final class Query {
 	private PreparedStatement prepareInsert(final Connection conn)
 		throws SQLException
 	{
-		final PreparedStatement stmt = conn.prepareStatement(
+		final var stmt = conn.prepareStatement(
 			sql.string(),
 			RETURN_GENERATED_KEYS
 		);
@@ -369,7 +369,7 @@ public final class Query {
 		throws SQLException
 	{
 		final IntStream.Builder counts = IntStream.builder();
-		try (PreparedStatement stmt = prepare(conn)) {
+		try (var stmt = prepare(conn)) {
 			for (var row : batch) {
 				row.apply(conn).set(paramNames(), stmt);
 				final int count = stmt.executeUpdate();
