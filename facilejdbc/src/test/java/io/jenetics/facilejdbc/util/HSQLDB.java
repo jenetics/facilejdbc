@@ -41,14 +41,14 @@ public final class HSQLDB {
 	execute(final SqlFunction<? super Connection, ? extends T> block)
 		throws SQLException
 	{
-		return Transaction.execute(conn(), block);
+		return Transactions.execute(conn(), block);
 	}
 
 	public static void
 	run(final SqlFunction0<? super Connection> block)
 		throws SQLException
 	{
-		Transaction.run(conn(), block);
+		Transactions.run(conn(), block);
 	}
 
 }

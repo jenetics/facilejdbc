@@ -34,8 +34,8 @@ import io.jenetics.facilejdbc.function.SqlFunction0;
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-public final class Transaction {
-	private Transaction() {
+public final class Transactions {
+	private Transactions() {
 	}
 
 	/**
