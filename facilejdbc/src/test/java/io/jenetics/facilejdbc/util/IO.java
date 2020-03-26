@@ -19,20 +19,36 @@
  */
 package io.jenetics.facilejdbc.util;
 
+import io.jenetics.facilejdbc.Query;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
 public class IO {
-	private IO() {
+	private IO() {}
+
+	private static final Pattern END_OF_STMT = Pattern.compile(
+		"\\s*;\\s*(?=([^']*'[^']*')*[^']*$)"
+	);
+
+	public static List<Query> read(final InputStream in) throws IOException {
+		final String script = toSQLText(in);
+
+		return END_OF_STMT.splitAsStream(script)
+			.map(Query::of)
+			.collect(Collectors.toList());
 	}
 
-	public static String toSQLText(final InputStream in) throws IOException {
+	private static String toSQLText(final InputStream in) throws IOException {
 		try(Reader r = new InputStreamReader(in);
 			BufferedReader br = new BufferedReader(r))
 		{
@@ -40,8 +56,10 @@ public class IO {
 
 			String line;
 			while ((line = br.readLine()) != null) {
-				if (!line.trim().startsWith("--")) {
-					builder.append(line);
+				final String trimmed = line.strip();
+
+				if (!trimmed.isEmpty() && !trimmed.startsWith("--")) {
+					builder.append(trimmed);
 					builder.append("\n");
 				}
 			}
