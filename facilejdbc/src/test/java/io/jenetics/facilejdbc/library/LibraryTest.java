@@ -20,11 +20,16 @@
 package io.jenetics.facilejdbc.library;
 
 import io.jenetics.facilejdbc.util.IO;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static io.jenetics.facilejdbc.util.HSQLDB.transaction;
 
@@ -32,6 +37,43 @@ import static io.jenetics.facilejdbc.util.HSQLDB.transaction;
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
 public class LibraryTest {
+
+	private static final List<Book> BOOKS = List.of(
+		new Book(
+			"Auf der Suche nach der verlorenen Zeit",
+			"978-3518061756",
+			5100,
+			List.of(
+				new Author(
+					"Marcel Proust",
+					LocalDate.parse("1922-11-08")
+				)
+			)
+		),
+		new Book(
+			"Database Design for Mere Mortals",
+			"978-0321884497",
+			654,
+			List.of(
+				new Author(
+					"Michael J. Hernandez",
+					null
+				)
+			)
+		),
+		new Book(
+			"Der alte Mann und das Meer",
+			"B00JM4RD2S",
+			142,
+			List.of(
+				new Author(
+					"Ernest Hemingway",
+					LocalDate.parse("1899-07-21")
+				)
+			)
+		)
+	);
+
 
 	@BeforeClass
 	public void setup() throws IOException, SQLException {
@@ -48,8 +90,60 @@ public class LibraryTest {
 	}
 
 	@Test
-	public void foo() {
+	public void insert() throws SQLException {
+		final long id = transaction(conn ->
+			Book.insert(BOOKS.get(0), conn)
+		);
 
+		Assert.assertTrue(id >= 0);
+	}
+
+	@Test(dependsOnMethods = "insert")
+	public void select() throws SQLException {
+		final List<Book> books = transaction(conn ->
+			Book.selectByTitle(BOOKS.get(0).title(), conn)
+		);
+
+		Assert.assertEquals(books.size(), 1);
+		Assert.assertEquals(books.get(0), BOOKS.get(0));
+	}
+
+	@Test(dependsOnMethods = "select")
+	public void insertAndSelectAuthor() throws SQLException {
+		final long id = transaction(conn ->
+			Author.insert(BOOKS.get(1).authors().get(0), conn)
+		);
+
+		Assert.assertTrue(id >= 0);
+
+		final Optional<Author> author = transaction(conn ->
+			Author.selectById(id, conn)
+		);
+		Assert.assertTrue(author.isPresent());
+
+		Assert.assertEquals(
+			author.orElseThrow(),
+			BOOKS.get(1).authors().get(0)
+		);
+	}
+
+	@Test(dependsOnMethods = "insertAndSelectAuthor")
+	public void insertRestOfBooks() throws SQLException {
+		transaction(conn -> {
+			for (int i = 1; i < BOOKS.size(); ++i) {
+				Book.insert(BOOKS.get(i), conn);
+			}
+			return null;
+		});
+	}
+
+	@Test(dependsOnMethods = "insertRestOfBooks")
+	public void selectAll() throws SQLException {
+		final Set<Book> books = transaction(Book::selectAll);
+		Assert.assertEquals(
+			books,
+			Set.copyOf(BOOKS)
+		);
 	}
 
 }

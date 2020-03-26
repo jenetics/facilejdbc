@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import io.jenetics.facilejdbc.Dctor;
 import io.jenetics.facilejdbc.Query;
@@ -72,13 +73,15 @@ public final class Author {
 	 * DB access
 	 * ************************************************************************/
 
-	public static final RowParser<Author> PARSER = (row, conn) -> new Author(
+	private static final RowParser<Author> PARSER = (row, conn) -> new Author(
 		row.getString("name"),
-		row.getDate("birth_day").toLocalDate()
+		row.getDate("birth_day") != null
+			? row.getDate("birth_day").toLocalDate()
+			: null
 	);
 
-	public static final Dctor<Author> DCTOR = Dctor.of(
-		field("forename", Author::name),
+	private static final Dctor<Author> DCTOR = Dctor.of(
+		field("name", Author::name),
 		field("birth_day", Author::birthDay)
 	);
 
@@ -102,11 +105,18 @@ public final class Author {
 		"WHERE book_id = :book_id"
 	);
 
-	public static Long insert(final Author author, final Connection conn)
+	/**
+	 * Inserts the given author into the DB. Or just return the id of the author
+	 * already inserted into the DB.
+	 *
+	 * @param author the book to insert
+	 * @param conn the DB connection
+	 * @return the primary key of the author
+	 * @throws SQLException if a DB error occurs
+	 */
+	public static long insert(final Author author, final Connection conn)
 		throws SQLException
 	{
-		if (author == null) return null;
-
 		Long authorId = SELECT_ID_BY_NAME
 			.on(value("name", author.name()))
 			.as(RowParser.int64("id").singleNull(), conn);
@@ -121,14 +131,30 @@ public final class Author {
 		return authorId;
 	}
 
-	public static Author selectById(final long id, final Connection conn)
+	/**
+	 * Select the author by the DB id.
+	 *
+	 * @param id the primary key
+	 * @param conn the DB connection
+	 * @return the selected author
+	 * @throws SQLException if a DB error occurs
+	 */
+	public static Optional<Author> selectById(final long id, final Connection conn)
 		throws SQLException
 	{
 		return SELECT_BY_ID
 			.on(value("id", id))
-			.as(PARSER.singleNull(), conn);
+			.as(PARSER.singleOpt(), conn);
 	}
 
+	/**
+	 * Selects the authors from a given book ID.
+	 *
+	 * @param id the book id
+	 * @param conn the DB connection
+	 * @return the list of auhtors for the given book ID
+	 * @throws SQLException if a DB error occurs
+	 */
 	public static List<Author> selectByBookId(final long id, final Connection conn)
 		throws SQLException
 	{

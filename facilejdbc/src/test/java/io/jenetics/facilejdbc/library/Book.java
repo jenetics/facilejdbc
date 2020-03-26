@@ -28,6 +28,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import io.jenetics.facilejdbc.Batch;
 import io.jenetics.facilejdbc.Dctor;
@@ -118,11 +119,17 @@ public final class Book {
 		"SELECT id, title, isbn, pages FROM book WHERE LCASE(title) like :title"
 	);
 
-	public static Long insert(final Book book, final Connection conn)
+	/**
+	 * Inserts the given book into the DB.
+	 *
+	 * @param book the book to insert
+	 * @param conn the DB connection
+	 * @return the primary key of the newly inserted book
+	 * @throws SQLException if a DB error occurs
+	 */
+	static long insert(final Book book, final Connection conn)
 		throws SQLException
 	{
-		if (book == null) return null;
-
 		final Long id = INSERT
 			.on(book, DCTOR)
 			.executeInsert(conn)
@@ -150,11 +157,34 @@ public final class Book {
 		INSERT_BOOK_AUTHOR.executeUpdate(batch, conn);
 	}
 
-	public static List<Book> selectByTitle(final String title, final Connection conn)
+	/**
+	 * Selects all books from the DB.
+	 *
+	 * @param conn the DB connection
+	 * @return all books in the DB
+	 * @throws SQLException if a DB error occurs
+	 */
+	public static Set<Book> selectAll(final Connection conn) throws SQLException {
+		return Set.copyOf(
+			Query.of("SELECT * FROM book;")
+				.as(PARSER.list(), conn)
+		);
+	}
+
+	/**
+	 * Selects books by its title.
+	 *
+	 * @param title the title pattern to select
+	 * @param conn the DB connection
+	 * @return the found books
+	 * @throws SQLException if a DB error occurs
+	 */
+	public static List<Book>
+	selectByTitle(final String title, final Connection conn)
 		throws SQLException
 	{
 		return SELECT_BY_TITLE
-			.on(value("title", title.toLowerCase()))
+			.on(value("title", "%" + title.toLowerCase() + "%"))
 			.as(PARSER.list(), conn);
 	}
 
