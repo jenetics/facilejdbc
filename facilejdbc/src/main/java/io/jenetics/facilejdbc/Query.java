@@ -141,12 +141,12 @@ public final class Query {
 	 * Return a new query object with the given query parameter values.
 	 *
 	 * @param record the query parameters
-	 * @param dctor the deconstructor used to <em>split</em> the parameters
+	 * @param dctor the de-constructor used to <em>split</em> the parameters
 	 * @param <T> the parameter record type
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
-	public <T> Query on(final T record, final Dctor<T> dctor) {
+	public <T> Query on(final T record, final Dctor<? super T> dctor) {
 		requireNonNull(record);
 		requireNonNull(dctor);
 
@@ -179,7 +179,10 @@ public final class Query {
 	 * @throws NullPointerException if the given result parser or connection is
 	 *         {@code null}
 	 */
-	public <T> T as(final ResultSetParser<T> parser, final Connection conn)
+	public <T> T as(
+		final ResultSetParser<? extends T> parser,
+		final Connection conn
+	)
 		throws SQLException
 	{
 		try (var stmt = prepare(conn); var rs = stmt.executeQuery()) {
@@ -256,7 +259,7 @@ public final class Query {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
 	public <K> Optional<K> executeInsert(
-		final RowParser<K> keyParser,
+		final RowParser<? extends K> keyParser,
 		final Connection conn
 	)
 		throws SQLException
@@ -280,14 +283,16 @@ public final class Query {
 	}
 
 	private static <K> Optional<K> readId(
-		final RowParser<K> keyParser,
+		final RowParser<? extends K> keyParser,
 		final Statement stmt,
 		final Connection conn
 	)
 		throws SQLException
 	{
 		try (ResultSet keys = stmt.getGeneratedKeys()) {
-			return keyParser.singleOpt().parse(keys, conn);
+			@SuppressWarnings("unchecked")
+			final var key = (Optional<K>)keyParser.singleOpt().parse(keys, conn);
+			return key;
 		}
 	}
 

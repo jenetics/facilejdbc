@@ -103,7 +103,7 @@ public interface Dctor<T> {
 			requireNonNull(name);
 			requireNonNull(value);
 
-			return new Field<T>() {
+			return new Field<>() {
 				@Override
 				public String name() {
 					return name;
@@ -145,8 +145,8 @@ public interface Dctor<T> {
 	 * @param <T> the type of the record to be deconstructed
 	 * @return a new de-constructor from the given field definitions
 	 */
-	static <T> Dctor<T> of(final List<? extends Field<T>> fields) {
-		final Map<String, Field<T>> map = fields.isEmpty()
+	static <T> Dctor<T> of(final List<? extends Field<? super T>> fields) {
+		final Map<String, Field<? super T>> map = fields.isEmpty()
 			? Map.of()
 			: fields.stream().collect(
 				groupingBy(Field::name, reducing(null, (a, b) -> b)));
@@ -156,7 +156,7 @@ public interface Dctor<T> {
 				int index = 0;
 				for (String name : params) {
 					++index;
-					final Field<T> field = map.get(name);
+					final Field<? super T> field = map.get(name);
 					if (field != null) {
 						field.value(record, conn).set(index, stmt);
 					}
@@ -175,8 +175,9 @@ public interface Dctor<T> {
 	 * @return a new de-constructor from the given field definitions
 	 */
 	@SafeVarargs
-	static <T> Dctor<T> of(final Field<T>... fields) {
-		return Dctor.of(asList(fields));
+	static <T> Dctor<T> of(final Field<? super T>... fields) {
+		final List<? extends Field<? super T>> list = asList(fields);
+		return Dctor.of(list);
 	}
 
 	/**
