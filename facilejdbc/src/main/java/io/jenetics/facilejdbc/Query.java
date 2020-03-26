@@ -151,7 +151,7 @@ public final class Query {
 		requireNonNull(dctor);
 
 		final ParamValues values = (params, stmt) -> dctor
-			.deconstruct(record, stmt.getConnection())
+			.unapply(record, stmt.getConnection())
 			.set(params, stmt);
 
 		return new Query(sql, this.values.andThen(values));

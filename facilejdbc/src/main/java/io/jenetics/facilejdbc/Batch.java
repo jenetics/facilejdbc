@@ -73,7 +73,7 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 			@Override
 			public Function<Connection, ParamValues> next() {
 				final T record = it.next();
-				return conn -> dctor.deconstruct(record, conn);
+				return conn -> dctor.unapply(record, conn);
 			}
 		};
 	}

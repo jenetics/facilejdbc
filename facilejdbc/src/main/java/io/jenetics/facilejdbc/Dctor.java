@@ -129,7 +129,7 @@ public interface Dctor<T> {
 	 * @param conn the DB connection used for record deconstruction, if needed
 	 * @return a new row preparer
 	 */
-	ParamValues deconstruct(final T record, final Connection conn);
+	ParamValues unapply(final T record, final Connection conn);
 
 
 	/* *************************************************************************

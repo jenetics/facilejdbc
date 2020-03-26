@@ -69,7 +69,7 @@ public class DctorTest {
 			field("pages", Book::pages)
 		);
 
-		final ParamValues values = dctor.deconstruct(
+		final ParamValues values = dctor.unapply(
 			new Book("title", "isbn", 123),
 			null
 		);
