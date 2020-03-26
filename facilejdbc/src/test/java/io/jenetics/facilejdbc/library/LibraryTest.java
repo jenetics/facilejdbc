@@ -20,7 +20,7 @@
 package io.jenetics.facilejdbc.library;
 
 import io.jenetics.facilejdbc.util.HSQLDB;
-import io.jenetics.facilejdbc.util.IO;
+import io.jenetics.facilejdbc.util.Queries;
 import io.jenetics.facilejdbc.util.Transactional;
 
 import org.testng.Assert;
@@ -80,7 +80,7 @@ public class LibraryTest {
 
 	@BeforeClass
 	public void setup() throws IOException, SQLException {
-		final var queries = IO.readQueries(
+		final var queries = Queries.read(
 			getClass().getResourceAsStream("/library-hsqldb.sql")
 		);
 
