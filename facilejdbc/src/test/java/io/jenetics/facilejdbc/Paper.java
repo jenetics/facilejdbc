@@ -19,37 +19,35 @@
  */
 package io.jenetics.facilejdbc;
 
-import static io.jenetics.facilejdbc.Dctor.field;
-
-import java.sql.SQLException;
-import java.util.List;
-
-import org.testng.Assert;
-import org.testng.annotations.Test;
+import static java.util.Objects.requireNonNull;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-public class DctorTest {
+final class Paper {
+	private final String title;
+	private final String isbn;
+	private final Integer pages;
 
-	@Test
-	public void deconstruct() throws SQLException {
-		final Dctor<Paper> dctor = Dctor.of(
-			field("title", Paper::title),
-			field("isbn", Paper::isbn),
-			field("pages", Paper::pages)
-		);
-
-		final ParamValues values = dctor.unapply(
-			new Paper("title", "isbn", 123),
-			null
-		);
-
-		final var stmt = new MockPreparedStatement();
-		values.set(List.of("title", "isbn", "pages"), stmt);
-		Assert.assertEquals(stmt.get(1), "title");
-		Assert.assertEquals(stmt.get(2), "isbn");
-		Assert.assertEquals(stmt.get(3), 123);
+	public Paper(
+		final String title,
+		final String isbn,
+		final Integer pages
+	) {
+		this.title = requireNonNull(title);
+		this.isbn = isbn;
+		this.pages = pages;
 	}
 
+	public String title() {
+		return title;
+	}
+
+	public String isbn() {
+		return isbn;
+	}
+
+	public Integer pages() {
+		return pages;
+	}
 }
