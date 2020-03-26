@@ -31,7 +31,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static io.jenetics.facilejdbc.util.HSQLDB.transaction;
+import static io.jenetics.facilejdbc.util.HSQLDB.execute;
+import static io.jenetics.facilejdbc.util.HSQLDB.run;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
@@ -77,11 +78,11 @@ public class LibraryTest {
 
 	@BeforeClass
 	public void setup() throws IOException, SQLException {
-		final var queries = IO.read(
+		final var queries = IO.readQueries(
 			getClass().getResourceAsStream("/library-hsqldb.sql")
 		);
 
-		transaction(conn -> {
+		execute(conn -> {
 			for (var query : queries) {
 				query.execute(conn);
 			}
@@ -91,7 +92,7 @@ public class LibraryTest {
 
 	@Test
 	public void insert() throws SQLException {
-		final long id = transaction(conn ->
+		final long id = execute(conn ->
 			Book.insert(BOOKS.get(0), conn)
 		);
 
@@ -100,7 +101,7 @@ public class LibraryTest {
 
 	@Test(dependsOnMethods = "insert")
 	public void select() throws SQLException {
-		final List<Book> books = transaction(conn ->
+		final List<Book> books = execute(conn ->
 			Book.selectByTitle(BOOKS.get(0).title(), conn)
 		);
 
@@ -110,13 +111,13 @@ public class LibraryTest {
 
 	@Test(dependsOnMethods = "select")
 	public void insertAndSelectAuthor() throws SQLException {
-		final long id = transaction(conn ->
+		final long id = execute(conn ->
 			Author.insert(BOOKS.get(1).authors().get(0), conn)
 		);
 
 		Assert.assertTrue(id >= 0);
 
-		final Optional<Author> author = transaction(conn ->
+		final Optional<Author> author = execute(conn ->
 			Author.selectById(id, conn)
 		);
 		Assert.assertTrue(author.isPresent());
@@ -129,17 +130,16 @@ public class LibraryTest {
 
 	@Test(dependsOnMethods = "insertAndSelectAuthor")
 	public void insertRestOfBooks() throws SQLException {
-		transaction(conn -> {
+		run(conn -> {
 			for (int i = 1; i < BOOKS.size(); ++i) {
 				Book.insert(BOOKS.get(i), conn);
 			}
-			return null;
 		});
 	}
 
 	@Test(dependsOnMethods = "insertRestOfBooks")
 	public void selectAll() throws SQLException {
-		final Set<Book> books = transaction(Book::selectAll);
+		final Set<Book> books = execute(Book::selectAll);
 		Assert.assertEquals(
 			books,
 			Set.copyOf(BOOKS)

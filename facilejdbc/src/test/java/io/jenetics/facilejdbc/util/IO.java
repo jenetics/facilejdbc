@@ -40,7 +40,9 @@ public class IO {
 		"\\s*;\\s*(?=([^']*'[^']*')*[^']*$)"
 	);
 
-	public static List<Query> read(final InputStream in) throws IOException {
+	public static List<Query> readQueries(final InputStream in)
+		throws IOException
+	{
 		final String script = toSQLText(in);
 
 		return END_OF_STMT.splitAsStream(script)

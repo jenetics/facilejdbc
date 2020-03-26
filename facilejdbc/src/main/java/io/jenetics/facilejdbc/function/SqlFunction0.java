@@ -17,38 +17,32 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc.util;
+package io.jenetics.facilejdbc.function;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import io.jenetics.facilejdbc.function.SqlFunction;
-import io.jenetics.facilejdbc.function.SqlFunction0;
-
 /**
+ * Represents a function that accepts one argument and produces a result. In
+ * contrast to the Java {@link java.util.function.Consumer} interface, a
+ * SQL-function is allowed to throw a {@link SQLException}.
+ *
+ * @see java.util.function.Function
+ *
+ * @param <T> the argument type
+ *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @version 1.0
+ * @since 1.0
  */
-public final class HSQLDB {
-	private HSQLDB() {
-	}
+@FunctionalInterface
+public interface SqlFunction0<T> {
 
-	private static Connection conn() throws SQLException {
-		return DriverManager.getConnection("jdbc:hsqldb:mem:testdb", "SA", "");
-	}
-
-	public static <T> T
-	execute(final SqlFunction<? super Connection, ? extends T> block)
-		throws SQLException
-	{
-		return Transaction.execute(conn(), block);
-	}
-
-	public static void
-	run(final SqlFunction0<? super Connection> block)
-		throws SQLException
-	{
-		Transaction.run(conn(), block);
-	}
+	/**
+	 * Applies this function to the given argument.
+	 *
+	 * @param t the function argument
+	 * @throws SQLException if the execution of the SQL-function fails
+	 */
+	void apply(final T t) throws SQLException;
 
 }

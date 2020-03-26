@@ -19,54 +19,70 @@
  */
 package io.jenetics.facilejdbc.util;
 
+import static java.util.Objects.requireNonNull;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
+import io.jenetics.facilejdbc.function.SqlFunction0;
 
 /**
  * This class contains some helper functions for DB transaction handling.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-public final class Db {
-	private Db() {
+public final class Transaction {
+	private Transaction() {
 	}
 
 	/**
 	 * Open a new <i>transactional</i> context with the given connection. The
 	 * caller is responsible for closing the connection.
 	 *
-	 * @param connection the connection used in this transaction
+	 * @param conn the connection used in this transaction
 	 * @param block the code block to execute with the given connection
 	 * @param <T> the result type
 	 * @return the result of the connection block
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 * @throws SQLException if the transaction fails
 	 */
-	public static <T> T transaction(
-		final Connection connection,
+	public static <T> T execute(
+		final Connection conn,
 		final SqlFunction<? super Connection, ? extends T> block
 	)
 		throws SQLException
 	{
+		requireNonNull(conn);
+		requireNonNull(block);
+
 		try {
-			if (connection.getAutoCommit()) {
-				connection.setAutoCommit(false);
+			if (conn.getAutoCommit()) {
+				conn.setAutoCommit(false);
 			}
-			var result = block.apply(connection);
-			connection.commit();
+			var result = block.apply(conn);
+			conn.commit();
 			return result;
 		} catch (Throwable e) {
-			try {
-				connection.rollback();
-			} catch (Exception suppressed) {
-				e.addSuppressed(suppressed);
+			if (nonFatal(e)) {
+				try {
+					conn.rollback();
+				} catch (Exception suppressed) {
+					e.addSuppressed(suppressed);
+				}
 			}
 			throw e;
 		}
+	}
+
+	private static boolean nonFatal(final Throwable throwable) {
+		return
+			!(throwable instanceof VirtualMachineError) &&
+			!(throwable instanceof ThreadDeath) &&
+			!(throwable instanceof InterruptedException) &&
+			!(throwable instanceof LinkageError);
 	}
 
 	/**
@@ -81,14 +97,53 @@ public final class Db {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 * @throws SQLException if the transaction fails
 	 */
-	public static <T> T transaction(
+	public static <T> T execute(
 		final DataSource ds,
 		final SqlFunction<? super Connection, ? extends T> block
 	)
 		throws SQLException
 	{
 		try (var conn = ds.getConnection()) {
-			return transaction(conn, block);
+			return execute(conn, block);
+		}
+	}
+
+	/**
+	 * Open a new <i>transactional</i> context with the given connection. The
+	 * caller is responsible for closing the connection.
+	 *
+	 * @param conn the connection used in this transaction
+	 * @param block the code block to execute with the given connection
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 * @throws SQLException if the transaction fails
+	 */
+	public static void run(
+		final Connection conn,
+		final SqlFunction0<? super Connection> block
+	)
+		throws SQLException
+	{
+		execute(conn, c -> { block.apply(c); return null; });
+	}
+
+	/**
+	 * Open a new <i>transactional</i> context with the given connection. The
+	 * caller is responsible for closing the connection.
+	 *
+	 * @param ds the data source where the connection for the transaction is
+	 *           created.
+	 * @param block the code block to execute with the given connection
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 * @throws SQLException if the transaction fails
+	 */
+	public static void run(
+		final DataSource ds,
+		final SqlFunction0<? super Connection> block
+	)
+		throws SQLException
+	{
+		try (var conn = ds.getConnection()) {
+			run(conn, block);
 		}
 	}
 
