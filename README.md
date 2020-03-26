@@ -38,9 +38,9 @@ JDBC is the basic API for accessing relational databases. Being basic makes it q
 > * No connection pooling.
 
 
-**Libraries which serve a similar purpose**
-* [jOOQ](https://www.jooq.org/)
-* [Jdbi](http://jdbi.org/)
+**Other Java DB libraries**
+* [jOOQ](https://www.jooq.org/): Excellent library for accessing databases in a type safe way. Because of the different scope, it is more than a thin wrapper around the JDBC API. 
+* [Jdbi](http://jdbi.org/): Similar scope, but with a different approach. 
 
 ## Examples
 
@@ -48,7 +48,7 @@ The following example show how to use _FacileJDBC_ for different use cases. For 
 
 ### Executing queries
 
-SQL queries are defined via the `Query` class. Since the `Query` class is immutable, it is safe to use it in a multi-threaded environment or define it as _static_ class member. For executing query, all what it needs is a JDBC `Connection`.
+SQL queries are defined via the `Query` class. Since the `Query` class is immutable, it is safe to use it in a multi-threaded environment or define it as _static_ class member. The `Query` class is the main entry point of the _FacileJDBC_ library. For executing a query, all what it needs is a JDBC `Connection`.
 
 ```java
 final Query query = Query.of("SELECT 1");
