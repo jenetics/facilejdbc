@@ -78,7 +78,7 @@ public class LibraryTest {
 	@BeforeClass
 	public void setup() throws IOException, SQLException {
 		final var queries = IO.read(
-			getClass().getResourceAsStream("/library.sql")
+			getClass().getResourceAsStream("/library-hsqldb.sql")
 		);
 
 		transaction(conn -> {
