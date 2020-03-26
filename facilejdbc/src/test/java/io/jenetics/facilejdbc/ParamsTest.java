@@ -20,7 +20,9 @@
 package io.jenetics.facilejdbc;
 
 import java.sql.SQLException;
+import java.util.List;
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
@@ -30,7 +32,20 @@ public class ParamsTest {
 
 	@Test
 	public void set() throws SQLException {
-		//final Params params =
+		final var stmt = new MockPreparedStatement();
+
+		final Params params = new Params(List.of(
+			Param.value("name_1", "value_1"),
+			Param.value("name_2", "value_2"),
+			Param.value("name_3", "value_3"),
+			Param.value("name_4", "value_4"),
+			Param.value("name_5", "value_5")
+		));
+
+		params.set(List.of("name_2", "name_5", "name_1"), stmt);
+		Assert.assertEquals(stmt.get(1), "value_2");
+		Assert.assertEquals(stmt.get(2), "value_5");
+		Assert.assertEquals(stmt.get(3), "value_1");
 	}
 
 }

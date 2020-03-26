@@ -27,7 +27,7 @@ import java.util.Map;
 @SuppressWarnings("deprecation")
 public final class MockPreparedStatement implements PreparedStatement {
 
-	private final Map<Integer, Object> data = new HashMap<>();
+	final Map<Integer, Object> data = new HashMap<>();
 
 	Object get(int index) {
 		return data.get(index);
