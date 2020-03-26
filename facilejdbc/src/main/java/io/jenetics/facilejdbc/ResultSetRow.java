@@ -48,219 +48,219 @@ import java.util.Map;
  */
 final class ResultSetRow implements Row {
 
-	private final ResultSet _rs;
+	private final ResultSet rs;
 
 	private ResultSetRow(final ResultSet result) {
-		_rs = requireNonNull(result);
+		rs = requireNonNull(result);
 	}
 
 	@Override
 	public boolean wasNull() throws SQLException {
-		return _rs.wasNull();
+		return rs.wasNull();
 	}
 
 	@Override
 	public String getString(final int columnIndex) throws SQLException {
-		return _rs.getString(columnIndex);
+		return rs.getString(columnIndex);
 	}
 
 	@Override
 	public boolean getBoolean(final int columnIndex) throws SQLException {
-		return _rs.getBoolean(columnIndex);
+		return rs.getBoolean(columnIndex);
 	}
 
 	@Override
 	public byte getByte(final int columnIndex) throws SQLException {
-		return _rs.getByte(columnIndex);
+		return rs.getByte(columnIndex);
 	}
 
 	@Override
 	public short getShort(final int columnIndex) throws SQLException {
-		return _rs.getShort(columnIndex);
+		return rs.getShort(columnIndex);
 	}
 
 	@Override
 	public int getInt(final int columnIndex) throws SQLException {
-		return _rs.getInt(columnIndex);
+		return rs.getInt(columnIndex);
 	}
 
 	@Override
 	public long getLong(final int columnIndex) throws SQLException {
-		return _rs.getLong(columnIndex);
+		return rs.getLong(columnIndex);
 	}
 
 	@Override
 	public float getFloat(final int columnIndex) throws SQLException {
-		return _rs.getFloat(columnIndex);
+		return rs.getFloat(columnIndex);
 	}
 
 	@Override
 	public double getDouble(final int columnIndex) throws SQLException {
-		return _rs.getDouble(columnIndex);
+		return rs.getDouble(columnIndex);
 	}
 
 	@Override
 	public byte[] getBytes(final int columnIndex) throws SQLException {
-		return _rs.getBytes(columnIndex);
+		return rs.getBytes(columnIndex);
 	}
 
 	@Override
 	public Date getDate(final int columnIndex) throws SQLException {
-		return _rs.getDate(columnIndex);
+		return rs.getDate(columnIndex);
 	}
 
 	@Override
 	public Time getTime(final int columnIndex) throws SQLException {
-		return _rs.getTime(columnIndex);
+		return rs.getTime(columnIndex);
 	}
 
 	@Override
 	public Timestamp getTimestamp(final int columnIndex) throws SQLException {
-		return _rs.getTimestamp(columnIndex);
+		return rs.getTimestamp(columnIndex);
 	}
 
 	@Override
 	public InputStream getAsciiStream(final int columnIndex)
 		throws SQLException
 	{
-		return _rs.getAsciiStream(columnIndex);
+		return rs.getAsciiStream(columnIndex);
 	}
 
 	@Override
 	public InputStream getBinaryStream(final int columnIndex)
 		throws SQLException
 	{
-		return _rs.getBinaryStream(columnIndex);
+		return rs.getBinaryStream(columnIndex);
 	}
 
 	@Override
 	public String getString(final String columnLabel) throws SQLException {
-		return _rs.getString(columnLabel);
+		return rs.getString(columnLabel);
 	}
 
 	@Override
 	public boolean getBoolean(final String columnLabel) throws SQLException {
-		return _rs.getBoolean(columnLabel);
+		return rs.getBoolean(columnLabel);
 	}
 
 	@Override
 	public byte getByte(final String columnLabel) throws SQLException {
-		return _rs.getByte(columnLabel);
+		return rs.getByte(columnLabel);
 	}
 
 	@Override
 	public short getShort(final String columnLabel) throws SQLException {
-		return _rs.getShort(columnLabel);
+		return rs.getShort(columnLabel);
 	}
 
 	@Override
 	public int getInt(final String columnLabel) throws SQLException {
-		return _rs.getInt(columnLabel);
+		return rs.getInt(columnLabel);
 	}
 
 	@Override
 	public long getLong(final String columnLabel) throws SQLException {
-		return _rs.getLong(columnLabel);
+		return rs.getLong(columnLabel);
 	}
 
 	@Override
 	public float getFloat(final String columnLabel) throws SQLException {
-		return _rs.getFloat(columnLabel);
+		return rs.getFloat(columnLabel);
 	}
 
 	@Override
 	public double getDouble(final String columnLabel) throws SQLException {
-		return _rs.getDouble(columnLabel);
+		return rs.getDouble(columnLabel);
 	}
 
 	@Override
 	public byte[] getBytes(final String columnLabel) throws SQLException {
-		return _rs.getBytes(columnLabel);
+		return rs.getBytes(columnLabel);
 	}
 
 	@Override
 	public Date getDate(final String columnLabel) throws SQLException {
-		return _rs.getDate(columnLabel);
+		return rs.getDate(columnLabel);
 	}
 
 	@Override
 	public Time getTime(final String columnLabel) throws SQLException {
-		return _rs.getTime(columnLabel);
+		return rs.getTime(columnLabel);
 	}
 
 	@Override
 	public Timestamp getTimestamp(final String columnLabel) throws SQLException {
-		return _rs.getTimestamp(columnLabel);
+		return rs.getTimestamp(columnLabel);
 	}
 
 	@Override
 	public InputStream getAsciiStream(final String columnLabel)
 		throws SQLException
 	{
-		return _rs.getAsciiStream(columnLabel);
+		return rs.getAsciiStream(columnLabel);
 	}
 
 	@Override
 	public InputStream getBinaryStream(final String columnLabel)
 		throws SQLException
 	{
-		return _rs.getBinaryStream(columnLabel);
+		return rs.getBinaryStream(columnLabel);
 	}
 
 	@Override
 	public ResultSetMetaData getMetaData() throws SQLException {
-		return _rs.getMetaData();
+		return rs.getMetaData();
 	}
 
 	@Override
 	public Object getObject(final int columnIndex) throws SQLException {
-		return _rs.getObject(columnIndex);
+		return rs.getObject(columnIndex);
 	}
 
 	@Override
 	public Object getObject(final String columnLabel) throws SQLException {
-		return _rs.getObject(columnLabel);
+		return rs.getObject(columnLabel);
 	}
 
 	@Override
 	public int findColumn(final String columnLabel) throws SQLException {
-		return _rs.findColumn(columnLabel);
+		return rs.findColumn(columnLabel);
 	}
 
 	@Override
 	public Reader getCharacterStream(final int columnIndex)
 		throws SQLException
 	{
-		return _rs.getCharacterStream(columnIndex);
+		return rs.getCharacterStream(columnIndex);
 	}
 
 	@Override
 	public Reader getCharacterStream(final String columnLabel)
 		throws SQLException
 	{
-		return _rs.getCharacterStream(columnLabel);
+		return rs.getCharacterStream(columnLabel);
 	}
 
 	@Override
 	public BigDecimal getBigDecimal(final int columnIndex) throws SQLException {
-		return _rs.getBigDecimal(columnIndex);
+		return rs.getBigDecimal(columnIndex);
 	}
 
 	@Override
 	public BigDecimal getBigDecimal(final String columnLabel)
 		throws SQLException
 	{
-		return _rs.getBigDecimal(columnLabel);
+		return rs.getBigDecimal(columnLabel);
 	}
 
 	@Override
 	public int getRow() throws SQLException {
-		return _rs.getRow();
+		return rs.getRow();
 	}
 
 	@Override
 	public int getType() throws SQLException {
-		return _rs.getType();
+		return rs.getType();
 	}
 
 	@Override
@@ -270,27 +270,27 @@ final class ResultSetRow implements Row {
 	)
 		throws SQLException
 	{
-		return _rs.getObject(columnIndex, map);
+		return rs.getObject(columnIndex, map);
 	}
 
 	@Override
 	public Ref getRef(final int columnIndex) throws SQLException {
-		return _rs.getRef(columnIndex);
+		return rs.getRef(columnIndex);
 	}
 
 	@Override
 	public Blob getBlob(final int columnIndex) throws SQLException {
-		return _rs.getBlob(columnIndex);
+		return rs.getBlob(columnIndex);
 	}
 
 	@Override
 	public Clob getClob(final int columnIndex) throws SQLException {
-		return _rs.getClob(columnIndex);
+		return rs.getClob(columnIndex);
 	}
 
 	@Override
 	public Array getArray(final int columnIndex) throws SQLException {
-		return _rs.getArray(columnIndex);
+		return rs.getArray(columnIndex);
 	}
 
 	@Override
@@ -300,157 +300,157 @@ final class ResultSetRow implements Row {
 	)
 		throws SQLException
 	{
-		return _rs.getObject(columnLabel, map);
+		return rs.getObject(columnLabel, map);
 	}
 
 	@Override
 	public Ref getRef(final String columnLabel) throws SQLException {
-		return _rs.getRef(columnLabel);
+		return rs.getRef(columnLabel);
 	}
 
 	@Override
 	public Blob getBlob(final String columnLabel) throws SQLException {
-		return _rs.getBlob(columnLabel);
+		return rs.getBlob(columnLabel);
 	}
 
 	@Override
 	public Clob getClob(final String columnLabel) throws SQLException {
-		return _rs.getClob(columnLabel);
+		return rs.getClob(columnLabel);
 	}
 
 	@Override
 	public Array getArray(final String columnLabel) throws SQLException {
-		return _rs.getArray(columnLabel);
+		return rs.getArray(columnLabel);
 	}
 
 	@Override
 	public Date getDate(final int columnIndex, final Calendar cal)
 		throws SQLException
 	{
-		return _rs.getDate(columnIndex, cal);
+		return rs.getDate(columnIndex, cal);
 	}
 
 	@Override
 	public Date getDate(final String columnLabel, final Calendar cal)
 		throws SQLException
 	{
-		return _rs.getDate(columnLabel, cal);
+		return rs.getDate(columnLabel, cal);
 	}
 
 	@Override
 	public Time getTime(final int columnIndex, final Calendar cal)
 		throws SQLException
 	{
-		return _rs.getTime(columnIndex, cal);
+		return rs.getTime(columnIndex, cal);
 	}
 
 	@Override
 	public Time getTime(final String columnLabel, final Calendar cal)
 		throws SQLException
 	{
-		return _rs.getTime(columnLabel, cal);
+		return rs.getTime(columnLabel, cal);
 	}
 
 	@Override
 	public Timestamp getTimestamp(final int columnIndex, final Calendar cal)
 		throws SQLException
 	{
-		return _rs.getTimestamp(columnIndex, cal);
+		return rs.getTimestamp(columnIndex, cal);
 	}
 
 	@Override
 	public Timestamp getTimestamp(final String columnLabel, final Calendar cal)
 		throws SQLException
 	{
-		return _rs.getTimestamp(columnLabel, cal);
+		return rs.getTimestamp(columnLabel, cal);
 	}
 
 	@Override
 	public URL getURL(final int columnIndex) throws SQLException {
-		return _rs.getURL(columnIndex);
+		return rs.getURL(columnIndex);
 	}
 
 	@Override
 	public URL getURL(final String columnLabel) throws SQLException {
-		return _rs.getURL(columnLabel);
+		return rs.getURL(columnLabel);
 	}
 
 	@Override
 	public RowId getRowId(final int columnIndex) throws SQLException {
-		return _rs.getRowId(columnIndex);
+		return rs.getRowId(columnIndex);
 	}
 
 	@Override
 	public RowId getRowId(final String columnLabel) throws SQLException {
-		return _rs.getRowId(columnLabel);
+		return rs.getRowId(columnLabel);
 	}
 
 	@Override
 	public NClob getNClob(final int columnIndex) throws SQLException {
-		return _rs.getNClob(columnIndex);
+		return rs.getNClob(columnIndex);
 	}
 
 	@Override
 	public NClob getNClob(final String columnLabel) throws SQLException {
-		return _rs.getNClob(columnLabel);
+		return rs.getNClob(columnLabel);
 	}
 
 	@Override
 	public SQLXML getSQLXML(final int columnIndex) throws SQLException {
-		return _rs.getSQLXML(columnIndex);
+		return rs.getSQLXML(columnIndex);
 	}
 
 	@Override
 	public SQLXML getSQLXML(final String columnLabel) throws SQLException {
-		return _rs.getSQLXML(columnLabel);
+		return rs.getSQLXML(columnLabel);
 	}
 
 	@Override
 	public String getNString(final int columnIndex) throws SQLException {
-		return _rs.getNString(columnIndex);
+		return rs.getNString(columnIndex);
 	}
 
 	@Override
 	public String getNString(final String columnLabel) throws SQLException {
-		return _rs.getNString(columnLabel);
+		return rs.getNString(columnLabel);
 	}
 
 	@Override
 	public Reader getNCharacterStream(final int columnIndex)
 		throws SQLException
 	{
-		return _rs.getNCharacterStream(columnIndex);
+		return rs.getNCharacterStream(columnIndex);
 	}
 
 	@Override
 	public Reader getNCharacterStream(final String columnLabel)
 		throws SQLException
 	{
-		return _rs.getNCharacterStream(columnLabel);
+		return rs.getNCharacterStream(columnLabel);
 	}
 
 	@Override
 	public <T> T getObject(final int columnIndex, final Class<T> type)
 		throws SQLException
 	{
-		return _rs.getObject(columnIndex, type);
+		return rs.getObject(columnIndex, type);
 	}
 
 	@Override
 	public <T> T getObject(final String columnLabel, final Class<T> type)
 		throws SQLException
 	{
-		return _rs.getObject(columnLabel, type);
+		return rs.getObject(columnLabel, type);
 	}
 
 	@Override
 	public <T> T unwrap(final Class<T> iface) throws SQLException {
-		return _rs.unwrap(iface);
+		return rs.unwrap(iface);
 	}
 
 	@Override
 	public boolean isWrapperFor(final Class<?> iface) throws SQLException {
-		return _rs.isWrapperFor(iface);
+		return rs.isWrapperFor(iface);
 	}
 
 	/* *************************************************************************
