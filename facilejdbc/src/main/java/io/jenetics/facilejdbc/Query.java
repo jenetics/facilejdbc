@@ -350,7 +350,7 @@ public final class Query implements Serializable {
 	public void execute(final Batch batch, final Connection conn)
 		throws SQLException
 	{
-		try (PreparedStatement stmt = prepare(conn)) {
+		try (var stmt = prepare(conn)) {
 			for (var row : batch) {
 				row.apply(conn).set(paramNames(), stmt);
 				stmt.execute();
