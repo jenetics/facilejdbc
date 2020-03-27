@@ -174,6 +174,20 @@ final Batch batch = Batch.of(persons, DCTOR);
 final int[] counts = INSERT.executeUpdate(batch, conn);
 ```
 
+For simple insertions, you can also do some kind of ad-hoc batch insertions.
+
+```java
+Query.of("INSERT INTO person(id, name) VALUES(:id, :name)")
+    .execute(
+        Batch.of(
+            List.of(value("id", 1), value("name", "Peter")),
+            List.of(value("id", 2), value("name", "Jack")),
+            List.of(value("id", 3), value("name", "John"))
+        ),
+        conn
+    );
+``` 
+
 ### Selecting/inserting object _graphs_
 
 The previous examples shows the basic usage of the library. It is possible to use this for all needed select and insert queries, as you will do it with plain JDBC. If you need to select or insert _small_ object graphs, this becomes fast tedious as well. 
