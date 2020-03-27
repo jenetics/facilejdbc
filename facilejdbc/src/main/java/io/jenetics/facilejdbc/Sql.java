@@ -20,9 +20,17 @@
 package io.jenetics.facilejdbc;
 
 import static java.util.Objects.requireNonNull;
+import static io.jenetics.facilejdbc.SerialIO.readInt;
+import static io.jenetics.facilejdbc.SerialIO.readString;
+import static io.jenetics.facilejdbc.SerialIO.writeInt;
+import static io.jenetics.facilejdbc.SerialIO.writeString;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,7 +56,7 @@ import java.util.regex.Pattern;
  * @see Query
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  */
 final class Sql {
@@ -62,7 +70,7 @@ final class Sql {
 	private final String string;
 	private final List<String> paramNames;
 
-	private Sql(final String string, final List<String> paramNames) {
+	Sql(final String string, final List<String> paramNames) {
 		this.string = requireNonNull(string);
 		this.paramNames = List.copyOf(paramNames);
 	}
@@ -90,14 +98,15 @@ final class Sql {
 
 	@Override
 	public int hashCode() {
-		return string.hashCode();
+		return Objects.hash(string, paramNames);
 	}
 
 	@Override
 	public boolean equals(final Object obj) {
 		return this == obj ||
 			obj instanceof Sql &&
-			string.equals(((Sql)obj).string);
+			string.equals(((Sql)obj).string) &&
+			paramNames.equals(((Sql)obj).paramNames);
 	}
 
 	@Override
@@ -130,6 +139,30 @@ final class Sql {
 		matcher.appendTail(parsed);
 
 		return new Sql(parsed.toString(), names);
+	}
+
+
+	/* *************************************************************************
+	 *  Serialization methods
+	 * ************************************************************************/
+
+	void write(final DataOutput out) throws IOException {
+		writeString(string, out);
+		writeInt(paramNames.size(), out);
+		for (String name : paramNames) {
+			writeString(name, out);
+		}
+	}
+
+	static Sql read(final DataInput in) throws IOException {
+		final String sql = readString(in);
+		final int paramCount = readInt(in);
+		final List<String> paramNames = new ArrayList<>();
+		for (int i = 0; i < paramCount; ++i) {
+			paramNames.add(readString(in));
+		}
+
+		return new Sql(sql, paramNames);
 	}
 
 }

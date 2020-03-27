@@ -23,6 +23,15 @@ import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -54,10 +63,11 @@ import java.util.stream.IntStream;
  * This class is immutable and thread-safe.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  */
-public final class Query {
+public final class Query implements Serializable {
+	private static final long serialVersionUID = 1;
 
 	private final Sql sql;
 	private final ParamValues values;
@@ -380,6 +390,10 @@ public final class Query {
 		return counts.build().toArray();
 	}
 
+	@Override
+	public String toString() {
+		return sql();
+	}
 
 	/* *************************************************************************
 	 * Static factory methods.
@@ -406,6 +420,68 @@ public final class Query {
 	 */
 	public static Query of(final String sql) {
 		return new Query(Sql.of(sql), ParamValues.EMPTY);
+	}
+
+
+	/* *************************************************************************
+	 *  Java object serialization
+	 * ************************************************************************/
+
+	private Object writeReplace() {
+		return new Serial(this);
+	}
+
+	private void readObject(final ObjectInputStream stream)
+		throws InvalidObjectException
+	{
+		throw new InvalidObjectException("Serialization proxy required.");
+	}
+
+	private void write(final DataOutput out) throws IOException {
+		sql.write(out);
+	}
+
+	private static Query read(final DataInput in) throws IOException {
+		return new Query(Sql.read(in), ParamValues.EMPTY);
+	}
+
+	private static final class Serial implements Externalizable {
+		private static final long serialVersionUID = 1;
+
+		/**
+		 * The object being serialized.
+		 */
+		private Query _object;
+
+		/**
+		 * Constructor for deserialization.
+		 */
+		public Serial() {
+		}
+
+		/**
+		 * Creates an instance for serialization.
+		 *
+		 * @param object  the object
+		 */
+		Serial(final Query object) {
+			_object = object;
+		}
+
+		@Override
+		public void writeExternal(final ObjectOutput out) throws IOException {
+			_object.write(out);
+		}
+
+		@Override
+		public void readExternal(final ObjectInput in) throws IOException {
+			_object = Query.read(in);
+		}
+
+		private Object readResolve() {
+			return _object;
+		}
+
 	}
 
 }
