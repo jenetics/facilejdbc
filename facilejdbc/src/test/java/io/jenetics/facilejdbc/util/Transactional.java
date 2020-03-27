@@ -19,11 +19,11 @@
  */
 package io.jenetics.facilejdbc.util;
 
+import io.jenetics.facilejdbc.function.SqlConsumer;
+import io.jenetics.facilejdbc.function.SqlFunction;
+
 import java.sql.Connection;
 import java.sql.SQLException;
-
-import io.jenetics.facilejdbc.function.SqlFunction;
-import io.jenetics.facilejdbc.function.SqlFunction0;
 
 /**
  * This interface represents transactional capability.
@@ -36,7 +36,7 @@ public interface Transactional {
 	 * Return the DB connection.
 	 *
 	 * @return the DB connection
-	 * @throws if obtaining a DB connection fails
+	 * @throws SQLException if obtaining a DB connection fails
 	 */
 	Connection conn() throws SQLException;
 
@@ -64,7 +64,7 @@ public interface Transactional {
 	 * @throws SQLException it the execution of the SQL block fails. In this
 	 *         case a rollback is performed.
 	 */
-	default void run(final SqlFunction0<? super Connection> block)
+	default void run(final SqlConsumer<? super Connection> block)
 		throws SQLException
 	{
 		Transactions.run(conn(), block);

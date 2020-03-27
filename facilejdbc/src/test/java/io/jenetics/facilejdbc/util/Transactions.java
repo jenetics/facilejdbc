@@ -26,8 +26,8 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import io.jenetics.facilejdbc.function.SqlConsumer;
 import io.jenetics.facilejdbc.function.SqlFunction;
-import io.jenetics.facilejdbc.function.SqlFunction0;
 
 /**
  * This class contains some helper functions for DB transaction handling.
@@ -119,11 +119,11 @@ public final class Transactions {
 	 */
 	public static void run(
 		final Connection conn,
-		final SqlFunction0<? super Connection> block
+		final SqlConsumer<? super Connection> block
 	)
 		throws SQLException
 	{
-		execute(conn, c -> { block.apply(c); return null; });
+		execute(conn, c -> { block.accept(c); return null; });
 	}
 
 	/**
@@ -138,7 +138,7 @@ public final class Transactions {
 	 */
 	public static void run(
 		final DataSource ds,
-		final SqlFunction0<? super Connection> block
+		final SqlConsumer<? super Connection> block
 	)
 		throws SQLException
 	{

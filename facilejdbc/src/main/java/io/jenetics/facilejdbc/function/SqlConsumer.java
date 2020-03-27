@@ -31,14 +31,11 @@ import java.sql.SQLException;
  * @param <T> the argument type
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.0
- * @since 1.0
- *
- * @deprecated Use {@link SqlConsumer} instead
+ * @version 1.1
+ * @since 1.1
  */
-@Deprecated
 @FunctionalInterface
-public interface SqlFunction0<T> {
+public interface SqlConsumer<T> {
 
 	/**
 	 * Applies this function to the given argument.
