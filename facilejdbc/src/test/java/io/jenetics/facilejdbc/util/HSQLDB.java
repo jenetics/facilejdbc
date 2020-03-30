@@ -29,7 +29,7 @@ import java.sql.SQLException;
 public final class HSQLDB implements Transactional {
 
 	@Override
-	public Connection conn() throws SQLException {
+	public Connection connection() throws SQLException {
 		return DriverManager.getConnection("jdbc:hsqldb:mem:testdb", "SA", "");
 	}
 

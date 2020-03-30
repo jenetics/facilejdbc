@@ -19,18 +19,17 @@
  */
 package io.jenetics.facilejdbc.util;
 
-import io.jenetics.facilejdbc.function.SqlConsumer;
-import io.jenetics.facilejdbc.function.SqlFunction;
-
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import io.jenetics.facilejdbc.function.SqlFunction;
 
 /**
  * This interface represents transactional capability.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-public interface Transactional {
+public interface Transactional extends Transaction {
 
 	/**
 	 * Return the DB connection.
@@ -38,11 +37,11 @@ public interface Transactional {
 	 * @return the DB connection
 	 * @throws SQLException if obtaining a DB connection fails
 	 */
-	Connection conn() throws SQLException;
+	Connection connection() throws SQLException;
 
 	/**
 	 * Executes the given {@code block} with the connection returned by the
-	 * {@link #conn()} method.
+	 * {@link #connection()} method.
 	 *
 	 * @param block the SQL function which is executed within a DB transaction
 	 * @param <T> the returned data type
@@ -50,24 +49,13 @@ public interface Transactional {
 	 * @throws SQLException it the execution of the SQL block fails. In this
 	 *         case a rollback is performed.
 	 */
-	default <T> T execute(final SqlFunction<? super Connection, ? extends T> block)
+	@Override
+	default <T> T apply(final SqlFunction<? super Connection, ? extends T> block)
 		throws SQLException
 	{
-		return Transactions.execute(conn(), block);
-	}
-
-	/**
-	 * Executes the given {@code block} with the connection returned by the
-	 * {@link #conn()} method.
-	 *
-	 * @param block the SQL function which is executed within a DB transaction
-	 * @throws SQLException it the execution of the SQL block fails. In this
-	 *         case a rollback is performed.
-	 */
-	default void run(final SqlConsumer<? super Connection> block)
-		throws SQLException
-	{
-		Transactions.run(conn(), block);
+		try (var conn = connection()) {
+			return Transaction.apply(conn, block);
+		}
 	}
 
 }

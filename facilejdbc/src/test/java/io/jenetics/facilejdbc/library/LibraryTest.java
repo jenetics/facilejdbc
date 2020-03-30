@@ -84,7 +84,7 @@ public class LibraryTest {
 			getClass().getResourceAsStream("/library-hsqldb.sql")
 		);
 
-		db.execute(conn -> {
+		db.apply(conn -> {
 			for (var query : queries) {
 				query.execute(conn);
 			}
@@ -94,7 +94,7 @@ public class LibraryTest {
 
 	@Test
 	public void insert() throws SQLException {
-		final long id = db.execute(conn ->
+		final long id = db.apply(conn ->
 			Book.insert(BOOKS.get(0), conn)
 		);
 
@@ -103,7 +103,7 @@ public class LibraryTest {
 
 	@Test(dependsOnMethods = "insert")
 	public void select() throws SQLException {
-		final List<Book> books = db.execute(conn ->
+		final List<Book> books = db.apply(conn ->
 			Book.selectByTitle(BOOKS.get(0).title(), conn)
 		);
 
@@ -113,13 +113,13 @@ public class LibraryTest {
 
 	@Test(dependsOnMethods = "select")
 	public void insertAndSelectAuthor() throws SQLException {
-		final long id = db.execute(conn ->
+		final long id = db.apply(conn ->
 			Author.insert(BOOKS.get(1).authors().get(0), conn)
 		);
 
 		Assert.assertTrue(id >= 0);
 
-		final Optional<Author> author = db.execute(conn ->
+		final Optional<Author> author = db.apply(conn ->
 			Author.selectById(id, conn)
 		);
 		Assert.assertTrue(author.isPresent());
@@ -132,7 +132,7 @@ public class LibraryTest {
 
 	@Test(dependsOnMethods = "insertAndSelectAuthor")
 	public void insertRestOfBooks() throws SQLException {
-		db.run(conn -> {
+		db.accept(conn -> {
 			for (int i = 1; i < BOOKS.size(); ++i) {
 				Book.insert(BOOKS.get(i), conn);
 			}
@@ -141,7 +141,7 @@ public class LibraryTest {
 
 	@Test(dependsOnMethods = "insertRestOfBooks")
 	public void selectAll() throws SQLException {
-		final Set<Book> books = db.execute(Book::selectAll);
+		final Set<Book> books = db.apply(Book::selectAll);
 		Assert.assertEquals(
 			books,
 			Set.copyOf(BOOKS)
