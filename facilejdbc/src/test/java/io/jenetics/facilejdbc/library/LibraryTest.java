@@ -19,27 +19,31 @@
  */
 package io.jenetics.facilejdbc.library;
 
-import io.jenetics.facilejdbc.util.HSQLDB;
-import io.jenetics.facilejdbc.util.Queries;
-import io.jenetics.facilejdbc.util.Transactional;
-
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import java.io.IOException;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import io.jenetics.facilejdbc.util.Queries;
+import io.jenetics.facilejdbc.util.Transactional;
+
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
 public class LibraryTest {
 
-	private final Transactional db = new HSQLDB();
+	private final Transactional db = () -> DriverManager.getConnection(
+		"jdbc:hsqldb:mem:testdb",
+		"SA",
+		""
+	);
 
 	private static final List<Book> BOOKS = List.of(
 		new Book(
@@ -84,7 +88,7 @@ public class LibraryTest {
 			getClass().getResourceAsStream("/library-hsqldb.sql")
 		);
 
-		db.apply(conn -> {
+		db.transaction().apply(conn -> {
 			for (var query : queries) {
 				query.execute(conn);
 			}
@@ -94,7 +98,7 @@ public class LibraryTest {
 
 	@Test
 	public void insert() throws SQLException {
-		final long id = db.apply(conn ->
+		final long id = db.transaction().apply(conn ->
 			Book.insert(BOOKS.get(0), conn)
 		);
 
@@ -103,7 +107,7 @@ public class LibraryTest {
 
 	@Test(dependsOnMethods = "insert")
 	public void select() throws SQLException {
-		final List<Book> books = db.apply(conn ->
+		final List<Book> books = db.transaction().apply(conn ->
 			Book.selectByTitle(BOOKS.get(0).title(), conn)
 		);
 
@@ -113,13 +117,13 @@ public class LibraryTest {
 
 	@Test(dependsOnMethods = "select")
 	public void insertAndSelectAuthor() throws SQLException {
-		final long id = db.apply(conn ->
+		final long id = db.transaction().apply(conn ->
 			Author.insert(BOOKS.get(1).authors().get(0), conn)
 		);
 
 		Assert.assertTrue(id >= 0);
 
-		final Optional<Author> author = db.apply(conn ->
+		final Optional<Author> author = db.transaction().apply(conn ->
 			Author.selectById(id, conn)
 		);
 		Assert.assertTrue(author.isPresent());
@@ -132,7 +136,7 @@ public class LibraryTest {
 
 	@Test(dependsOnMethods = "insertAndSelectAuthor")
 	public void insertRestOfBooks() throws SQLException {
-		db.accept(conn -> {
+		db.transaction().accept(conn -> {
 			for (int i = 1; i < BOOKS.size(); ++i) {
 				Book.insert(BOOKS.get(i), conn);
 			}
@@ -141,7 +145,7 @@ public class LibraryTest {
 
 	@Test(dependsOnMethods = "insertRestOfBooks")
 	public void selectAll() throws SQLException {
-		final Set<Book> books = db.apply(Book::selectAll);
+		final Set<Book> books = db.transaction().apply(Book::selectAll);
 		Assert.assertEquals(
 			books,
 			Set.copyOf(BOOKS)

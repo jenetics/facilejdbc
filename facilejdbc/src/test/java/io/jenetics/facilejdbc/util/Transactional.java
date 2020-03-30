@@ -29,7 +29,8 @@ import io.jenetics.facilejdbc.function.SqlFunction;
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-public interface Transactional extends Transaction {
+@FunctionalInterface
+public interface Transactional {
 
 	/**
 	 * Return the DB connection.
@@ -39,23 +40,17 @@ public interface Transactional extends Transaction {
 	 */
 	Connection connection() throws SQLException;
 
-	/**
-	 * Executes the given {@code block} with the connection returned by the
-	 * {@link #connection()} method.
-	 *
-	 * @param block the SQL function which is executed within a DB transaction
-	 * @param <T> the returned data type
-	 * @return the result of the given SQL {@code block}
-	 * @throws SQLException it the execution of the SQL block fails. In this
-	 *         case a rollback is performed.
-	 */
-	@Override
-	default <T> T apply(final SqlFunction<? super Connection, ? extends T> block)
-		throws SQLException
-	{
-		try (var conn = connection()) {
-			return Transaction.apply(conn, block);
-		}
+	default Transaction transaction() {
+		return new Transaction() {
+			@Override
+			public <T> T apply(final SqlFunction<? super Connection, ? extends T> block)
+				throws SQLException
+			{
+				try (var conn = connection()) {
+					return Transaction.apply(conn, block);
+				}
+			}
+		};
 	}
 
 }

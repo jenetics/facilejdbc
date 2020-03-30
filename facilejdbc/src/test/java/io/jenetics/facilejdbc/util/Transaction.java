@@ -32,7 +32,6 @@ import io.jenetics.facilejdbc.function.SqlFunction;
  * @version !__version__!
  * @since !__version__!
  */
-@FunctionalInterface
 public interface Transaction {
 
 	/**

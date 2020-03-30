@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-public class Queries {
+public final class Queries {
 	private Queries() {}
 
 	private static final Pattern END_OF_STMT = Pattern.compile(
