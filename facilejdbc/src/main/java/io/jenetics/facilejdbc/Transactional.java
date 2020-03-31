@@ -115,10 +115,10 @@ public interface Transactional {
 	}
 
 	/**
-	 * This method implements the transactional default behaviour ot the
-	 * {@link Transaction} implementation, returned by the {@link #transaction()}
-	 * interface. If a different behaviour is necessary, also override this
-	 * default method.
+	 * This method defines the transactional behaviour of the {@link Transaction}
+	 * interface, returned by the {@link #transaction()} method. The default
+	 * implementation is given by the {@link Transaction#apply(Connection, SqlFunction)}
+	 * method. If a different behaviour is needed, override this method.
 	 *
 	 * @see Transaction#apply(Connection, SqlFunction)
 	 *
