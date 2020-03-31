@@ -97,7 +97,7 @@ public interface Transactional {
 	 * Return a <em>Transaction</em> object, which obtains the connection,
 	 * needed for executing a query, from the {@link #connection()} factory
 	 * method. The transactional behaviour is defined by the
-	 * {@link #apply(Connection, SqlFunction)} method of {@code this} interface.
+	 * {@link #txm(Connection, SqlFunction)} method of {@code this} interface.
 	 *
 	 * @return a new <em>Transaction</em> object
 	 */
@@ -108,7 +108,7 @@ public interface Transactional {
 				throws SQLException
 			{
 				try (var conn = connection()) {
-					return Transactional.this.apply(conn, block);
+					return Transactional.this.txm(conn, block);
 				}
 			}
 		};
@@ -129,7 +129,7 @@ public interface Transactional {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 * @throws SQLException if the transaction fails
 	 */
-	default <T> T apply(
+	default <T> T txm(
 		final Connection conn,
 		final SqlFunction<? super Connection, ? extends T> block
 	)
