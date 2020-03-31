@@ -145,10 +145,10 @@ public interface Transactional {
 	/**
 	 * This method defines the transactional behaviour of the {@link Transaction}
 	 * interface, returned by the {@link #transaction()} method. The default
-	 * implementation is given by the {@link Transaction#apply(Connection, SqlFunction)}
+	 * implementation is given by the {@link Transaction#txm(Connection, SqlFunction)}
 	 * method. If a different behaviour is needed, override this method.
 	 *
-	 * @see Transaction#apply(Connection, SqlFunction)
+	 * @see Transaction#txm(Connection, SqlFunction)
 	 *
 	 * @param conn the connection used in this transaction
 	 * @param block the code block to execute with the given connection
@@ -163,7 +163,7 @@ public interface Transactional {
 	)
 		throws SQLException
 	{
-		return Transaction.apply(conn, block);
+		return Transaction.txm(conn, block);
 	}
 
 }

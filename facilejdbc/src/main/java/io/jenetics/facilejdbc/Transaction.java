@@ -109,7 +109,7 @@ public interface Transaction {
 	 * <pre>{@code
 	 * final DataSource ds = ...;
 	 * try (var conn = ds.getConnection()) {
-	 *     return Transaction.apply(conn, c ->
+	 *     return Transaction.txm(conn, c ->
 	 *         Query.of("SELECT id FROM author WHERE name = :name")
 	 *             .on(value("name", "Hemingway"))
 	 *             .as(RowParser.int64("id").singleOpt(), c);
@@ -129,7 +129,7 @@ public interface Transaction {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 * @throws SQLException if the transaction fails
 	 */
-	static <T> T apply(
+	static <T> T txm(
 		final Connection conn,
 		final SqlFunction<? super Connection, ? extends T> block
 	)
