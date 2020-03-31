@@ -270,6 +270,49 @@ It is still necessary to implement the sub-inserts and sub-selects, but this can
 >
 > Although the described feature is quite expressive and may solve some selection/insertion task in an elegant way, does not mean you have to use it. Just treat it as additional possibility.
 
+### Transaction handling
+
+_FacileJDBC_ also contains two interfaces for simple transaction handling. The `Transaction` interface defines methods for executing one or more queries in a transactional context.
+
+```java
+final Transaction transaction = ...;
+// Inserting a new link into the DB and returning 
+// the  primary key of the newly inserted row.
+final long id = transaction.apply(conn -> insertLink(link, conn));
+```
+
+If you are not interested in the return value of the SQL execution, you can use the `accept` method instead. In the case of an error, the connection is rolled back. If everything works fine, the connection is committed.
+
+```java
+transaction.accept(conn -> insertLink(link, conn));
+```
+
+The second interface is the `Transactional` interface, which represents the _transactional_ capability, typically exposed by a database. In this sense, it can be seen as a minimal database  interface, just by exposing a `Connection` factory method, `Transactional::connection`. Since `Transactional` is a functional interface, it can easily created by defining the `Connection` factory method.
+
+```java
+final Transactional db = () -> DriverManager.getConnection(
+    "jdbc:hsqldb:mem:testdb",
+    "SA",
+    ""
+);
+```
+
+The example above shows how to create a `Transactional` instance for a HSQLDB in-memory database, perfectly usable for testing purposes. Then it can be used for performing some SQL inserts.
+
+```java
+final long bookId = db.transaction().apply(conn ->
+    Book.insert(book, conn)
+);
+``` 
+
+For production code you usually have a `DataSource`, which represents the connection to the DB. It's equally easy to create a `Transactional` object from a given `DataSource` instance.
+
+```java
+final DataSource ds = ...;
+final Transactional db = ds::getConnection;
+```
+
+
 ## License
 
 The library is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
