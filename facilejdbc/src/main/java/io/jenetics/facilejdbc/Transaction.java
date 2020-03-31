@@ -56,6 +56,14 @@ public interface Transaction {
 	/**
 	 * Executes the given {@code block} with a DB connection.
 	 *
+	 * <pre>{@code
+	 * final Optional<Long> id = apply(conn ->
+	 *     Query.of("SELECT id FROM author WHERE name = :name")
+	 *         .on(value("name", "Hemingway"))
+	 *         .as(RowParser.int64("id").singleOpt(), conn);
+	 * );
+	 * }</pre>
+	 *
 	 * @param block the SQL function which is executed within a DB transaction
 	 * @param <T> the returned data type
 	 * @return the result of the given SQL {@code block}
@@ -67,6 +75,14 @@ public interface Transaction {
 
 	/**
 	 * Executes the given {@code block} with a DB connection.
+	 *
+	 * <pre>{@code
+	 * accept(conn ->
+	 *     Query.of("SELECT id FROM author WHERE name = :name")
+	 *         .on(value("name", "Hemingway"))
+	 *         .as(RowParser.int64("id").singleOpt(), conn);
+	 * );
+	 * }</pre>
 	 *
 	 * @param block the SQL function which is executed within a DB transaction
 	 * @throws SQLException it the execution of the SQL block fails. In this
@@ -89,6 +105,17 @@ public interface Transaction {
 	 *     <li>Perform a rollback if an exception is thrown. The thrown
 	 *     exception is then propagated to the caller.</li>
 	 * </ul>
+	 *
+	 * <pre>{@code
+	 * final DataSource ds = ...;
+	 * try (var conn = ds.getConnection()) {
+	 *     return Transaction.apply(conn, c ->
+	 *         Query.of("SELECT id FROM author WHERE name = :name")
+	 *             .on(value("name", "Hemingway"))
+	 *             .as(RowParser.int64("id").singleOpt(), c);
+	 *     );
+	 * }
+	 * }</pre>
 	 *
 	 * @apiNote
 	 * This method implements the transactional default behaviour ot the
