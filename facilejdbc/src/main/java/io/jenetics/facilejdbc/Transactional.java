@@ -52,10 +52,26 @@ import io.jenetics.facilejdbc.function.SqlFunction;
  *
  * <pre>{@code
  * final long id = db.transaction().apply(conn ->
- *     INSERT
+ *     INSERT_QUERY
  *         .on(author, DCTOR)
  *         .executeInsert(conn)
  *         .orElseThrow()
+ * );
+ * }</pre>
+ *
+ * Using a transaction for batch update.
+ *
+ * <pre>{@code
+ * db.transaction().accept(conn ->
+ *     final Batch batch = Batch.of(
+ *         authors,
+ *         Dctor.of(
+ *             field("name", Author::name),
+ *             field("age", Author::age)
+ *         )
+ *     );
+ *
+ *     INSERT_BOOK_AUTHOR.executeUpdate(batch, conn);
  * );
  * }</pre>
  *

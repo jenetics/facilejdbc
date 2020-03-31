@@ -35,8 +35,8 @@ import io.jenetics.facilejdbc.function.SqlFunction;
  * final Transaction transaction = ...;
  * final Optional<Long> id = transaction.apply(conn ->
  *     Query.of("SELECT id FROM author WHERE name = :name")
- * 			.on(value("name", "Hemingway"))
- * 			.as(RowParser.int64("id").singleOpt(), conn);
+ *         .on(value("name", "Hemingway"))
+ *         .as(RowParser.int64("id").singleOpt(), conn);
  * );
  * }</pre>
  *
