@@ -86,7 +86,23 @@ import io.jenetics.facilejdbc.function.SqlFunction;
 public interface Transactional {
 
 	/**
-	 * Return the DB connection.
+	 * Return the DB connection. If you obtain a new connection you are
+	 * responsible for closing it after usage. This is done ideally in a
+	 * resource-try block.
+	 *
+	 * <pre>{@code
+	 * final Transactional db = ...;
+	 * try (var conn = db.connection()) {
+	 *     // Using the connection.
+	 *     ...;
+	 * }
+	 * }</pre>
+	 *
+	 * You are usually using the {@link #transaction()} method for getting an
+	 * instance of the {@link Transaction} interface, which is then using this
+	 * method for obtaining the needed connections.
+	 *
+	 * @see #transaction()
 	 *
 	 * @return the DB connection
 	 * @throws SQLException if obtaining a DB connection fails
@@ -98,6 +114,18 @@ public interface Transactional {
 	 * needed for executing a query, from the {@link #connection()} factory
 	 * method. The transactional behaviour is defined by the
 	 * {@link #txm(Connection, SqlFunction)} method of {@code this} interface.
+	 *
+	 * <pre>{@code
+	 * final Transaction db = ...;
+	 * final long id = db.transaction().apply(conn ->
+	 *     INSERT_QUERY
+	 *         .on(author, DCTOR)
+	 *         .executeInsert(conn)
+	 *         .orElseThrow()
+	 * );
+	 * }</pre>
+	 *
+	 * @see #txm(Connection, SqlFunction)
 	 *
 	 * @return a new <em>Transaction</em> object
 	 */
