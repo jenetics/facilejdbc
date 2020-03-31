@@ -19,10 +19,10 @@
  */
 package io.jenetics.facilejdbc.util;
 
-import io.jenetics.facilejdbc.function.SqlFunction;
-
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import io.jenetics.facilejdbc.function.SqlFunction;
 
 /**
  * This interface represents the <em>transactional</em> capability, typically

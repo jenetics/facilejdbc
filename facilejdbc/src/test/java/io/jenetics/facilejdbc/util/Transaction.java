@@ -19,13 +19,13 @@
  */
 package io.jenetics.facilejdbc.util;
 
+import static java.util.Objects.requireNonNull;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
 import io.jenetics.facilejdbc.function.SqlConsumer;
 import io.jenetics.facilejdbc.function.SqlFunction;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * This interface defines methods for executing a SQL query in a transactional
