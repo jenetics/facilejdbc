@@ -19,15 +19,34 @@
  */
 package io.jenetics.facilejdbc.util;
 
-import static java.util.Objects.requireNonNull;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 
 import io.jenetics.facilejdbc.function.SqlConsumer;
 import io.jenetics.facilejdbc.function.SqlFunction;
 
+import static java.util.Objects.requireNonNull;
+
 /**
+ * This interface defines methods for executing a SQL query in a transactional
+ * context.
+ *
+ * <pre>{@code
+ * final Transaction transaction = ...;
+ * final Optional<Long> id = transaction.apply(conn ->
+ *     Query.of("SELECT id FROM author WHERE name = :name")
+ * 			.on(value("name", "Hemingway"))
+ * 			.as(RowParser.int64("id").singleOpt(), conn);
+ * );
+ * }</pre>
+ *
+ * All queries within the {@code apply} block are executed within the same
+ * transaction. If any exception is thrown within this block, a rollback on the
+ * given connection is performed. For code {@code blocks} without return values,
+ * the {@link #accept(SqlConsumer)} method is used.
+ *
+ * @see Transactional
+ *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
  * @since !__version__!
@@ -62,7 +81,19 @@ public interface Transaction {
 
 	/**
 	 * Open a new <i>transactional</i> context with the given connection. The
-	 * caller is responsible for closing the connection.
+	 * caller is responsible for closing the connection. This method is
+	 * <em>only</em> responsible for the correct transaction handling:
+	 * <ul>
+	 *     <li>Setting the autocommit flag of the connection to false.</li>
+	 *     <li>Committing the connection on success.</li>
+	 *     <li>Perform a rollback if an exception is thrown. The thrown
+	 *     exception is then propagated to the caller.</li>
+	 * </ul>
+	 *
+	 * @apiNote
+	 * This method implements the transactional default behaviour ot the
+	 * {@link Transaction} implementation, returned by the
+	 * {@link Transactional#transaction()} interface.
 	 *
 	 * @param conn the connection used in this transaction
 	 * @param block the code block to execute with the given connection

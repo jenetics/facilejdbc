@@ -19,13 +19,50 @@
  */
 package io.jenetics.facilejdbc.util;
 
+import io.jenetics.facilejdbc.function.SqlFunction;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import io.jenetics.facilejdbc.function.SqlFunction;
-
 /**
- * This interface represents transactional capability.
+ * This interface represents the <em>transactional</em> capability, typically
+ * exposed by a database. In this sense, it can be seen as a minimal database
+ * interface, just by exposing a a {@link Connection} factory method,
+ * {@link #connection()}.
+ *
+ * <pre>{@code
+ * final Transactional db = () -> DriverManager.getConnection(
+ *     "jdbc:hsqldb:mem:testdb",
+ *     "SA",
+ *     ""
+ * );
+ * }</pre>
+ *
+ * The code example shows how easy it is to create an in-memory HSQLDB
+ * {@code Transactional} instance. If you already have a
+ * {@link javax.sql.DataSource} instance, the creation of a <em>transactional</em>
+ * object is even easier.
+ *
+ * <pre>{@code
+ * final DataSource ds = ...;
+ * final Transactional db = ds::getConnection;
+ * }</pre>
+ *
+ * The usage of the <em>db</em> is then also very straight forward.
+ *
+ * <pre>{@code
+ * final long id = db.transaction().apply(conn ->
+ *     INSERT
+ *         .on(author, DCTOR)
+ *         .executeInsert(conn)
+ *         .orElseThrow()
+ * );
+ * }</pre>
+ *
+ * @apiNote
+ * The transactional default behaviour
+ *
+ *  @see Transaction
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
@@ -40,6 +77,14 @@ public interface Transactional {
 	 */
 	Connection connection() throws SQLException;
 
+	/**
+	 * Return a <em>Transaction</em> object, which obtains the connection,
+	 * needed for executing a query, from the {@link #connection()} factory
+	 * method. The transactional behaviour is defined by the
+	 * {@link #apply(Connection, SqlFunction)} method of {@code this} interface.
+	 *
+	 * @return a new <em>Transaction</em> object
+	 */
 	default Transaction transaction() {
 		return new Transaction() {
 			@Override
@@ -47,10 +92,34 @@ public interface Transactional {
 				throws SQLException
 			{
 				try (var conn = connection()) {
-					return Transaction.apply(conn, block);
+					return Transactional.this.apply(conn, block);
 				}
 			}
 		};
+	}
+
+	/**
+	 * This method implements the transactional default behaviour ot the
+	 * {@link Transaction} implementation, returned by the {@link #transaction()}
+	 * interface. If a different behaviour is necessary, also override this
+	 * default method.
+	 *
+	 * @see Transaction#apply(Connection, SqlFunction)
+	 *
+	 * @param conn the connection used in this transaction
+	 * @param block the code block to execute with the given connection
+	 * @param <T> the result type
+	 * @return the result of the connection block
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 * @throws SQLException if the transaction fails
+	 */
+	default <T> T apply(
+		final Connection conn,
+		final SqlFunction<? super Connection, ? extends T> block
+	)
+		throws SQLException
+	{
+		return Transaction.apply(conn, block);
 	}
 
 }
