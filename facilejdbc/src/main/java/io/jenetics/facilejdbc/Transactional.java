@@ -27,7 +27,7 @@ import io.jenetics.facilejdbc.function.SqlFunction;
 /**
  * This interface represents the <em>transactional</em> capability, typically
  * exposed by a database. In this sense, it can be seen as a minimal database
- * interface, just by exposing a a {@link Connection} factory method,
+ * interface, just by exposing a {@link Connection} factory method,
  * {@link #connection()}.
  *
  * <pre>{@code
