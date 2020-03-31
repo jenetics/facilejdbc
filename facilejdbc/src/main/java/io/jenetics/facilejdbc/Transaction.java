@@ -17,7 +17,7 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc.util;
+package io.jenetics.facilejdbc;
 
 import static java.util.Objects.requireNonNull;
 
