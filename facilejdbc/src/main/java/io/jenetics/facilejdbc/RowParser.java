@@ -19,6 +19,8 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.util.Objects.requireNonNull;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,8 +36,6 @@ import java.util.function.Supplier;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * Converts one row from the given {@link ResultSet} into a data object from

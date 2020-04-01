@@ -31,9 +31,8 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import io.jenetics.facilejdbc.SavePoints;
-import io.jenetics.facilejdbc.util.Queries;
 import io.jenetics.facilejdbc.Transactional;
+import io.jenetics.facilejdbc.util.Queries;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
@@ -138,11 +137,9 @@ public class LibraryTest {
 	@Test(dependsOnMethods = "insertAndSelectAuthor")
 	public void insertRestOfBooks() throws SQLException {
 		db.transaction().accept(conn -> {
-			SavePoints.accept(conn, () -> {
-				for (int i = 1; i < BOOKS.size(); ++i) {
-					Book.insert(BOOKS.get(i), conn);
-				}
-			});
+			for (int i = 1; i < BOOKS.size(); ++i) {
+				Book.insert(BOOKS.get(i), conn);
+			}
 		});
 	}
 
