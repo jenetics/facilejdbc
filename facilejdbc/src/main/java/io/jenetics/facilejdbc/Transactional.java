@@ -128,6 +128,10 @@ public interface Transactional {
 	 * );
 	 * }</pre>
 	 *
+	 * @implNote
+	 * It is possible to store the {@code Transaction} instance, returned by
+	 * this methods, in a variable and use it for more than one call.
+	 *
 	 * @see #txm(Connection, SqlSupplier)
 	 *
 	 * @return a new <em>Transaction</em> object
