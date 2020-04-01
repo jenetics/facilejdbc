@@ -19,13 +19,14 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.util.Objects.requireNonNull;
+import io.jenetics.facilejdbc.function.SqlConsumer;
+import io.jenetics.facilejdbc.function.SqlFunction;
+import io.jenetics.facilejdbc.function.SqlSupplier;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import io.jenetics.facilejdbc.function.SqlConsumer;
-import io.jenetics.facilejdbc.function.SqlFunction;
+import static java.util.Objects.requireNonNull;
 
 /**
  * This interface defines methods for executing a SQL query in a transactional
@@ -131,7 +132,7 @@ public interface Transaction {
 	 */
 	static <T> T txm(
 		final Connection conn,
-		final SqlFunction<? super Connection, ? extends T> block
+		final SqlSupplier<? extends T> block
 	)
 		throws SQLException
 	{
@@ -142,7 +143,7 @@ public interface Transaction {
 			if (conn.getAutoCommit()) {
 				conn.setAutoCommit(false);
 			}
-			var result = block.apply(conn);
+			var result = block.get();
 			conn.commit();
 			return result;
 		} catch (Throwable e) {

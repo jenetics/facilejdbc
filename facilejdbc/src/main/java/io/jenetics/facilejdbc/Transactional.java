@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
+import io.jenetics.facilejdbc.function.SqlSupplier;
 
 /**
  * This interface represents the <em>transactional</em> capability, typically
@@ -78,9 +79,11 @@ import io.jenetics.facilejdbc.function.SqlFunction;
  * @apiNote
  * The transactional default behaviour
  *
- *  @see Transaction
+ * @see Transaction
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @version !__version__!
+ * @since !__version__!
  */
 @FunctionalInterface
 public interface Transactional {
@@ -113,7 +116,7 @@ public interface Transactional {
 	 * Return a <em>Transaction</em> object, which obtains the connection,
 	 * needed for executing a query, from the {@link #connection()} factory
 	 * method. The transactional behaviour is defined by the
-	 * {@link #txm(Connection, SqlFunction)} method of {@code this} interface.
+	 * {@link #txm(Connection, SqlSupplier)} method of {@code this} interface.
 	 *
 	 * <pre>{@code
 	 * final Transaction db = ...;
@@ -125,7 +128,7 @@ public interface Transactional {
 	 * );
 	 * }</pre>
 	 *
-	 * @see #txm(Connection, SqlFunction)
+	 * @see #txm(Connection, SqlSupplier)
 	 *
 	 * @return a new <em>Transaction</em> object
 	 */
@@ -136,7 +139,7 @@ public interface Transactional {
 				throws SQLException
 			{
 				try (var conn = connection()) {
-					return Transactional.this.txm(conn, block);
+					return Transactional.this.txm(conn, () -> block.apply(conn));
 				}
 			}
 		};
@@ -145,10 +148,10 @@ public interface Transactional {
 	/**
 	 * This method defines the transactional behaviour of the {@link Transaction}
 	 * interface, returned by the {@link #transaction()} method. The default
-	 * implementation is given by the {@link Transaction#txm(Connection, SqlFunction)}
+	 * implementation is given by the {@link Transaction#txm(Connection, SqlSupplier)}
 	 * method. If a different behaviour is needed, override this method.
 	 *
-	 * @see Transaction#txm(Connection, SqlFunction)
+	 * @see Transaction#txm(Connection, SqlSupplier)
 	 *
 	 * @param conn the connection used in this transaction
 	 * @param block the code block to execute with the given connection
@@ -159,7 +162,7 @@ public interface Transactional {
 	 */
 	default <T> T txm(
 		final Connection conn,
-		final SqlFunction<? super Connection, ? extends T> block
+		final SqlSupplier<? extends T> block
 	)
 		throws SQLException
 	{
