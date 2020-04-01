@@ -19,28 +19,28 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.util.Objects.requireNonNull;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
  * @since !__version__!
  */
-final class CloseableSavePoint implements AutoCloseable {
+final class SavePoint implements AutoCloseable {
 
 	private final Connection connection;
 	private final Savepoint savepoint;
 
-	private CloseableSavePoint(final Connection connection, final Savepoint savepoint) {
+	private SavePoint(final Connection connection, final Savepoint savepoint) {
 		this.connection = requireNonNull(connection);
 		this.savepoint = requireNonNull(savepoint);
 	}
 
-	CloseableSavePoint(final Connection connection) throws SQLException {
+	SavePoint(final Connection connection) throws SQLException {
 		this(connection, connection.setSavepoint());
 	}
 
