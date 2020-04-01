@@ -19,6 +19,8 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.util.Objects.requireNonNull;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -142,6 +144,8 @@ public interface Transactional {
 			public <T> T apply(final SqlFunction<? super Connection, ? extends T> block)
 				throws SQLException
 			{
+				requireNonNull(block);
+
 				try (var conn = connection()) {
 					return Transactional.this.txm(conn, () -> block.apply(conn));
 				}
@@ -157,17 +161,16 @@ public interface Transactional {
 	 *
 	 * @see Transaction#txm(Connection, SqlSupplier)
 	 *
-	 * @param conn the connection used in this transaction
+	 * @param conn the connection used in this transaction. The connection is
+	 *        not closed by this method. Only <em>committed</em> or
+	 *        <em>rolled back</em>.
 	 * @param block the code block to execute with the given connection
 	 * @param <T> the result type
 	 * @return the result of the connection block
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 * @throws SQLException if the transaction fails
 	 */
-	default <T> T txm(
-		final Connection conn,
-		final SqlSupplier<? extends T> block
-	)
+	default <T> T txm(final Connection conn, final SqlSupplier<? extends T> block)
 		throws SQLException
 	{
 		return Transaction.txm(conn, block);

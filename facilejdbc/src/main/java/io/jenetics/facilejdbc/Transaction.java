@@ -110,10 +110,10 @@ public interface Transaction {
 	 * <pre>{@code
 	 * final DataSource ds = ...;
 	 * try (var conn = ds.getConnection()) {
-	 *     return Transaction.txm(conn, c ->
+	 *     return Transaction.txm(conn, () ->
 	 *         Query.of("SELECT id FROM author WHERE name = :name")
 	 *             .on(value("name", "Hemingway"))
-	 *             .as(RowParser.int64("id").singleOpt(), c);
+	 *             .as(RowParser.int64("id").singleOpt(), conn);
 	 *     );
 	 * }
 	 * }</pre>
@@ -123,17 +123,16 @@ public interface Transaction {
 	 * {@link Transaction} implementation, returned by the
 	 * {@link Transactional#transaction()} interface.
 	 *
-	 * @param conn the connection used in this transaction
+	 * @param conn the connection used in this transaction. The connection is
+	 *        not closed by this method. Only <em>committed</em> or
+	 *        <em>rolled back</em>.
 	 * @param block the code block to execute with the given connection
 	 * @param <T> the result type
 	 * @return the result of the connection block
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 * @throws SQLException if the transaction fails
 	 */
-	static <T> T txm(
-		final Connection conn,
-		final SqlSupplier<? extends T> block
-	)
+	static <T> T txm(final Connection conn, final SqlSupplier<? extends T> block)
 		throws SQLException
 	{
 		requireNonNull(conn);
