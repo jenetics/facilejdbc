@@ -84,8 +84,8 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * @see Transaction
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
+ * @version 1.1
+ * @since 1.1
  */
 @FunctionalInterface
 public interface Transactional {
