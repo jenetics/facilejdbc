@@ -31,8 +31,8 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import io.jenetics.facilejdbc.Transactional;
 import io.jenetics.facilejdbc.util.Queries;
-import io.jenetics.facilejdbc.util.Transactional;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>

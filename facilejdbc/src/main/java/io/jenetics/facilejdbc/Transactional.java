@@ -17,17 +17,20 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc.util;
+package io.jenetics.facilejdbc;
 
-import io.jenetics.facilejdbc.function.SqlFunction;
+import static java.util.Objects.requireNonNull;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import io.jenetics.facilejdbc.function.SqlFunction;
+import io.jenetics.facilejdbc.function.SqlSupplier;
+
 /**
  * This interface represents the <em>transactional</em> capability, typically
  * exposed by a database. In this sense, it can be seen as a minimal database
- * interface, just by exposing a a {@link Connection} factory method,
+ * interface, just by exposing a {@link Connection} factory method,
  * {@link #connection()}.
  *
  * <pre>{@code
@@ -52,25 +55,59 @@ import java.sql.SQLException;
  *
  * <pre>{@code
  * final long id = db.transaction().apply(conn ->
- *     INSERT
+ *     INSERT_QUERY
  *         .on(author, DCTOR)
  *         .executeInsert(conn)
  *         .orElseThrow()
  * );
  * }</pre>
  *
+ * Using a transaction for batch update.
+ *
+ * <pre>{@code
+ * db.transaction().accept(conn ->
+ *     final Batch batch = Batch.of(
+ *         authors,
+ *         Dctor.of(
+ *             field("name", Author::name),
+ *             field("age", Author::age)
+ *         )
+ *     );
+ *
+ *     INSERT_BOOK_AUTHOR.executeUpdate(batch, conn);
+ * );
+ * }</pre>
+ *
  * @apiNote
  * The transactional default behaviour
  *
- *  @see Transaction
+ * @see Transaction
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @version !__version__!
+ * @since !__version__!
  */
 @FunctionalInterface
 public interface Transactional {
 
 	/**
-	 * Return the DB connection.
+	 * Return the DB connection. If you obtain a new connection you are
+	 * responsible for closing it after usage. This is done ideally in a
+	 * resource-try block.
+	 *
+	 * <pre>{@code
+	 * final Transactional db = ...;
+	 * try (var conn = db.connection()) {
+	 *     // Using the connection.
+	 *     ...;
+	 * }
+	 * }</pre>
+	 *
+	 * You are usually using the {@link #transaction()} method for getting an
+	 * instance of the {@link Transaction} interface, which is then using this
+	 * method for obtaining the needed connections.
+	 *
+	 * @see #transaction()
 	 *
 	 * @return the DB connection
 	 * @throws SQLException if obtaining a DB connection fails
@@ -81,7 +118,23 @@ public interface Transactional {
 	 * Return a <em>Transaction</em> object, which obtains the connection,
 	 * needed for executing a query, from the {@link #connection()} factory
 	 * method. The transactional behaviour is defined by the
-	 * {@link #apply(Connection, SqlFunction)} method of {@code this} interface.
+	 * {@link #txm(Connection, SqlSupplier)} method of {@code this} interface.
+	 *
+	 * <pre>{@code
+	 * final Transaction db = ...;
+	 * final long id = db.transaction().apply(conn ->
+	 *     INSERT_QUERY
+	 *         .on(author, DCTOR)
+	 *         .executeInsert(conn)
+	 *         .orElseThrow()
+	 * );
+	 * }</pre>
+	 *
+	 * @implNote
+	 * It is possible to store the {@code Transaction} instance, returned by
+	 * this methods, in a variable and use it for more than one call.
+	 *
+	 * @see #txm(Connection, SqlSupplier)
 	 *
 	 * @return a new <em>Transaction</em> object
 	 */
@@ -91,35 +144,36 @@ public interface Transactional {
 			public <T> T apply(final SqlFunction<? super Connection, ? extends T> block)
 				throws SQLException
 			{
+				requireNonNull(block);
+
 				try (var conn = connection()) {
-					return Transactional.this.apply(conn, block);
+					return Transactional.this.txm(conn, () -> block.apply(conn));
 				}
 			}
 		};
 	}
 
 	/**
-	 * This method implements the transactional default behaviour ot the
-	 * {@link Transaction} implementation, returned by the {@link #transaction()}
-	 * interface. If a different behaviour is necessary, also override this
-	 * default method.
+	 * This method defines the transactional behaviour of the {@link Transaction}
+	 * interface, returned by the {@link #transaction()} method. The default
+	 * implementation is given by the {@link Transaction#txm(Connection, SqlSupplier)}
+	 * method. If a different behaviour is needed, override this method.
 	 *
-	 * @see Transaction#apply(Connection, SqlFunction)
+	 * @see Transaction#txm(Connection, SqlSupplier)
 	 *
-	 * @param conn the connection used in this transaction
+	 * @param conn the connection used in this transaction. The connection is
+	 *        not closed by this method. Only <em>committed</em> or
+	 *        <em>rolled back</em>.
 	 * @param block the code block to execute with the given connection
 	 * @param <T> the result type
 	 * @return the result of the connection block
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 * @throws SQLException if the transaction fails
 	 */
-	default <T> T apply(
-		final Connection conn,
-		final SqlFunction<? super Connection, ? extends T> block
-	)
+	default <T> T txm(final Connection conn, final SqlSupplier<? extends T> block)
 		throws SQLException
 	{
-		return Transaction.apply(conn, block);
+		return Transaction.txm(conn, block);
 	}
 
 }
