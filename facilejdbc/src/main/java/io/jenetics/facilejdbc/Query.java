@@ -93,14 +93,14 @@ public final class Query implements Serializable {
 	 * <pre>{@code
 	 * final String sql = "SELECT * FROM table WHERE id = :id;";
 	 * final Query query = Query.of(sql);
-	 * assert sql.equals(query.paramSql());
+	 * assert sql.equals(query.rawSql());
 	 * }</pre>
 	 *
 	 * @since 1.1
 	 *
 	 * @return the original SQL string
 	 */
-	public String paramSql() {
+	public String rawSql() {
 		return sql.sql();
 	}
 
