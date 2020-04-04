@@ -40,6 +40,17 @@ public class SqlTest {
 
 		Assert.assertEquals(s.paramNames(), params);
 		Assert.assertEquals(s.string(), sql);
+		Assert.assertEquals(string, s.sql());
+	}
+
+	@Test(dataProvider = "strings")
+	public void formatting(
+		final String string,
+		final List<String> params,
+		final String sql
+	) {
+		final Sql s = Sql.of(string);
+		Assert.assertEquals(string, s.sql());
 	}
 
 	@DataProvider
@@ -47,6 +58,7 @@ public class SqlTest {
 		return new Object[][] {
 			{"", List.of(), ""},
 			{" ", List.of(), " "},
+			{"SELECT COUNT(*) FROM table;", List.of(), "SELECT COUNT(*) FROM table;"},
 			{"and v=::g", List.of(), "and v=::g"},
 			{"AND x= :::v; ", List.of(), "AND x= :::v; "},
 			{"AND M.STATUS = :::STATUS ::1", List.of(), "AND M.STATUS = :::STATUS ::1"},
