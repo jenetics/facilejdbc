@@ -88,6 +88,23 @@ public final class Query implements Serializable {
 	}
 
 	/**
+	 * Return the original SQL string, this object is created with. So the
+	 * following assertion holds for every possible SQL string;
+	 * <pre>{@code
+	 * final String sql = "SELECT * FROM table WHERE id = :id;";
+	 * final Query query = Query.of(sql);
+	 * assert sql.equals(query.rawSql());
+	 * }</pre>
+	 *
+	 * @since 1.1
+	 *
+	 * @return the original SQL string
+	 */
+	public String rawSql() {
+		return sql.sql();
+	}
+
+	/**
 	 * Return the list of parsed parameter names. The list may be empty or
 	 * contain duplicate entries, depending on the input string. The list are
 	 * in exactly the order they appeared in the SQL string and can be used for

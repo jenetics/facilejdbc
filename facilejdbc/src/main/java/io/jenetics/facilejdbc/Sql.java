@@ -19,6 +19,7 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static io.jenetics.facilejdbc.SerialIO.readInt;
 import static io.jenetics.facilejdbc.SerialIO.readString;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Internal representation of an SQL query string. This parses the structure of
@@ -61,6 +63,34 @@ import java.util.regex.Pattern;
  */
 final class Sql {
 
+	private static final class Param {
+		final int index;
+		final String name;
+
+		private Param(final int index, final String name) {
+			this.index = index;
+			this.name = name;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(index, name);
+		}
+
+		@Override
+		public boolean equals(final Object obj) {
+			return obj == this ||
+				obj instanceof Param &&
+				index == ((Param)obj).index &&
+				Objects.equals(name, ((Param)obj).name);
+		}
+
+		@Override
+		public String toString() {
+			return format("%s[%d]", name, index);
+		}
+	}
+
 	private static final Pattern PARAM_PATTERN = Pattern.compile(
 		"(?<!:):\\w+\\b(?=(?:[^\"'\\\\]*" +
 		"(?:\\\\.|([\"'])(?:(?:(?!\\\\|\\1).)*\\\\.)*" +
@@ -68,11 +98,13 @@ final class Sql {
 	);
 
 	private final String string;
-	private final List<String> paramNames;
+	private final List<Param> params;
 
-	Sql(final String string, final List<String> paramNames) {
+	private List<String> paramNames = null;
+
+	Sql(final String string, final List<Param> params) {
 		this.string = requireNonNull(string);
-		this.paramNames = List.copyOf(paramNames);
+		this.params = List.copyOf(params);
 	}
 
 	/**
@@ -86,6 +118,33 @@ final class Sql {
 	}
 
 	/**
+	 * Return the original SQL string, this object is created with. So the
+	 * following assertion holds for every possible SQL string;
+	 * <pre>{@code
+	 * final String query = "SELECT * FROM table WHERE id = :id;";
+	 * final Sql sql = Sql.of(query);
+	 * assert query.equals(sql.sql());
+	 * }</pre>
+	 *
+	 * @since 1.1
+	 *
+	 * @return the original SQL string
+	 */
+	String sql() {
+		final StringBuilder sql = new StringBuilder();
+
+		int index = 0;
+		for (var param : params) {
+			sql.append(string, index, param.index - 1);
+			sql.append(":").append(param.name);
+			index = param.index;
+		}
+		sql.append(string.substring(index));
+
+		return sql.toString();
+	}
+
+	/**
 	 * Return the list of parsed parameter names. The list may be empty or
 	 * contain duplicate entries, depending on the input string. The list are
 	 * in exactly the order they appeared in the SQL string.
@@ -93,12 +152,19 @@ final class Sql {
 	 * @return the parsed parameter names
 	 */
 	List<String> paramNames() {
-		return paramNames;
+		List<String> names = paramNames;
+		if (names == null) {
+			paramNames = names = params.stream()
+				.map(p -> p.name)
+				.collect(Collectors.toUnmodifiableList());
+		}
+
+		return names;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(string, paramNames);
+		return Objects.hash(string, params);
 	}
 
 	@Override
@@ -106,7 +172,7 @@ final class Sql {
 		return this == obj ||
 			obj instanceof Sql &&
 			string.equals(((Sql)obj).string) &&
-			paramNames.equals(((Sql)obj).paramNames);
+			params.equals(((Sql)obj).params);
 	}
 
 	@Override
@@ -127,18 +193,19 @@ final class Sql {
 	 * @throws NullPointerException if the given SQL string is {@code null}
 	 */
 	static Sql of(final String sql) {
-		final List<String> names = new ArrayList<>();
+		final List<Param> params = new ArrayList<>();
 		final StringBuffer parsed = new StringBuffer();
 
 		final Matcher matcher = PARAM_PATTERN.matcher(sql);
 		while (matcher.find()) {
-			final String match = matcher.group();
-			names.add(match.substring(1));
+			final String name = matcher.group().substring(1);
 			matcher.appendReplacement(parsed, "?");
+			final int index = parsed.length();
+			params.add(new Param(index, name));
 		}
 		matcher.appendTail(parsed);
 
-		return new Sql(parsed.toString(), names);
+		return new Sql(parsed.toString(), params);
 	}
 
 
@@ -148,21 +215,22 @@ final class Sql {
 
 	void write(final DataOutput out) throws IOException {
 		writeString(string, out);
-		writeInt(paramNames.size(), out);
-		for (String name : paramNames) {
-			writeString(name, out);
+		writeInt(params.size(), out);
+		for (var param : params) {
+			writeInt(param.index, out);
+			writeString(param.name, out);
 		}
 	}
 
 	static Sql read(final DataInput in) throws IOException {
 		final String sql = readString(in);
 		final int paramCount = readInt(in);
-		final List<String> paramNames = new ArrayList<>();
+		final List<Param> params = new ArrayList<>();
 		for (int i = 0; i < paramCount; ++i) {
-			paramNames.add(readString(in));
+			params.add(new Param(readInt(in), readString(in)));
 		}
 
-		return new Sql(sql, paramNames);
+		return new Sql(sql, params);
 	}
 
 }

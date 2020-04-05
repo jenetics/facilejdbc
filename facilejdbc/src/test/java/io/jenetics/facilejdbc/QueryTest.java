@@ -48,6 +48,13 @@ public class QueryTest {
 	}
 
 	@Test
+	public void paramSql() {
+		final String sql = "SELECT * FROM table WHERE id = :id AND name = :name";
+		final Query query = Query.of(sql);
+		Assert.assertEquals(query.rawSql(), sql);
+	}
+
+	@Test
 	public void serialize() throws IOException, ClassNotFoundException {
 		final Query query = Query
 			.of("SELECT * FROM table WHERE id = :id AND name = :name");
