@@ -174,6 +174,20 @@ final Batch batch = Batch.of(persons, DCTOR);
 final int[] counts = INSERT.executeUpdate(batch, conn);
 ```
 
+For simple insertions, you can also do some kind of ad-hoc batch insertions.
+
+```java
+Query.of("INSERT INTO person(id, name) VALUES(:id, :name)")
+    .execute(
+        Batch.of(
+            List.of(value("id", 1), value("name", "Peter")),
+            List.of(value("id", 2), value("name", "Jack")),
+            List.of(value("id", 3), value("name", "John"))
+        ),
+        conn
+    );
+``` 
+
 ### Selecting/inserting object _graphs_
 
 The previous examples shows the basic usage of the library. It is possible to use this for all needed select and insert queries, as you will do it with plain JDBC. If you need to select or insert _small_ object graphs, this becomes fast tedious as well. 
@@ -256,6 +270,49 @@ It is still necessary to implement the sub-inserts and sub-selects, but this can
 >
 > Although the described feature is quite expressive and may solve some selection/insertion task in an elegant way, does not mean you have to use it. Just treat it as additional possibility.
 
+### Transaction handling
+
+_FacileJDBC_ also contains two interfaces for simple transaction handling. The `Transaction` interface defines methods for executing one or more queries in a transactional context.
+
+```java
+final Transaction transaction = ...;
+// Inserting a new link into the DB and returning 
+// the  primary key of the newly inserted row.
+final long id = transaction.apply(conn -> insertLink(link, conn));
+```
+
+If you are not interested in the return value of the SQL execution, you can use the `accept` method instead. In the case of an error, the connection is rolled back. If everything works fine, the connection is committed.
+
+```java
+transaction.accept(conn -> insertLink(link, conn));
+```
+
+The second interface is the `Transactional` interface, which represents the _transactional_ capability, typically exposed by a database. In this sense, it can be seen as a minimal database  interface, just by exposing a `Connection` factory method, `Transactional::connection`. Since `Transactional` is a functional interface, it can easily created by defining the `Connection` factory method.
+
+```java
+final Transactional db = () -> DriverManager.getConnection(
+    "jdbc:hsqldb:mem:testdb",
+    "SA",
+    ""
+);
+```
+
+The example above shows how to create a `Transactional` instance for a HSQLDB in-memory database, perfectly usable for testing purposes. Then it can be used for performing some SQL inserts.
+
+```java
+final long bookId = db.transaction().apply(conn ->
+    Book.insert(book, conn)
+);
+``` 
+
+For production code you usually have a `DataSource`, which represents the connection to the DB. It's equally easy to create a `Transactional` object from a given `DataSource` instance.
+
+```java
+final DataSource ds = ...;
+final Transactional db = ds::getConnection;
+```
+
+
 ## License
 
 The library is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
@@ -276,4 +333,26 @@ The library is licensed under the [Apache License, Version 2.0](http://www.apach
 
 ## Release notes
 
-* Initial release.
+### [1.1.0](https://github.com/jenetics/facilejdbc/releases/tag/v1.1.0)
+
+#### Improvements
+
+* [#15](https://github.com/jenetics/facilejdbc/issues/15): Make the `Query` class serializable.
+* [#17](https://github.com/jenetics/facilejdbc/issues/17): Add lightwieght transaction functionality.
+```java
+final Transactional db = () -> DriverManager.getConnection(
+    "jdbc:hsqldb:mem:testdb",
+    "SA",
+    ""
+);
+db.transaction().accept(conn -> {
+    for (var query : queries) {
+        query.execute(conn);
+    }
+});
+final long id = db.transaction().apply(conn ->
+    Book.insert(BOOKS.get(0), conn)
+);
+```
+* [#19](https://github.com/jenetics/facilejdbc/issues/19): The original SQL string is reconstructible from the query object; `Query.rawSql()`.
+

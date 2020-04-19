@@ -43,7 +43,7 @@ public interface ParamValue {
 	 *
 	 * @param index the index of the value to set
 	 * @param stmt the prepared statement to fill (set)
-	 * @throws SQLException if the preparation fails
+	 * @throws SQLException if setting the parameter value fails
 	 */
 	void set(final int index, final PreparedStatement stmt)
 		throws SQLException;

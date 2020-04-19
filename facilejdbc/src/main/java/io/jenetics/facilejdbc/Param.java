@@ -106,7 +106,11 @@ public interface Param {
 	 *         {@code null}
 	 */
 	static Param value(final String name, final Object value) {
-		return Param.lazy(name, () -> value);
+		requireNonNull(value);
+		return Param.of(
+			name,
+			(index, stmt) -> stmt.setObject(index, map(value))
+		);
 	}
 
 	/**

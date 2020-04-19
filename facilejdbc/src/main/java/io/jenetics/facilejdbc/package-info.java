@@ -20,7 +20,9 @@
 
 /**
  * This is the base package of the JDBC wrapper and contains all needed
- * interfaces and the {@link io.jenetics.facilejdbc.Query} class.
+ * interfaces and the {@link io.jenetics.facilejdbc.Query} class. An overview
+ * of the purpose and functionality of the <em>FacileJDBC</em> library can be
+ * found <a href="https://github.com/jenetics/facilejdbc/blob/master/README.md">here</a>.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version 1.0

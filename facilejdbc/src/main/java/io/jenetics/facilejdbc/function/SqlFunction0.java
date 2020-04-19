@@ -33,7 +33,10 @@ import java.sql.SQLException;
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version 1.0
  * @since 1.0
+ *
+ * @deprecated Use {@link SqlConsumer} instead
  */
+@Deprecated
 @FunctionalInterface
 public interface SqlFunction0<T> {
 
@@ -43,6 +46,6 @@ public interface SqlFunction0<T> {
 	 * @param t the function argument
 	 * @throws SQLException if the execution of the SQL-function fails
 	 */
-	void apply(final T t) throws SQLException;
+	void accept(final T t) throws SQLException;
 
 }

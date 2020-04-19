@@ -21,6 +21,12 @@ package io.jenetics.facilejdbc;
 
 import static java.util.Arrays.asList;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -39,6 +45,33 @@ public class QueryTest {
 			"SELECT * FROM table WHERE id = ? AND name = ?"
 		);
 		Assert.assertEquals(query.paramNames(), asList("id", "name"));
+	}
+
+	@Test
+	public void paramSql() {
+		final String sql = "SELECT * FROM table WHERE id = :id AND name = :name";
+		final Query query = Query.of(sql);
+		Assert.assertEquals(query.rawSql(), sql);
+	}
+
+	@Test
+	public void serialize() throws IOException, ClassNotFoundException {
+		final Query query = Query
+			.of("SELECT * FROM table WHERE id = :id AND name = :name");
+
+		final var bout = new ByteArrayOutputStream();
+		final var oout = new ObjectOutputStream(bout);
+
+		oout.writeObject(query);
+		final byte[] bytes = bout.toByteArray();
+
+		final var bin = new ByteArrayInputStream(bytes);
+		final var oin = new ObjectInputStream(bin);
+
+		Assert.assertEquals(
+			oin.readObject().toString(),
+			query.toString()
+		);
 	}
 
 }

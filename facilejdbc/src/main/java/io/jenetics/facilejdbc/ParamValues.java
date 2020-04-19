@@ -52,7 +52,7 @@ public interface ParamValues {
 	 *        names is exhaustive and can be used for determining the parameter
 	 *        index in the prepared statement.
 	 * @param stmt the prepared statement to fill (set)
-	 * @throws SQLException if the preparation fails
+	 * @throws SQLException if setting the parameter values fails
 	 */
 	void set(final List<String> paramNames, final PreparedStatement stmt)
 		throws SQLException;

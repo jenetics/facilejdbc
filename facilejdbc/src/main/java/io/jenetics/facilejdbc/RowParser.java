@@ -19,6 +19,8 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.util.Objects.requireNonNull;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,8 +36,6 @@ import java.util.function.Supplier;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * Converts one row from the given {@link ResultSet} into a data object from
@@ -60,7 +60,7 @@ import static java.util.Objects.requireNonNull;
  * @param <T> the row type
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  */
 @FunctionalInterface
@@ -152,20 +152,38 @@ public interface RowParser<T> {
 	/**
 	 * Return a new parser witch parses a the whole selection result.
 	 *
+	 * @since 1.1
+	 *
+	 * @param factory a supplier providing a new empty {@code Collection} into
+	 *        which the results will be inserted
+	 * @param <C> the type of the resulting {@code Collection}
+	 * @return which collects all the input elements into a {@code Collection},
+	 *         in encounter order
+	 * @throws NullPointerException if the given {@code factory} is {@code null}
+	 */
+	default  <C extends Collection<T>>
+	ResultSetParser<C> collection(final Supplier<C> factory) {
+		return collection(factory, Function.identity());
+	}
+
+	/**
+	 * Return a new parser witch parses a the whole selection result.
+	 *
 	 * @return a new parser witch parses a the whole selection result
 	 */
 	default ResultSetParser<List<T>> list() {
-		return collection(ArrayList::new, Function.identity());
+		return collection(ArrayList::new);
 	}
 
 	private <C1 extends Collection<T>, C2 extends Collection<T>>
 	ResultSetParser<C2>
-	collection(final Supplier<C1> supplier, final Function<C1, C2> mapper) {
+	collection(final Supplier<C1> factory, final Function<C1, C2> mapper) {
+		requireNonNull(factory);
 		requireNonNull(mapper);
 
 		return (rs, conn) -> {
 			final ResultSetRow row = ResultSetRow.of(rs);
-			final C1 result = supplier.get();
+			final C1 result = factory.get();
 			while (rs.next()) {
 				result.add(parse(row, conn));
 			}
@@ -176,6 +194,8 @@ public interface RowParser<T> {
 
 	/**
 	 * Return a new parser witch parses a the whole selection result.
+	 *
+	 * @since 1.1
 	 *
 	 * @return a new parser witch parses a the whole selection result, as an
 	 *         unmodifiable list
@@ -194,14 +214,18 @@ public interface RowParser<T> {
 	/**
 	 * Return a new parser witch parses a the whole selection result.
 	 *
+	 * @since 1.1
+	 *
 	 * @return a new parser witch parses a the whole selection result
 	 */
 	default ResultSetParser<Set<T>> set() {
-		return collection(HashSet::new, Function.identity());
+		return collection(HashSet::new);
 	}
 
 	/**
 	 * Return a new parser witch parses a the whole selection result.
+	 *
+	 * @since 1.1
 	 *
 	 * @return a new parser witch parses a the whole selection result, as an
 	 *         unmodifiable list
