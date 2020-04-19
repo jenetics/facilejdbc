@@ -51,6 +51,29 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * final Transactional db = ds::getConnection;
  * }</pre>
  *
+ * If you want to implement a different transaction strategy, you have also to
+ * implement the {@link #txm(Connection, SqlSupplier)} method of {@code this}
+ * interface.
+ *
+ * <pre>{@code
+ * final var db = new Transactional() {
+ *     public Connection connection() throws SQLException {
+ *         return DriverManager.getConnection(
+ *             "jdbc:hsqldb:mem:testdb",
+ *             "SA",
+ *             ""
+ *         );
+ *     }
+ *     public <T> T txm(final Connection conn, final SqlSupplier<? extends T> block)
+ *         throws SQLException
+ *     {
+ *         // Implement your transaction handling.
+ *         return ...;
+ *     }
+ * };
+ * }</pre>
+ *
+ *
  * The usage of the <em>db</em> is then also very straight forward.
  *
  * <pre>{@code
