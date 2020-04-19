@@ -333,4 +333,26 @@ The library is licensed under the [Apache License, Version 2.0](http://www.apach
 
 ## Release notes
 
-* Initial release.
+### [1.1.0](https://github.com/jenetics/facilejdbc/releases/tag/v1.0.0)
+
+#### Improvements
+
+* [#15](https://github.com/jenetics/facilejdbc/issues/15): Make the `Query` class serializable.
+* [#17](https://github.com/jenetics/facilejdbc/issues/17): Add lightwieght transaction functionality.
+```java
+final Transactional db = () -> DriverManager.getConnection(
+    "jdbc:hsqldb:mem:testdb",
+    "SA",
+    ""
+);
+db.transaction().accept(conn -> {
+    for (var query : queries) {
+        query.execute(conn);
+    }
+});
+final long id = db.transaction().apply(conn ->
+    Book.insert(BOOKS.get(0), conn)
+);
+```
+* [#19](https://github.com/jenetics/facilejdbc/issues/19): The original SQL string is reconstructible from the query object; `Query.rawSql()`.
+

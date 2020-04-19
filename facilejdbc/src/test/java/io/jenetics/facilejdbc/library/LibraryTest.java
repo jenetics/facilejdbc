@@ -88,11 +88,10 @@ public class LibraryTest {
 			getClass().getResourceAsStream("/library-hsqldb.sql")
 		);
 
-		db.transaction().apply(conn -> {
+		db.transaction().accept(conn -> {
 			for (var query : queries) {
 				query.execute(conn);
 			}
-			return null;
 		});
 	}
 
