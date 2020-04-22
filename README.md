@@ -21,6 +21,7 @@ JDBC is the basic API for accessing relational databases. Being basic makes it q
 > * Functions for creating (parsing) _entity_ objects from query `ResultSet`s: Available via the `RowParser` interface
 > * Functions for splitting (deconstructing) _entity_ objects to DB columns: Available via the `Dctor` interface.
 > * A `Query` object to putting all things together.
+> * Lightweight transaction handling support.
 
 #### _FacileJDBC_ is not
 
@@ -34,7 +35,6 @@ JDBC is the basic API for accessing relational databases. Being basic makes it q
 > * DB-vendor specific code, uses 100% pure JDBC.
 > * Query generation capabilities. The user is responsible for creating the proper SQL string.
 > * Generated classes or dynamically generated proxies.
-> * Transaction handling. The users are responsible when to create, commit or rollback their connections. 
 > * No connection pooling.
 
 
