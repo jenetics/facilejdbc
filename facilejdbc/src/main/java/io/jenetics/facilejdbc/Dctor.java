@@ -47,7 +47,7 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * }</pre>
  *
  * @apiNote
- * A {@code Dctor} (de-constructor) is responsible for splitting a given record
+ * A {@code Dctor} (deconstructor) is responsible for splitting a given record
  * into a set of fields (columns), which can be written into the DB. The
  * counterpart of this interface is the {@link RowParser}, which builds a
  * record of a DB result row.
@@ -137,13 +137,13 @@ public interface Dctor<T> {
 	 * ************************************************************************/
 
 	/**
-	 * Create a new de-constructor from the given field definitions.
+	 * Create a new deconstructor from the given field definitions.
 	 *
 	 * @see #of(Field[])
 	 *
 	 * @param fields the fields which describe the deconstruction
 	 * @param <T> the type of the record to be deconstructed
-	 * @return a new de-constructor from the given field definitions
+	 * @return a new deconstructor from the given field definitions
 	 */
 	static <T> Dctor<T> of(final List<? extends Field<? super T>> fields) {
 		final Map<String, Field<? super T>> map = fields.isEmpty()
@@ -166,13 +166,13 @@ public interface Dctor<T> {
 	}
 
 	/**
-	 * Create a new de-constructor from the given field definitions.
+	 * Create a new deconstructor from the given field definitions.
 	 *
 	 * @see #of(List)
 	 *
 	 * @param fields the fields which describe the deconstruction
 	 * @param <T> the type of the record to be deconstructed
-	 * @return a new de-constructor from the given field definitions
+	 * @return a new deconstructor from the given field definitions
 	 */
 	@SafeVarargs
 	static <T> Dctor<T> of(final Field<? super T>... fields) {

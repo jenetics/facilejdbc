@@ -54,7 +54,7 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 	 * Create a new batch from the given records (rows) and the deconstructor.
 	 *
 	 * @param records the rows to be inserted by the created batch
-	 * @param dctor the record de-constructor
+	 * @param dctor the record deconstructor
 	 * @param <T> the row type
 	 * @return a new batch from the given arguments
 	 * @throws NullPointerException if one of the arguments is {@code null}

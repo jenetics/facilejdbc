@@ -168,7 +168,7 @@ public final class Query implements Serializable {
 	 * Return a new query object with the given query parameter values.
 	 *
 	 * @param record the query parameters
-	 * @param dctor the de-constructor used to <em>split</em> the parameters
+	 * @param dctor the deconstructor used to <em>split</em> the parameters
 	 * @param <T> the parameter record type
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if one of the arguments is {@code null}
