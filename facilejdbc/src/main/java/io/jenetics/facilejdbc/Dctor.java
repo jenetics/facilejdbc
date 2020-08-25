@@ -30,6 +30,7 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
@@ -182,6 +183,37 @@ public interface Dctor<T> {
 
 	/**
 	 * Create a new record field with the given {@code name} and field
+	 * {@code accessor}. The given {@code mapper} function allows a
+	 * transformation to the proper SQL type before inserting the value into
+	 * the DB.
+	 *
+	 * @since !__version__!
+	 *
+	 * @param name the field name
+	 * @param value the field accessor
+	 * @param mapper the additional mapper function
+	 * @param <T> the record type
+	 * @param <U> the native field type
+	 * @param <V> the mapped field type
+	 * @return a new record field
+	 * @throws NullPointerException if one of the given arguments is {@code null}
+	 */
+	static <T, U, V> Field<T> field(
+		final String name,
+		final SqlFunction2<? super T, ? super Connection, ? extends U> value,
+		final Function<? super U, ? extends V> mapper
+	) {
+		return Field.of(
+			name,
+			(record, conn) -> (index, stmt) -> stmt.setObject(
+				index,
+				map(mapper.apply(value.apply(record, conn)))
+			)
+		);
+	}
+
+	/**
+	 * Create a new record field with the given {@code name} and field
 	 * {@code accessor}.
 	 *
 	 * @see #field(String, SqlFunction)
@@ -196,11 +228,32 @@ public interface Dctor<T> {
 		final String name,
 		final SqlFunction2<? super T, ? super Connection, ?> value
 	) {
-		return Field.of(
-			name,
-			(record, conn) -> (index, stmt) ->
-				stmt.setObject(index, map(value.apply(record, conn)))
-		);
+		return field(name, value, a -> a);
+	}
+
+	/**
+	 * Create a new record field with the given {@code name} and field
+	 * {@code accessor}. The given {@code mapper} function allows a
+	 * transformation to the proper SQL type before inserting the value into
+	 * the DB.
+	 *
+	 * @since !__version__!
+	 *
+	 * @param name the field name
+	 * @param value the field accessor
+	 * @param mapper the additional mapper function
+	 * @param <T> the record type
+	 * @param <U> the native field type
+	 * @param <V> the mapped field type
+	 * @return a new record field
+	 * @throws NullPointerException if one of the given arguments is {@code null}
+	 */
+	static <T, U, V> Field<T> field(
+		final String name,
+		final SqlFunction<? super T, ? extends U> value,
+		final Function<? super U, ? extends V> mapper
+	) {
+		return field(name, (record, conn) -> value.apply(record), mapper);
 	}
 
 	/**
@@ -219,7 +272,7 @@ public interface Dctor<T> {
 		final String name,
 		final SqlFunction<? super T, ?> value
 	) {
-		return field(name, (record, conn) -> value.apply(record));
+		return field(name, value, a -> a);
 	}
 
 	/**
