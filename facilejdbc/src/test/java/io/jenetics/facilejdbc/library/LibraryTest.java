@@ -50,6 +50,7 @@ public class LibraryTest {
 			"Auf der Suche nach der verlorenen Zeit",
 			"978-3518061756",
 			5100,
+			LocalDate.of(1987, 2, 4),
 			List.of(
 				new Author(
 					"Marcel Proust",
@@ -61,6 +62,7 @@ public class LibraryTest {
 			"Database Design for Mere Mortals",
 			"978-0321884497",
 			654,
+			LocalDate.of(1945, 1, 4),
 			List.of(
 				new Author(
 					"Michael J. Hernandez",
@@ -72,6 +74,7 @@ public class LibraryTest {
 			"Der alte Mann und das Meer",
 			"B00JM4RD2S",
 			142,
+			LocalDate.of(1887, 2, 4),
 			List.of(
 				new Author(
 					"Ernest Hemingway",
