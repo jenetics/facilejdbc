@@ -43,6 +43,7 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * final Dctor<Book> dctor = Dctor.of(
  *     Dctor.field("title", Book::title),
  *     Dctor.field("isbn", Book::isbn),
+ *     Dctor.field("published_at", Book::publishedAt, Date::valueOf),
  *     Dctor.field("pages", Book::pages)
  * );
  * }</pre>
@@ -58,7 +59,7 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * @param <T> the record type to be deconstructed
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.0
+ * @version !__version__!
  * @since 1.0
  */
 @FunctionalInterface
