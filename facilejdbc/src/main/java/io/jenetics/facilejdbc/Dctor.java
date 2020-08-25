@@ -203,6 +203,10 @@ public interface Dctor<T> {
 		final SqlFunction2<? super T, ? super Connection, ? extends U> value,
 		final Function<? super U, ? extends V> mapper
 	) {
+		requireNonNull(name);
+		requireNonNull(value);
+		requireNonNull(mapper);
+
 		return Field.of(
 			name,
 			(record, conn) -> (index, stmt) -> stmt.setObject(
