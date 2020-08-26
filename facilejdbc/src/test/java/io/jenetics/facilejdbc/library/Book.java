@@ -128,7 +128,8 @@ public final class Book {
 	);
 
 	private static final Query SELECT_BY_TITLE = Query.of(
-		"SELECT id, title, isbn, published_at, pages FROM book WHERE LCASE(title) like :title"
+		"SELECT id, title, isbn, published_at, pages " +
+		"FROM book WHERE LCASE(title) like :title"
 	);
 
 	/**
