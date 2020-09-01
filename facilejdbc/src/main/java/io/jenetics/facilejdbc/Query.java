@@ -468,7 +468,7 @@ public final class Query implements Serializable {
 		/**
 		 * The object being serialized.
 		 */
-		private Query _object;
+		private Query object;
 
 		/**
 		 * Constructor for deserialization.
@@ -482,21 +482,21 @@ public final class Query implements Serializable {
 		 * @param object  the object
 		 */
 		Serial(final Query object) {
-			_object = object;
+			this.object = object;
 		}
 
 		@Override
 		public void writeExternal(final ObjectOutput out) throws IOException {
-			_object.write(out);
+			object.write(out);
 		}
 
 		@Override
 		public void readExternal(final ObjectInput in) throws IOException {
-			_object = Query.read(in);
+			object = Query.read(in);
 		}
 
 		private Object readResolve() {
-			return _object;
+			return object;
 		}
 
 	}
