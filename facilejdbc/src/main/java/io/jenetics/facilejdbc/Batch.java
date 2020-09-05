@@ -93,6 +93,7 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 		return () -> new Iterator<>() {
 			private final Iterator<? extends List<? extends Param>>
 			it = rows.iterator();
+
 			@Override
 			public boolean hasNext() {
 				return it.hasNext();

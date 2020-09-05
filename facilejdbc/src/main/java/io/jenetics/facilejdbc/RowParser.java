@@ -188,14 +188,16 @@ public interface RowParser<T> {
 	}
 
 	private <C1 extends Collection<T>, C2 extends Collection<T>>
-	ResultSetParser<C2>
-	collection(final Supplier<C1> factory, final Function<C1, C2> mapper) {
+	ResultSetParser<C2> collection(
+		final Supplier<C1> factory,
+		final Function<? super C1, ? extends C2> mapper
+	) {
 		requireNonNull(factory);
 		requireNonNull(mapper);
 
 		return (rs, conn) -> {
-			final ResultSetRow row = ResultSetRow.of(rs);
-			final C1 result = factory.get();
+			final var row = ResultSetRow.of(rs);
+			final var result = factory.get();
 			while (rs.next()) {
 				result.add(parse(row, conn));
 			}
