@@ -20,18 +20,22 @@
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @since 1.0
+ * @since !__version__!
  * @version !__version__!
  */
-pluginManagement {
-	repositories {
-		mavenLocal()
-		jcenter()
-		gradlePluginPortal()
-	}
+plugins {
+	`java-gradle-plugin`
+	`kotlin-dsl`
+	kotlin("jvm") version "1.3.72"
+
 }
 
-rootProject.name = "facilejdbc"
+repositories {
+	mavenLocal()
+	gradlePluginPortal()
+}
 
-// The FacileJDBC projects.
-include("facilejdbc")
+configure<JavaPluginConvention> {
+	sourceCompatibility = JavaVersion.VERSION_11
+	targetCompatibility = JavaVersion.VERSION_11
+}
