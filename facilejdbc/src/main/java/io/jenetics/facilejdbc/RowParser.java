@@ -110,7 +110,11 @@ public interface RowParser<T> {
 
 	/**
 	 * Return a new parser which expects at least one result. If no result is
-	 * available, a {@link NoSuchElementException} is thrown by the parser.
+	 * available, a {@link NoSuchElementException} is thrown by the parser.  If
+	 * more then one result is available, the first one is returned.
+	 *
+	 * @see #singleNull()
+	 * @see #singleOpt()
 	 *
 	 * @return a new parser which expects at least one result
 	 */
@@ -127,6 +131,9 @@ public interface RowParser<T> {
 	 * Return a new parser which parses a single selection result. If no result
 	 * is available, {@code null} is returned by the parse.
 	 *
+	 * @see #single()
+	 * @see #singleOpt()
+	 *
 	 * @return a new parser which parses a single selection result or
 	 *         {@code null} if not available
 	 */
@@ -139,6 +146,9 @@ public interface RowParser<T> {
 	/**
 	 * Return a new parser which parses a single selection result. If no result
 	 * is available, {@link Optional#empty()} is returned by the parse.
+	 *
+	 * @see #single()
+	 * @see #singleNull()
 	 *
 	 * @return a new parser which parses a single selection result or
 	 *         {@link Optional#empty()} if not available
@@ -169,6 +179,8 @@ public interface RowParser<T> {
 	/**
 	 * Return a new parser witch parses a the whole selection result.
 	 *
+	 * @see #unmodifiableList()
+	 *
 	 * @return a new parser witch parses a the whole selection result
 	 */
 	default ResultSetParser<List<T>> list() {
@@ -176,14 +188,16 @@ public interface RowParser<T> {
 	}
 
 	private <C1 extends Collection<T>, C2 extends Collection<T>>
-	ResultSetParser<C2>
-	collection(final Supplier<C1> factory, final Function<C1, C2> mapper) {
+	ResultSetParser<C2> collection(
+		final Supplier<C1> factory,
+		final Function<? super C1, ? extends C2> mapper
+	) {
 		requireNonNull(factory);
 		requireNonNull(mapper);
 
 		return (rs, conn) -> {
-			final ResultSetRow row = ResultSetRow.of(rs);
-			final C1 result = factory.get();
+			final var row = ResultSetRow.of(rs);
+			final var result = factory.get();
 			while (rs.next()) {
 				result.add(parse(row, conn));
 			}
@@ -196,6 +210,8 @@ public interface RowParser<T> {
 	 * Return a new parser witch parses a the whole selection result.
 	 *
 	 * @since 1.1
+	 *
+	 * @see #list()
 	 *
 	 * @return a new parser witch parses a the whole selection result, as an
 	 *         unmodifiable list
@@ -216,6 +232,8 @@ public interface RowParser<T> {
 	 *
 	 * @since 1.1
 	 *
+	 * @see #unmodifiableSet()
+	 *
 	 * @return a new parser witch parses a the whole selection result
 	 */
 	default ResultSetParser<Set<T>> set() {
@@ -226,6 +244,8 @@ public interface RowParser<T> {
 	 * Return a new parser witch parses a the whole selection result.
 	 *
 	 * @since 1.1
+	 *
+	 * @see #set()
 	 *
 	 * @return a new parser witch parses a the whole selection result, as an
 	 *         unmodifiable list

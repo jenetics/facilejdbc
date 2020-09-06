@@ -25,7 +25,9 @@ import static io.jenetics.facilejdbc.Dctor.fieldValue;
 import static io.jenetics.facilejdbc.Param.value;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -42,17 +44,20 @@ public final class Book {
 	private final String title;
 	private final String isbn;
 	private final Integer pages;
+	private final LocalDate publishedAt;
 	private final List<Author> authors;
 
 	public Book(
 		final String title,
 		final String isbn,
 		final Integer pages,
+		final LocalDate publishedAt,
 		final List<Author> authors
 	) {
 		this.title = requireNonNull(title);
 		this.isbn = isbn;
 		this.pages = pages;
+		this.publishedAt = publishedAt;
 		this.authors = List.copyOf(authors);
 	}
 
@@ -68,13 +73,17 @@ public final class Book {
 		return pages;
 	}
 
+	public LocalDate publishedAt() {
+		return publishedAt;
+	}
+
 	public List<Author> authors() {
 		return authors;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(title, isbn, pages, authors);
+		return Objects.hash(title, isbn, pages, publishedAt, authors);
 	}
 
 	@Override
@@ -84,6 +93,7 @@ public final class Book {
 			Objects.equals(title, ((Book)other).title) &&
 			Objects.equals(isbn, ((Book)other).isbn) &&
 			Objects.equals(pages, ((Book)other).pages) &&
+			Objects.equals(publishedAt, ((Book) other).publishedAt) &&
 			Objects.equals(authors, ((Book)other).authors);
 	}
 
@@ -96,18 +106,20 @@ public final class Book {
 		row.getString("title"),
 		row.getString("isbn"),
 		row.getInt("pages"),
+		row.getDate("published_at").toLocalDate(),
 		Author.selectByBookId(row.getLong("id"), conn)
 	);
 
 	private static final Dctor<Book> DCTOR = Dctor.of(
 		field("title", Book::title),
 		field("isbn", Book::isbn),
+		field("published_at", Book::publishedAt, Date::valueOf),
 		field("pages", Book::pages)
 	);
 
 	private static final Query INSERT= Query.of(
-		"INSERT INTO book(title, isbn, pages) " +
-		"VALUES(:title, :isbn, :pages);"
+		"INSERT INTO book(title, isbn, published_at, pages) " +
+		"VALUES(:title, :isbn, :published_at, :pages);"
 	);
 
 	private static final Query INSERT_BOOK_AUTHOR = Query.of(
@@ -116,7 +128,8 @@ public final class Book {
 	);
 
 	private static final Query SELECT_BY_TITLE = Query.of(
-		"SELECT id, title, isbn, pages FROM book WHERE LCASE(title) like :title"
+		"SELECT id, title, isbn, published_at, pages " +
+		"FROM book WHERE LCASE(title) like :title"
 	);
 
 	/**

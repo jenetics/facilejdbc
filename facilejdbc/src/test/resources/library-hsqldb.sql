@@ -1,12 +1,13 @@
 CREATE TABLE book(
     id BIGINT IDENTITY PRIMARY KEY,
+	published_at DATE,
 	title VARCHAR(255) NOT NULL,
 	isbn VARCHAR(255),
 	pages INT
 );
 
 CREATE TABLE author(
-					   id BIGINT IDENTITY PRIMARY KEY,
+	id BIGINT IDENTITY PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     birth_day DATE,
 
