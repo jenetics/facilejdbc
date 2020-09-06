@@ -131,4 +131,8 @@ public interface Param {
 		);
 	}
 
+	static Param list(final String name, final Object... values) {
+		return null;
+	}
+
 }
