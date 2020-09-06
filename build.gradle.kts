@@ -22,7 +22,7 @@
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @since 1.0
- * @version !__version__!
+ * @version 1.2
  */
 
 plugins {
