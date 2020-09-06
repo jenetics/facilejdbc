@@ -59,7 +59,7 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * @param <T> the record type to be deconstructed
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
+ * @version 1.2
  * @since 1.0
  */
 @FunctionalInterface
@@ -188,7 +188,7 @@ public interface Dctor<T> {
 	 * transformation to the proper SQL type before inserting the value into
 	 * the DB.
 	 *
-	 * @since !__version__!
+	 * @since 1.2
 	 *
 	 * @param name the field name
 	 * @param value the field accessor
@@ -242,7 +242,7 @@ public interface Dctor<T> {
 	 * transformation to the proper SQL type before inserting the value into
 	 * the DB.
 	 *
-	 * @since !__version__!
+	 * @since 1.2
 	 *
 	 * @param name the field name
 	 * @param value the field accessor
