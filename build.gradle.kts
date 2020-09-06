@@ -292,7 +292,7 @@ fun setupPublishing(project: Project) {
 					name.set(FacileJDBC.ID)
 					description.set(project.description)
 					url.set(FacileJDBC.URL)
-					inceptionYear.set("2007")
+					inceptionYear.set("2019")
 
 					licenses {
 						license {
@@ -345,5 +345,6 @@ fun setupPublishing(project: Project) {
 	project.configure<SigningExtension> {
 		sign(project.the<PublishingExtension>().publications["mavenJava"])
 	}
+
 }
 

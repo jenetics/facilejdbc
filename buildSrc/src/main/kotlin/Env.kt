@@ -30,7 +30,7 @@ object Env {
 
 	val YEAR = Year.now();
 
-	val COPYRIGHT_YEAR = "2007-${YEAR}"
+	val COPYRIGHT_YEAR = "2019-${YEAR}"
 
 	val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
@@ -52,7 +52,7 @@ object Env {
  * Information about the library and author.
  */
 object FacileJDBC {
-	const val VERSION = "1.1.0-SNAPSHOT"
+	const val VERSION = "1.1.0"
 	const val ID = "facilejdbc"
 	const val NAME = "facilejdbc"
 	const val GROUP = "io.jenetics"
