@@ -66,7 +66,7 @@ import java.util.stream.IntStream;
  * This class is immutable and thread-safe.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
+ * @version 1.2
  * @since 1.0
  */
 public final class Query implements Serializable {
@@ -133,7 +133,7 @@ public final class Query implements Serializable {
 	 * Return the number of result set rows that is the default fetch size for
 	 * {@link ResultSet} object created when {@code this} query is executed.
 	 *
-	 * @since !__version__!
+	 * @since 1.2
 	 *
 	 * @return the default fetch size for result sets generated from {@code this}
 	 *         query object
@@ -145,7 +145,7 @@ public final class Query implements Serializable {
 	/**
 	 * Return the query timeout.
 	 *
-	 * @since !__version__!
+	 * @since 1.2
 	 *
 	 * @return the query timeout
 	 */
@@ -158,7 +158,7 @@ public final class Query implements Serializable {
 	 * fetched from the database when more rows are needed. If the value
 	 * specified is zero, then the hint is ignored. The default value is zero.
 	 *
-	 * @since !__version__!
+	 * @since 1.2
 	 *
 	 * @see Statement#setFetchSize(int)
 	 *
@@ -183,7 +183,7 @@ public final class Query implements Serializable {
 	 * {@link SQLTimeoutException} is thrown. A JDBC driver must apply this
 	 * limit to the execute, executeQuery and executeUpdate methods.
 	 *
-	 * @since !__version__!
+	 * @since 1.2
 	 *
 	 * @see Statement#setQueryTimeout(int)
 	 *
