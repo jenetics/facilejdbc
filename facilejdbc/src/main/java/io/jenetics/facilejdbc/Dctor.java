@@ -30,6 +30,7 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
@@ -42,12 +43,13 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * final Dctor<Book> dctor = Dctor.of(
  *     Dctor.field("title", Book::title),
  *     Dctor.field("isbn", Book::isbn),
+ *     Dctor.field("published_at", Book::publishedAt, Date::valueOf),
  *     Dctor.field("pages", Book::pages)
  * );
  * }</pre>
  *
  * @apiNote
- * A {@code Dctor} (de-constructor) is responsible for splitting a given record
+ * A {@code Dctor} (deconstructor) is responsible for splitting a given record
  * into a set of fields (columns), which can be written into the DB. The
  * counterpart of this interface is the {@link RowParser}, which builds a
  * record of a DB result row.
@@ -57,7 +59,7 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * @param <T> the record type to be deconstructed
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.0
+ * @version 1.2
  * @since 1.0
  */
 @FunctionalInterface
@@ -137,13 +139,13 @@ public interface Dctor<T> {
 	 * ************************************************************************/
 
 	/**
-	 * Create a new de-constructor from the given field definitions.
+	 * Create a new deconstructor from the given field definitions.
 	 *
 	 * @see #of(Field[])
 	 *
 	 * @param fields the fields which describe the deconstruction
 	 * @param <T> the type of the record to be deconstructed
-	 * @return a new de-constructor from the given field definitions
+	 * @return a new deconstructor from the given field definitions
 	 */
 	static <T> Dctor<T> of(final List<? extends Field<? super T>> fields) {
 		final Map<String, Field<? super T>> map = fields.isEmpty()
@@ -166,18 +168,53 @@ public interface Dctor<T> {
 	}
 
 	/**
-	 * Create a new de-constructor from the given field definitions.
+	 * Create a new deconstructor from the given field definitions.
 	 *
 	 * @see #of(List)
 	 *
 	 * @param fields the fields which describe the deconstruction
 	 * @param <T> the type of the record to be deconstructed
-	 * @return a new de-constructor from the given field definitions
+	 * @return a new deconstructor from the given field definitions
 	 */
 	@SafeVarargs
 	static <T> Dctor<T> of(final Field<? super T>... fields) {
 		final List<? extends Field<? super T>> list = asList(fields);
 		return Dctor.of(list);
+	}
+
+	/**
+	 * Create a new record field with the given {@code name} and field
+	 * {@code accessor}. The given {@code mapper} function allows a
+	 * transformation to the proper SQL type before inserting the value into
+	 * the DB.
+	 *
+	 * @since 1.2
+	 *
+	 * @param name the field name
+	 * @param value the field accessor
+	 * @param mapper the additional mapper function
+	 * @param <T> the record type
+	 * @param <U> the native field type
+	 * @param <V> the mapped field type
+	 * @return a new record field
+	 * @throws NullPointerException if one of the given arguments is {@code null}
+	 */
+	static <T, U, V> Field<T> field(
+		final String name,
+		final SqlFunction2<? super T, ? super Connection, ? extends U> value,
+		final Function<? super U, ? extends V> mapper
+	) {
+		requireNonNull(name);
+		requireNonNull(value);
+		requireNonNull(mapper);
+
+		return Field.of(
+			name,
+			(record, conn) -> (index, stmt) -> stmt.setObject(
+				index,
+				map(mapper.apply(value.apply(record, conn)))
+			)
+		);
 	}
 
 	/**
@@ -196,11 +233,32 @@ public interface Dctor<T> {
 		final String name,
 		final SqlFunction2<? super T, ? super Connection, ?> value
 	) {
-		return Field.of(
-			name,
-			(record, conn) -> (index, stmt) ->
-				stmt.setObject(index, map(value.apply(record, conn)))
-		);
+		return field(name, value, a -> a);
+	}
+
+	/**
+	 * Create a new record field with the given {@code name} and field
+	 * {@code accessor}. The given {@code mapper} function allows a
+	 * transformation to the proper SQL type before inserting the value into
+	 * the DB.
+	 *
+	 * @since 1.2
+	 *
+	 * @param name the field name
+	 * @param value the field accessor
+	 * @param mapper the additional mapper function
+	 * @param <T> the record type
+	 * @param <U> the native field type
+	 * @param <V> the mapped field type
+	 * @return a new record field
+	 * @throws NullPointerException if one of the given arguments is {@code null}
+	 */
+	static <T, U, V> Field<T> field(
+		final String name,
+		final SqlFunction<? super T, ? extends U> value,
+		final Function<? super U, ? extends V> mapper
+	) {
+		return field(name, (record, conn) -> value.apply(record), mapper);
 	}
 
 	/**
@@ -219,7 +277,7 @@ public interface Dctor<T> {
 		final String name,
 		final SqlFunction<? super T, ?> value
 	) {
-		return field(name, (record, conn) -> value.apply(record));
+		return field(name, value, a -> a);
 	}
 
 	/**
