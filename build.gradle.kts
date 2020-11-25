@@ -68,12 +68,13 @@ gradle.projectsEvaluated {
 
 		tasks.withType<JavaCompile> {
 			options.compilerArgs.add("-Xlint:" + xlint())
+			options.compilerArgs.add("--enable-preview")
 		}
 
 		plugins.withType<JavaPlugin> {
 			configure<JavaPluginConvention> {
-				sourceCompatibility = JavaVersion.VERSION_11
-				targetCompatibility = JavaVersion.VERSION_11
+				sourceCompatibility = JavaVersion.VERSION_15
+				targetCompatibility = JavaVersion.VERSION_15
 			}
 
 			setupJava(project)
@@ -129,7 +130,7 @@ fun setupTestReporting(project: Project) {
 	project.apply(plugin = "jacoco")
 
 	project.configure<JacocoPluginExtension> {
-		toolVersion = "0.8.5"
+		toolVersion = "0.8.6"
 	}
 
 	project.tasks {
@@ -145,6 +146,7 @@ fun setupTestReporting(project: Project) {
 
 		named<Test>("test") {
 			useTestNG()
+			jvmArgs("--enable-preview")
 			finalizedBy("jacocoTestReport")
 		}
 	}
@@ -156,6 +158,8 @@ fun setupTestReporting(project: Project) {
 fun setupJavadoc(project: Project) {
 	project.tasks.withType<Javadoc> {
 		val doclet = options as StandardJavadocDocletOptions
+		doclet.addBooleanOption("-enable-preview", true)
+		doclet.addStringOption("-release", "15")
 
 		exclude("**/internal/**")
 
