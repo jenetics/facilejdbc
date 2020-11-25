@@ -261,6 +261,12 @@ public final class Query implements Serializable {
 		return new Query(sql, this.values.andThen(values), fetchSize, timeout);
 	}
 
+	public <T extends Record> Query on(final T record) {
+		@SuppressWarnings("unchecked")
+		final var type = (Class<T>)record.getClass();
+		return on(record, Dctor.of(type));
+	}
+
 
 	/* *************************************************************************
 	 * Executing query.

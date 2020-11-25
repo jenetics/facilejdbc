@@ -208,8 +208,16 @@ public interface Dctor<T> {
 			record -> {
 				try {
 					return component.getAccessor().invoke(record);
-				} catch (IllegalAccessException | InvocationTargetException e) {
+				} catch (IllegalAccessException e) {
 					throw new SQLNonTransientException(e);
+				} catch (InvocationTargetException e) {
+					if (e.getCause() instanceof RuntimeException) {
+						throw (RuntimeException)e.getCause();
+					} else if (e.getCause() instanceof Error) {
+						throw (Error)e.getCause();
+					} else {
+						throw new SQLNonTransientException(e.getCause());
+					}
 				}
 			}
 		);
