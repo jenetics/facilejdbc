@@ -33,7 +33,7 @@ plugins {
 rootProject.version = FacileJDBC.VERSION
 
 tasks.named<Wrapper>("wrapper") {
-	version = "6.5"
+	version = "6.7.1"
 	distributionType = Wrapper.DistributionType.ALL
 }
 
