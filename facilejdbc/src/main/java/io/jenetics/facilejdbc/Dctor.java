@@ -26,11 +26,17 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.reducing;
 import static io.jenetics.facilejdbc.spi.SqlTypeMapper.map;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.RecordComponent;
 import java.sql.Connection;
+import java.sql.SQLNonTransientException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
@@ -180,6 +186,57 @@ public interface Dctor<T> {
 	static <T> Dctor<T> of(final Field<? super T>... fields) {
 		final List<? extends Field<? super T>> list = asList(fields);
 		return Dctor.of(list);
+	}
+
+	static <T extends Record> Dctor<T> of(
+		final Class<T> record,
+		final UnaryOperator<String> componentToColumn
+	) {
+		return Dctor.of(
+			Stream.of(record.getRecordComponents())
+				.map(c -> toFiled(c, componentToColumn))
+				.collect(Collectors.toList())
+		);
+	}
+
+	private static <T extends Record> Field<T> toFiled(
+		final RecordComponent component,
+		final UnaryOperator<String> componentToColumn
+	) {
+		return field(
+			componentToColumn.apply(component.getName()),
+			record -> {
+				try {
+					return component.getAccessor().invoke(record);
+				} catch (IllegalAccessException | InvocationTargetException e) {
+					throw new SQLNonTransientException(e);
+				}
+			}
+		);
+	}
+
+	static <T extends Record> Dctor<T> of(final Class<T> record) {
+		return Dctor.of(
+			Stream.of(record.getRecordComponents())
+				.map(c -> toFiled(c, Dctor::camelCaseToSnakeCase))
+				.collect(Collectors.toList())
+		);
+	}
+
+	private static String camelCaseToSnakeCase(final String str) {
+		final var result = new StringBuilder();
+
+		for (int i = 0; i < str.length(); i++) {
+			final char ch = str.charAt(i);
+			if (Character.isUpperCase(ch)) {
+				result.append('_');
+				result.append(Character.toLowerCase(ch));
+			} else {
+				result.append(ch);
+			}
+		}
+
+		return result.toString();
 	}
 
 	/**

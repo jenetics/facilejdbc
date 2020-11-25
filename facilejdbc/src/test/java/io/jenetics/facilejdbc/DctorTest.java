@@ -41,15 +41,29 @@ public class DctorTest {
 		);
 
 		final ParamValues values = dctor.unapply(
-			new Paper("title", "isbn", 123),
+			new Paper("titleValue", "isbnValue", 123),
 			null
 		);
 
 		final var stmt = new MockPreparedStatement();
 		values.set(List.of("title", "isbn", "pages"), stmt);
-		Assert.assertEquals(stmt.get(1), "title");
-		Assert.assertEquals(stmt.get(2), "isbn");
+		Assert.assertEquals(stmt.get(1), "titleValue");
+		Assert.assertEquals(stmt.get(2), "isbnValue");
 		Assert.assertEquals(stmt.get(3), 123);
+	}
+
+	@Test
+	public void fromRecord() throws SQLException {
+		final record Foo(String colA, String colB, String colC) {}
+
+		final Dctor<Foo> dctor = Dctor.of(Foo.class);
+
+		final var values = dctor.unapply(new Foo("1", "2", "3"), null);
+		final var stmt = new MockPreparedStatement();
+		values.set(List.of("col_a", "col_b", "col_c"), stmt);
+		Assert.assertEquals(stmt.get(1), "1");
+		Assert.assertEquals(stmt.get(2), "2");
+		Assert.assertEquals(stmt.get(3), "3");
 	}
 
 }
