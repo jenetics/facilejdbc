@@ -22,15 +22,19 @@ package io.jenetics.facilejdbc;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.reducing;
 import static io.jenetics.facilejdbc.spi.SqlTypeMapper.map;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.RecordComponent;
 import java.sql.Connection;
+import java.sql.SQLNonTransientException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
@@ -59,7 +63,7 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * @param <T> the record type to be deconstructed
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.2
+ * @version !__version__!
  * @since 1.0
  */
 @FunctionalInterface
@@ -146,25 +150,34 @@ public interface Dctor<T> {
 	 * @param fields the fields which describe the deconstruction
 	 * @param <T> the type of the record to be deconstructed
 	 * @return a new deconstructor from the given field definitions
+	 * @throws NullPointerException if the given {@code fields} are {@code null}
+	 * @throws IllegalArgumentException if there are duplicate fields
 	 */
 	static <T> Dctor<T> of(final List<? extends Field<? super T>> fields) {
-		final Map<String, Field<? super T>> map = fields.isEmpty()
-			? Map.of()
-			: fields.stream().collect(
-				groupingBy(Field::name, reducing(null, (a, b) -> b)));
+		final Map<String, Field<? super T>> fieldMap = toMap(fields);
 
 		return (record, conn) -> (params, stmt) -> {
-			if (!map.isEmpty()) {
+			if (!fieldMap.isEmpty()) {
 				int index = 0;
 				for (String name : params) {
 					++index;
-					final Field<? super T> field = map.get(name);
+					final Field<? super T> field = fieldMap.get(name);
 					if (field != null) {
 						field.value(record, conn).set(index, stmt);
 					}
 				}
 			}
 		};
+	}
+
+	private static <T> Map<String, Field<? super T>>
+	toMap(final List<? extends Field<? super T>> fields) {
+		return fields.stream()
+			.collect(Collectors.toMap(
+				Field::name,
+				f -> f,
+				(a, b) -> { throw new IllegalArgumentException(format(
+					"Duplicate field detected: %s", a.name()));}));
 	}
 
 	/**
@@ -175,11 +188,122 @@ public interface Dctor<T> {
 	 * @param fields the fields which describe the deconstruction
 	 * @param <T> the type of the record to be deconstructed
 	 * @return a new deconstructor from the given field definitions
+	 * @throws NullPointerException if the given {@code fields} are {@code null}
+	 * @throws IllegalArgumentException if there are duplicate fields
 	 */
 	@SafeVarargs
 	static <T> Dctor<T> of(final Field<? super T>... fields) {
 		final List<? extends Field<? super T>> list = asList(fields);
 		return Dctor.of(list);
+	}
+
+	/**
+	 * Create a new deconstructor for the given record type.
+	 *
+	 * @since !__version__!
+	 *
+	 * @param record the record type to deconstruct
+	 * @param toColumnName function for mapping the component names to the
+	 *        column names of the DB
+	 * @param fields the fields which overrides/extends the automatically
+	 *        extracted fields from the record
+	 * @param <T> the record type
+	 * @return a new deconstructor for the given record type
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 * @throws IllegalArgumentException if there are duplicate fields
+	 */
+	@SafeVarargs
+	static <T extends Record> Dctor<T> of(
+		final Class<T> record,
+		final UnaryOperator<String> toColumnName,
+		final Field<? super T>... fields
+	) {
+		requireNonNull(record);
+		requireNonNull(toColumnName);
+		requireNonNull(fields);
+
+		final List<Field<? super T>> list = asList(fields);
+		final Map<String, Field<? super T>> fieldMap = toMap(list);
+
+		return Dctor.of(
+			Stream.of(record.getRecordComponents())
+				.map(c -> (Field<? super T>)toFiled(c, toColumnName, fieldMap))
+				.collect(Collectors.toList())
+		);
+	}
+
+	private static <T extends Record> Field<? super T> toFiled(
+		final RecordComponent component,
+		final UnaryOperator<String> toColumnName,
+		final Map<String, Field<? super T>> fields
+	) {
+		final var name = toColumnName.apply(component.getName());
+		return fields.getOrDefault(
+			name,
+			field(
+				name,
+				record -> {
+					try {
+						return component.getAccessor().invoke(record);
+					} catch (IllegalAccessException e) {
+						throw new SQLNonTransientException(e);
+					} catch (InvocationTargetException e) {
+						if (e.getCause() instanceof RuntimeException re) {
+							throw re;
+						} else if (e.getCause() instanceof Error er) {
+							throw er;
+						} else {
+							throw new SQLNonTransientException(e.getCause());
+						}
+					}
+				}
+			)
+		);
+	}
+
+	/**
+	 * Create a new deconstructor for the given record type. The component names
+	 * of the record type are converted to <em>snake_case</em> for the column
+	 * names of the DB. Some example mappings
+	 * <pre>{@code
+	 * forName -> for_name
+	 * sureName -> sure_name
+	 * userLoginCount -> user_login_count
+	 * userCreatedAt -> user_created_at
+	 * }</pre>
+	 *
+	 * @since !__version__!
+	 *
+	 * @param record the record type to deconstruct
+	 * @param fields the fields which overrides/extends the automatically
+	 *        extracted fields from the record
+	 * @param <T> the record type
+	 * @return a new deconstructor for the given record type
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 * @throws IllegalArgumentException if there are duplicate fields
+	 */
+	@SafeVarargs
+	static <T extends Record> Dctor<T> of(
+		final Class<T> record,
+		final Field<? super T>... fields
+	) {
+		return of(record, Dctor::toSnakeCase, fields);
+	}
+
+	private static String toSnakeCase(final String str) {
+		final var result = new StringBuilder();
+
+		for (int i = 0; i < str.length(); i++) {
+			final char ch = str.charAt(i);
+			if (Character.isUpperCase(ch)) {
+				result.append('_');
+				result.append(Character.toLowerCase(ch));
+			} else {
+				result.append(ch);
+			}
+		}
+
+		return result.toString();
 	}
 
 	/**

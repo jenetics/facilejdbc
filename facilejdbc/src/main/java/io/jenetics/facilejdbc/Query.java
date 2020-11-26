@@ -43,6 +43,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -50,15 +51,17 @@ import java.util.stream.IntStream;
  * A {@code Query} represents an executable piece of SQL text.
  *
  * <pre>{@code
- * private static final Query SELECT = Query.of(
- *     "SELECT * FROM person " +
- *     "WHERE forename like :forename " +
- *     "ORDER BY surname;"
+ * private static final Query SELECT = Query.of("""
+ *     SELECT * FROM person
+ *     WHERE forename like :forename
+ *     ORDER BY surname;
+ *     """
  * );
  *
- * private static final Query INSERT = Query.of(
- *     "INSERT INTO person(forename, surname, birthday, email) " +
- *     "VALUES(:forename, :surname, :birthday, :email);"
+ * private static final Query INSERT = Query.of("""
+ *     INSERT INTO person(forename, surname, birthday, email)
+ *     VALUES(:forename, :surname, :birthday, :email);
+ *     """
  * );
  * }</pre>
  *
@@ -66,7 +69,7 @@ import java.util.stream.IntStream;
  * This class is immutable and thread-safe.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.2
+ * @version !__version__!
  * @since 1.0
  */
 public final class Query implements Serializable {
@@ -259,6 +262,26 @@ public final class Query implements Serializable {
 			.set(params, stmt);
 
 		return new Query(sql, this.values.andThen(values), fetchSize, timeout);
+	}
+
+	/**
+	 * Return a new query object with the given query parameter values. They are
+	 * automatically extracted from the record components.
+	 *
+	 * @since !__version__!
+	 *
+	 * @see Dctor#of(Class, Dctor.Field[])
+	 * @see Dctor#of(Class, UnaryOperator, Dctor.Field[])
+	 *
+	 * @param record the query parameters
+	 * @param <T> the parameter record type
+	 * @return a new query object with the set parameters
+	 * @throws NullPointerException if the given {@code record} is {@code null}
+	 */
+	public <T extends Record> Query on(final T record) {
+		@SuppressWarnings("unchecked")
+		final var type = (Class<T>)record.getClass();
+		return on(record, Dctor.of(type));
 	}
 
 
