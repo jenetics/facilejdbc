@@ -20,6 +20,7 @@
 package io.jenetics.facilejdbc;
 
 import static io.jenetics.facilejdbc.Dctor.field;
+import static io.jenetics.facilejdbc.Dctor.fieldValue;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -57,14 +58,28 @@ public class DctorTest {
 	public void fromRecord() throws SQLException {
 		final record Foo(String colA, String colB, String colC) {}
 
-		final Dctor<Foo> dctor = Dctor.of(Foo.class);
+		final Dctor<Foo> dctor = Dctor.of(
+			Foo.class,
+			fieldValue("col_b", "replaced_b")
+		);
 
 		final var values = dctor.unapply(new Foo("1", "2", "3"), null);
 		final var stmt = new MockPreparedStatement();
 		values.set(List.of("col_a", "col_b", "col_c"), stmt);
 		Assert.assertEquals(stmt.get(1), "1");
-		Assert.assertEquals(stmt.get(2), "2");
+		Assert.assertEquals(stmt.get(2), "replaced_b");
 		Assert.assertEquals(stmt.get(3), "3");
+	}
+
+	@Test(expectedExceptions = IllegalArgumentException.class)
+	public void fromDuplicateRecordField() {
+		final record Foo(String colA, String colB, String colC) {}
+
+		final Dctor<Foo> dctor = Dctor.of(
+			Foo.class,
+			fieldValue("col_b", "replaced_b"),
+			fieldValue("col_b", "replaced_b")
+		);
 	}
 
 	@Test(dataProvider = "componentNames")
