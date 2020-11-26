@@ -154,14 +154,14 @@ public interface Dctor<T> {
 	 * @throws IllegalArgumentException if there are duplicate fields
 	 */
 	static <T> Dctor<T> of(final List<? extends Field<? super T>> fields) {
-		final Map<String, Field<? super T>> fielMap = toMap(fields);
+		final Map<String, Field<? super T>> fieldMap = toMap(fields);
 
 		return (record, conn) -> (params, stmt) -> {
-			if (!fielMap.isEmpty()) {
+			if (!fieldMap.isEmpty()) {
 				int index = 0;
 				for (String name : params) {
 					++index;
-					final Field<? super T> field = fielMap.get(name);
+					final Field<? super T> field = fieldMap.get(name);
 					if (field != null) {
 						field.value(record, conn).set(index, stmt);
 					}
@@ -275,6 +275,8 @@ public interface Dctor<T> {
 	 * @since !__version__!
 	 *
 	 * @param record the record type to deconstruct
+	 * @param fields the fields which overrides/extends the automatically
+	 *        extracted fields from the record
 	 * @param <T> the record type
 	 * @return a new deconstructor for the given record type
 	 * @throws NullPointerException if one of the arguments is {@code null}
