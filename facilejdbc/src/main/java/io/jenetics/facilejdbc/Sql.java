@@ -146,9 +146,9 @@ final class Sql {
 	@Override
 	public boolean equals(final Object obj) {
 		return this == obj ||
-			obj instanceof Sql &&
-			string.equals(((Sql)obj).string) &&
-			params.equals(((Sql)obj).params);
+			obj instanceof Sql sql &&
+			string.equals(sql.string) &&
+			params.equals(sql.params);
 	}
 
 	@Override

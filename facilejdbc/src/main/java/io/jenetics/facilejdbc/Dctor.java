@@ -248,10 +248,10 @@ public interface Dctor<T> {
 					} catch (IllegalAccessException e) {
 						throw new SQLNonTransientException(e);
 					} catch (InvocationTargetException e) {
-						if (e.getCause() instanceof RuntimeException) {
-							throw (RuntimeException)e.getCause();
-						} else if (e.getCause() instanceof Error) {
-							throw (Error)e.getCause();
+						if (e.getCause() instanceof RuntimeException re) {
+							throw re;
+						} else if (e.getCause() instanceof Error er) {
+							throw er;
 						} else {
 							throw new SQLNonTransientException(e.getCause());
 						}
