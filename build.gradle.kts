@@ -160,6 +160,7 @@ fun setupJavadoc(project: Project) {
 		val doclet = options as StandardJavadocDocletOptions
 		doclet.addBooleanOption("-enable-preview", true)
 		doclet.addStringOption("-release", "15")
+		doclet.addBooleanOption("Xdoclint:accessibility,html,reference,syntax", true)
 
 		exclude("**/internal/**")
 

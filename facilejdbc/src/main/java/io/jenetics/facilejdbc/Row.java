@@ -58,7 +58,6 @@ import java.util.Map;
  * @version 1.0
  * @since 1.0
  */
-@SuppressWarnings("all")
 public interface Row {
 
 	boolean wasNull() throws SQLException;
