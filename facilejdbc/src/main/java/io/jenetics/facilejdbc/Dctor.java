@@ -188,23 +188,36 @@ public interface Dctor<T> {
 		return Dctor.of(list);
 	}
 
+	/**
+	 * Create a new deconstructor for the given record type.
+	 *
+	 * @param record the record type to deconstruct
+	 * @param toColumnName function for mapping the component names to the
+	 *        column names of the DB
+	 * @param <T> the record type
+	 * @return a new deconstructor for the given record type
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 */
 	static <T extends Record> Dctor<T> of(
 		final Class<T> record,
-		final UnaryOperator<String> componentToColumn
+		final UnaryOperator<String> toColumnName
 	) {
+		requireNonNull(record);
+		requireNonNull(toColumnName);
+
 		return Dctor.of(
 			Stream.of(record.getRecordComponents())
-				.map(c -> toFiled(c, componentToColumn))
+				.map(c -> toFiled(c, toColumnName))
 				.collect(Collectors.toList())
 		);
 	}
 
 	private static <T extends Record> Field<T> toFiled(
 		final RecordComponent component,
-		final UnaryOperator<String> componentToColumn
+		final UnaryOperator<String> toColumnName
 	) {
 		return field(
-			componentToColumn.apply(component.getName()),
+			toColumnName.apply(component.getName()),
 			record -> {
 				try {
 					return component.getAccessor().invoke(record);
@@ -223,15 +236,27 @@ public interface Dctor<T> {
 		);
 	}
 
+	/**
+	 * Create a new deconstructor for the given record type. The component names
+	 * of the record type are converted to <em>snake_case</em> for the column
+	 * names of the DB. Some example mappings
+	 * <pre>{@code
+	 *     forName -> for_name
+	 *     sureName -> sure_name
+	 *     userLoginCount -> user_login_count
+	 *     userCreatedAt -> user_created_at
+	 * }</pre>
+	 *
+	 * @param record the record type to deconstruct
+	 * @param <T> the record type
+	 * @return a new deconstructor for the given record type
+	 * @throws NullPointerException if one of the record type is {@code null}
+	 */
 	static <T extends Record> Dctor<T> of(final Class<T> record) {
-		return Dctor.of(
-			Stream.of(record.getRecordComponents())
-				.map(c -> toFiled(c, Dctor::camelCaseToSnakeCase))
-				.collect(Collectors.toList())
-		);
+		return of(record, Dctor::toSnakeCase);
 	}
 
-	private static String camelCaseToSnakeCase(final String str) {
+	private static String toSnakeCase(final String str) {
 		final var result = new StringBuilder();
 
 		for (int i = 0; i < str.length(); i++) {
