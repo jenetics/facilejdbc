@@ -169,7 +169,7 @@ fun setupJavadoc(project: Project) {
 		doclet.charSet = "UTF-8"
 		doclet.linkSource(true)
 		doclet.linksOffline(
-			"https://docs.oracle.com/en/java/javase/11/docs/api",
+			"https://docs.oracle.com/en/java/javase/15/docs/api",
 			"${project.rootDir}/buildSrc/resources/javadoc/java.se"
 		)
 		doclet.windowTitle = "FacileJDBC ${project.version}"
