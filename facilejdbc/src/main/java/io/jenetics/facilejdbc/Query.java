@@ -51,15 +51,17 @@ import java.util.stream.IntStream;
  * A {@code Query} represents an executable piece of SQL text.
  *
  * <pre>{@code
- * private static final Query SELECT = Query.of(
- *     "SELECT * FROM person " +
- *     "WHERE forename like :forename " +
- *     "ORDER BY surname;"
+ * private static final Query SELECT = Query.of("""
+ *     SELECT * FROM person
+ *     WHERE forename like :forename
+ *     ORDER BY surname;
+ *     """
  * );
  *
- * private static final Query INSERT = Query.of(
- *     "INSERT INTO person(forename, surname, birthday, email) " +
- *     "VALUES(:forename, :surname, :birthday, :email);"
+ * private static final Query INSERT = Query.of("""
+ *     INSERT INTO person(forename, surname, birthday, email)
+ *     VALUES(:forename, :surname, :birthday, :email);
+ *     """
  * );
  * }</pre>
  *
@@ -67,7 +69,7 @@ import java.util.stream.IntStream;
  * This class is immutable and thread-safe.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.2
+ * @version !__version__!
  * @since 1.0
  */
 public final class Query implements Serializable {

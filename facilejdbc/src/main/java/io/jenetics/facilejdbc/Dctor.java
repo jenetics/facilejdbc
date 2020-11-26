@@ -19,8 +19,10 @@
  */
 package io.jenetics.facilejdbc;
 
-import io.jenetics.facilejdbc.function.SqlFunction;
-import io.jenetics.facilejdbc.function.SqlFunction2;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
+import static io.jenetics.facilejdbc.spi.SqlTypeMapper.map;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.RecordComponent;
@@ -34,10 +36,8 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static io.jenetics.facilejdbc.spi.SqlTypeMapper.map;
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-import static java.util.Objects.requireNonNull;
+import io.jenetics.facilejdbc.function.SqlFunction;
+import io.jenetics.facilejdbc.function.SqlFunction2;
 
 /**
  * This interface is responsible for <em>deconstructing</em> a given record, of
@@ -63,7 +63,7 @@ import static java.util.Objects.requireNonNull;
  * @param <T> the record type to be deconstructed
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.2
+ * @version !__version__!
  * @since 1.0
  */
 @FunctionalInterface
