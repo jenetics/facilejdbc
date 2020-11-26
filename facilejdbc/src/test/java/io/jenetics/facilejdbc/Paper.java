@@ -22,4 +22,4 @@ package io.jenetics.facilejdbc;
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-final record Paper(String title, String isbn, Integer pages) {}
+final record Paper(String title, String isbn, Integer pages){}

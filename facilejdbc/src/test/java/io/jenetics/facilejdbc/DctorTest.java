@@ -19,7 +19,6 @@
  */
 package io.jenetics.facilejdbc;
 
-import static io.jenetics.facilejdbc.Dctor.field;
 import static io.jenetics.facilejdbc.Dctor.fieldValue;
 
 import java.sql.SQLException;
@@ -36,11 +35,7 @@ public class DctorTest {
 
 	@Test
 	public void deconstruct() throws SQLException {
-		final Dctor<Paper> dctor = Dctor.of(
-			field("title", Paper::title),
-			field("isbn", Paper::isbn),
-			field("pages", Paper::pages)
-		);
+		final Dctor<Paper> dctor = Dctor.of(Paper.class);
 
 		final ParamValues values = dctor.unapply(
 			new Paper("titleValue", "isbnValue", 123),
