@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
@@ -64,6 +65,37 @@ public class DctorTest {
 		Assert.assertEquals(stmt.get(1), "1");
 		Assert.assertEquals(stmt.get(2), "2");
 		Assert.assertEquals(stmt.get(3), "3");
+	}
+
+	@Test(dataProvider = "componentNames")
+	public void toSnakeCase(final String cc, final String sc) {
+		Assert.assertEquals(toSnakeCase(cc), sc);
+	}
+
+	@DataProvider
+	public Object[][] componentNames() {
+		return new Object[][] {
+			{"forName", "for_name"},
+			{"sureName", "sure_name"},
+			{"userLoginCount", "user_login_count"},
+			{"userCreatedAt", "user_created_at"}
+		};
+	}
+
+	private static String toSnakeCase(final String str) {
+		final var result = new StringBuilder();
+
+		for (int i = 0; i < str.length(); i++) {
+			final char ch = str.charAt(i);
+			if (Character.isUpperCase(ch)) {
+				result.append('_');
+				result.append(Character.toLowerCase(ch));
+			} else {
+				result.append(ch);
+			}
+		}
+
+		return result.toString();
 	}
 
 }
