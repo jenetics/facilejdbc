@@ -43,6 +43,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -261,6 +262,20 @@ public final class Query implements Serializable {
 		return new Query(sql, this.values.andThen(values), fetchSize, timeout);
 	}
 
+	/**
+	 * Return a new query object with the given query parameter values. They are
+	 * automatically extracted from the record components.
+	 *
+	 * @since !__version__!
+	 *
+	 * @see Dctor#of(Class)
+	 * @see Dctor#of(Class, UnaryOperator)
+	 *
+	 * @param record the query parameters
+	 * @param <T> the parameter record type
+	 * @return a new query object with the set parameters
+	 * @throws NullPointerException if the given {@code record} is {@code null}
+	 */
 	public <T extends Record> Query on(final T record) {
 		@SuppressWarnings("unchecked")
 		final var type = (Class<T>)record.getClass();

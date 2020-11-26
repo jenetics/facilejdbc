@@ -191,6 +191,8 @@ public interface Dctor<T> {
 	/**
 	 * Create a new deconstructor for the given record type.
 	 *
+	 * @since !__version__!
+	 *
 	 * @param record the record type to deconstruct
 	 * @param toColumnName function for mapping the component names to the
 	 *        column names of the DB
@@ -241,11 +243,13 @@ public interface Dctor<T> {
 	 * of the record type are converted to <em>snake_case</em> for the column
 	 * names of the DB. Some example mappings
 	 * <pre>{@code
-	 *     forName -> for_name
-	 *     sureName -> sure_name
-	 *     userLoginCount -> user_login_count
-	 *     userCreatedAt -> user_created_at
+	 * forName -> for_name
+	 * sureName -> sure_name
+	 * userLoginCount -> user_login_count
+	 * userCreatedAt -> user_created_at
 	 * }</pre>
+	 *
+	 * @since !__version__!
 	 *
 	 * @param record the record type to deconstruct
 	 * @param <T> the record type
