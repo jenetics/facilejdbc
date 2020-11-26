@@ -17,9 +17,21 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @since 1.0
+ * @version 1.2
  */
-final record Paper(String title, String isbn, Integer pages){}
+pluginManagement {
+	repositories {
+		mavenLocal()
+		jcenter()
+		gradlePluginPortal()
+	}
+}
+
+rootProject.name = "facilejdbc"
+
+// The FacileJDBC projects.
+include("facilejdbc")

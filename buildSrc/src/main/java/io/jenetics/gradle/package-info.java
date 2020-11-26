@@ -1,5 +1,5 @@
 /*
- * Facile JDBC Library (@__identifier__@).
+ * Java Genetic Algorithm Library (@__identifier__@).
  * Copyright (c) @__year__@ Franz Wilhelmstötter
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,11 +20,7 @@
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @since 1.0
- * @version 1.0
+ * @since 1.4
+ * @version 1.4
  */
-
-rootProject.name = 'facilejdbc'
-
-// The JPX projects.
-include 'facilejdbc'
+package io.jenetics.gradle;

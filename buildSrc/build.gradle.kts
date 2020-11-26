@@ -17,9 +17,25 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @since 1.2
+ * @version 1.2
  */
-final record Paper(String title, String isbn, Integer pages){}
+plugins {
+	`java-gradle-plugin`
+	`kotlin-dsl`
+	kotlin("jvm") version "1.3.72"
+
+}
+
+repositories {
+	mavenLocal()
+	gradlePluginPortal()
+}
+
+configure<JavaPluginConvention> {
+	sourceCompatibility = JavaVersion.VERSION_11
+	targetCompatibility = JavaVersion.VERSION_11
+}

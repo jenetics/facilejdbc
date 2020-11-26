@@ -69,8 +69,8 @@ final class Params implements ParamValues {
 
 	@Override
 	public ParamValues andThen(final ParamValues after) {
-		return after instanceof Params
-			? andThen((Params)after)
+		return after instanceof Params p
+			? andThen(p)
 			: ParamValues.super.andThen(after);
 	}
 

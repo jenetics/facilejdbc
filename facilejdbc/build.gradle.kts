@@ -17,9 +17,24 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @since 1.2
+ * @version 1.2
  */
-final record Paper(String title, String isbn, Integer pages){}
+
+plugins {
+	`java-library`
+	idea
+	`maven-publish`
+}
+
+description = "FacileJDBC Library"
+
+extra["moduleName"] = "io.jenetics.facilejdbc"
+
+dependencies {
+	testImplementation(Libs.TestNG)
+	testImplementation(Libs.HsqlDB)
+}

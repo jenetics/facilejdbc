@@ -19,74 +19,38 @@
  */
 package io.jenetics.facilejdbc.library;
 
-import static java.util.Objects.requireNonNull;
-import static io.jenetics.facilejdbc.Dctor.field;
-import static io.jenetics.facilejdbc.Dctor.fieldValue;
-import static io.jenetics.facilejdbc.Param.value;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
 import io.jenetics.facilejdbc.Batch;
 import io.jenetics.facilejdbc.Dctor;
 import io.jenetics.facilejdbc.Query;
 import io.jenetics.facilejdbc.RowParser;
 
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
+
+import static io.jenetics.facilejdbc.Dctor.field;
+import static io.jenetics.facilejdbc.Dctor.fieldValue;
+import static io.jenetics.facilejdbc.Param.value;
+import static java.util.Objects.requireNonNull;
+
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-public final class Book {
-	private final String title;
-	private final String isbn;
-	private final Integer pages;
-	private final List<Author> authors;
+public final record Book(
+	String title,
+	String isbn,
+	Integer pages,
+	LocalDate publishedAt,
+	List<Author> authors
+) {
 
-	public Book(
-		final String title,
-		final String isbn,
-		final Integer pages,
-		final List<Author> authors
-	) {
-		this.title = requireNonNull(title);
-		this.isbn = isbn;
-		this.pages = pages;
-		this.authors = List.copyOf(authors);
+	public Book {
+		title = requireNonNull(title);
+		authors = List.copyOf(authors);
 	}
-
-	public String title() {
-		return title;
-	}
-
-	public String isbn() {
-		return isbn;
-	}
-
-	public Integer pages() {
-		return pages;
-	}
-
-	public List<Author> authors() {
-		return authors;
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(title, isbn, pages, authors);
-	}
-
-	@Override
-	public boolean equals(final Object other) {
-		return other == this ||
-			other instanceof Book &&
-			Objects.equals(title, ((Book)other).title) &&
-			Objects.equals(isbn, ((Book)other).isbn) &&
-			Objects.equals(pages, ((Book)other).pages) &&
-			Objects.equals(authors, ((Book)other).authors);
-	}
-
 
 	/* *************************************************************************
 	 * DB access
@@ -96,27 +60,31 @@ public final class Book {
 		row.getString("title"),
 		row.getString("isbn"),
 		row.getInt("pages"),
+		row.getDate("published_at").toLocalDate(),
 		Author.selectByBookId(row.getLong("id"), conn)
 	);
 
 	private static final Dctor<Book> DCTOR = Dctor.of(
-		field("title", Book::title),
-		field("isbn", Book::isbn),
-		field("pages", Book::pages)
+		Book.class,
+		field("published_at", Book::publishedAt, Date::valueOf)
 	);
 
-	private static final Query INSERT= Query.of(
-		"INSERT INTO book(title, isbn, pages) " +
-		"VALUES(:title, :isbn, :pages);"
+	private static final Query INSERT= Query.of("""
+		INSERT INTO book(title, isbn, published_at, pages)
+		VALUES(:title, :isbn, :published_at, :pages);
+		"""
 	);
 
-	private static final Query INSERT_BOOK_AUTHOR = Query.of(
-		"INSERT INTO book_author(book_id, author_id) " +
-		"VALUES(:book_id, :author_id);"
+	private static final Query INSERT_BOOK_AUTHOR = Query.of("""
+		INSERT INTO book_author(book_id, author_id)
+		VALUES(:book_id, :author_id);
+		"""
 	);
 
-	private static final Query SELECT_BY_TITLE = Query.of(
-		"SELECT id, title, isbn, pages FROM book WHERE LCASE(title) like :title"
+	private static final Query SELECT_BY_TITLE = Query.of("""
+		SELECT id, title, isbn, published_at, pages
+		FROM book WHERE LCASE(title) like :title
+		"""
 	);
 
 	/**

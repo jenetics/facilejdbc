@@ -19,8 +19,6 @@
  */
 package io.jenetics.facilejdbc;
 
-import static io.jenetics.facilejdbc.Dctor.field;
-
 import java.sql.SQLException;
 import java.util.List;
 
@@ -34,11 +32,7 @@ public class BatchTest {
 
 	@Test
 	public void iterate() throws SQLException {
-		final Dctor<Paper> dctor = Dctor.of(
-			field("title", Paper::title),
-			field("isbn", Paper::isbn),
-			field("pages", Paper::pages)
-		);
+		final Dctor<Paper> dctor = Dctor.of(Paper.class);
 
 		final Batch batch = Batch.of(
 			List.of(

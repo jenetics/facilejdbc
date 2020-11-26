@@ -19,6 +19,7 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.lang.String.format;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
@@ -36,10 +37,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 import java.sql.Statement;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -47,15 +51,17 @@ import java.util.stream.IntStream;
  * A {@code Query} represents an executable piece of SQL text.
  *
  * <pre>{@code
- * private static final Query SELECT = Query.of(
- *     "SELECT * FROM person " +
- *     "WHERE forename like :forename " +
- *     "ORDER BY surname;"
+ * private static final Query SELECT = Query.of("""
+ *     SELECT * FROM person
+ *     WHERE forename like :forename
+ *     ORDER BY surname;
+ *     """
  * );
  *
- * private static final Query INSERT = Query.of(
- *     "INSERT INTO person(forename, surname, birthday, email) " +
- *     "VALUES(:forename, :surname, :birthday, :email);"
+ * private static final Query INSERT = Query.of("""
+ *     INSERT INTO person(forename, surname, birthday, email)
+ *     VALUES(:forename, :surname, :birthday, :email);
+ *     """
  * );
  * }</pre>
  *
@@ -63,7 +69,7 @@ import java.util.stream.IntStream;
  * This class is immutable and thread-safe.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.1
+ * @version !__version__!
  * @since 1.0
  */
 public final class Query implements Serializable {
@@ -72,9 +78,19 @@ public final class Query implements Serializable {
 	private final Sql sql;
 	private final ParamValues values;
 
-	private Query(final Sql sql, final ParamValues values) {
+	private final Integer fetchSize;
+	private final Duration timeout;
+
+	private Query(
+		final Sql sql,
+		final ParamValues values,
+		final Integer fetchSize,
+		final Duration timeout
+	) {
 		this.sql = requireNonNull(sql);
 		this.values = requireNonNull(values);
+		this.fetchSize = fetchSize;
+		this.timeout = timeout;
 	}
 
 	/**
@@ -116,6 +132,70 @@ public final class Query implements Serializable {
 		return sql.paramNames();
 	}
 
+	/**
+	 * Return the number of result set rows that is the default fetch size for
+	 * {@link ResultSet} object created when {@code this} query is executed.
+	 *
+	 * @since 1.2
+	 *
+	 * @return the default fetch size for result sets generated from {@code this}
+	 *         query object
+	 */
+	public Optional<Integer> fetchSize() {
+		return Optional.ofNullable(fetchSize);
+	}
+
+	/**
+	 * Return the query timeout.
+	 *
+	 * @since 1.2
+	 *
+	 * @return the query timeout
+	 */
+	public Optional<Duration> timeout() {
+		return Optional.ofNullable(timeout);
+	}
+
+	/**
+	 * Gives the JDBC driver a hint as to the number of rows that should be
+	 * fetched from the database when more rows are needed. If the value
+	 * specified is zero, then the hint is ignored. The default value is zero.
+	 *
+	 * @since 1.2
+	 *
+	 * @see Statement#setFetchSize(int)
+	 *
+	 * @param fetchSize the number of rows to fetch
+	 * @return a new query object with the given fetch size set
+	 * @throws IllegalArgumentException if {@code fetchSize < 0}
+	 */
+	public Query withFetchSize(final int fetchSize) {
+		if (fetchSize < 0) {
+			throw new IllegalArgumentException(format(
+				"Fetch size must be positive: %s.", fetchSize
+			));
+		}
+
+		return new Query(sql, values, fetchSize, timeout);
+	}
+
+	/**
+	 * Sets the timeout the driver will wait for a {@link Statement} object to
+	 * execute. By default there is no limit on the amount of time allowed for a
+	 * running statement to complete. If the limit is exceeded, an
+	 * {@link SQLTimeoutException} is thrown. A JDBC driver must apply this
+	 * limit to the execute, executeQuery and executeUpdate methods.
+	 *
+	 * @since 1.2
+	 *
+	 * @see Statement#setQueryTimeout(int)
+	 *
+	 * @param timeout the query timeout
+	 * @return a new query object with the given query {@code timeout}
+	 */
+	public Query withTimeout(final Duration timeout) {
+		return new Query(sql, values, fetchSize, timeout);
+	}
 
 	/* *************************************************************************
 	 * Query parameter setting.
@@ -135,7 +215,7 @@ public final class Query implements Serializable {
 	public Query on(final List<? extends Param> params) {
 		return params.isEmpty()
 			? this
-			: new Query(sql, values.andThen(new Params(params)));
+			: new Query(sql, values.andThen(new Params(params)), fetchSize, timeout);
 	}
 
 	/**
@@ -181,7 +261,27 @@ public final class Query implements Serializable {
 			.unapply(record, stmt.getConnection())
 			.set(params, stmt);
 
-		return new Query(sql, this.values.andThen(values));
+		return new Query(sql, this.values.andThen(values), fetchSize, timeout);
+	}
+
+	/**
+	 * Return a new query object with the given query parameter values. They are
+	 * automatically extracted from the record components.
+	 *
+	 * @since !__version__!
+	 *
+	 * @see Dctor#of(Class, Dctor.Field[])
+	 * @see Dctor#of(Class, UnaryOperator, Dctor.Field[])
+	 *
+	 * @param record the query parameters
+	 * @param <T> the parameter record type
+	 * @return a new query object with the set parameters
+	 * @throws NullPointerException if the given {@code record} is {@code null}
+	 */
+	public <T extends Record> Query on(final T record) {
+		@SuppressWarnings("unchecked")
+		final var type = (Class<T>)record.getClass();
+		return on(record, Dctor.of(type));
 	}
 
 
@@ -222,7 +322,17 @@ public final class Query implements Serializable {
 	{
 		final PreparedStatement stmt = conn.prepareStatement(sql());
 		values.set(paramNames(), stmt);
+		setParams(stmt);
 		return stmt;
+	}
+
+	private void setParams(final Statement stmt) throws SQLException {
+		if (fetchSize != null) {
+			stmt.setFetchSize(fetchSize);
+		}
+		if (timeout != null) {
+			stmt.setFetchSize((int)timeout.toSeconds());
+		}
 	}
 
 	/**
@@ -306,6 +416,7 @@ public final class Query implements Serializable {
 		);
 
 		values.set(paramNames(), stmt);
+		setParams(stmt);
 		return stmt;
 	}
 
@@ -436,7 +547,7 @@ public final class Query implements Serializable {
 	 * @throws NullPointerException if the given SQL string is {@code null}
 	 */
 	public static Query of(final String sql) {
-		return new Query(Sql.of(sql), ParamValues.EMPTY);
+		return new Query(Sql.of(sql), ParamValues.EMPTY, null, null);
 	}
 
 
@@ -459,7 +570,7 @@ public final class Query implements Serializable {
 	}
 
 	private static Query read(final DataInput in) throws IOException {
-		return new Query(Sql.read(in), ParamValues.EMPTY);
+		return new Query(Sql.read(in), ParamValues.EMPTY, null, null);
 	}
 
 	private static final class Serial implements Externalizable {
@@ -468,7 +579,7 @@ public final class Query implements Serializable {
 		/**
 		 * The object being serialized.
 		 */
-		private Query _object;
+		private Query object;
 
 		/**
 		 * Constructor for deserialization.
@@ -482,21 +593,21 @@ public final class Query implements Serializable {
 		 * @param object  the object
 		 */
 		Serial(final Query object) {
-			_object = object;
+			this.object = object;
 		}
 
 		@Override
 		public void writeExternal(final ObjectOutput out) throws IOException {
-			_object.write(out);
+			object.write(out);
 		}
 
 		@Override
 		public void readExternal(final ObjectInput in) throws IOException {
-			_object = Query.read(in);
+			object = Query.read(in);
 		}
 
 		private Object readResolve() {
-			return _object;
+			return object;
 		}
 
 	}
