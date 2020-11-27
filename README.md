@@ -333,6 +333,13 @@ The library is licensed under the [Apache License, Version 2.0](http://www.apach
 
 ## Release notes
 
+### [1.2.0](https://github.com/jenetics/facilejdbc/releases/tag/v1.2.0)
+
+#### Improvements
+
+* [#24](https://github.com/jenetics/facilejdbc/issues/24): Support for SQL type transformation methods.
+* [#27](https://github.com/jenetics/facilejdbc/issues/27): Allow to define the query timeout and fetch size.
+
 ### [1.1.0](https://github.com/jenetics/facilejdbc/releases/tag/v1.1.0)
 
 #### Improvements
