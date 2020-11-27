@@ -51,9 +51,9 @@ public interface Param {
 	String name();
 
 	/**
-	 * Return the parameter values.
+	 * Return the parameter value.
 	 *
-	 * @return the parameter values
+	 * @return the parameter value
 	 */
 	ParamValue value();
 
