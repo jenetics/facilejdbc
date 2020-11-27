@@ -261,6 +261,9 @@ public final class Query implements Serializable {
 		return new Query(sql, this.values.andThen(values), fetchSize, timeout);
 	}
 
+	public Query on(final MultiParam... params) {
+		return this;
+	}
 
 	/* *************************************************************************
 	 * Executing query.

@@ -113,6 +113,10 @@ public interface Param {
 		);
 	}
 
+	static MultiParam values(final String name, final Object... values) {
+		return MultiParam.values(name, values);
+	}
+
 	/**
 	 * Create a new query parameter object from the given {@code name} and
 	 * lazily evaluated {@code value}.
@@ -129,10 +133,6 @@ public interface Param {
 			name,
 			(index, stmt) -> stmt.setObject(index, map(value.get()))
 		);
-	}
-
-	static Param list(final String name, final Object... values) {
-		return null;
 	}
 
 }

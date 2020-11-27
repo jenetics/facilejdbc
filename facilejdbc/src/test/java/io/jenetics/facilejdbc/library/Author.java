@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import io.jenetics.facilejdbc.Dctor;
+import io.jenetics.facilejdbc.MultiParam;
 import io.jenetics.facilejdbc.Query;
 import io.jenetics.facilejdbc.RowParser;
 
@@ -120,6 +121,13 @@ public final class Author {
 		Long authorId = SELECT_ID_BY_NAME
 			.on(value("name", author.name()))
 			.as(RowParser.int64("id").singleNull(), conn);
+
+		/*
+		SELECT_BY_BOOK_ID
+			.on(MultiParam.values("ids", 1, 2, 3, 4, 5))
+			.on(value("name", author.name()))
+			.as(RowParser.int64("id").singleNull(), conn);
+		 */
 
 		if (authorId == null) {
 			authorId = INSERT
