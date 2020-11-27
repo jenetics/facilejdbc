@@ -22,8 +22,7 @@ package io.jenetics.facilejdbc;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.reducing;
+import static java.util.stream.Collectors.toMap;
 import static io.jenetics.facilejdbc.spi.SqlTypeMapper.map;
 
 import java.sql.Connection;
@@ -150,8 +149,7 @@ public interface Dctor<T> {
 	static <T> Dctor<T> of(final List<? extends Field<? super T>> fields) {
 		final Map<String, Field<? super T>> map = fields.isEmpty()
 			? Map.of()
-			: fields.stream().collect(
-				groupingBy(Field::name, reducing(null, (a, b) -> b)));
+			: fields.stream().collect(toMap(Field::name, f -> f, (a, b) -> b));
 
 		return (record, conn) -> (params, stmt) -> {
 			if (!map.isEmpty()) {

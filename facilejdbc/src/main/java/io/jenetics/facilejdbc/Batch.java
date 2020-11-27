@@ -51,34 +51,6 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 	 * ************************************************************************/
 
 	/**
-	 * Create a new batch from the given records (rows) and the deconstructor.
-	 *
-	 * @param records the rows to be inserted by the created batch
-	 * @param dctor the record deconstructor
-	 * @param <T> the row type
-	 * @return a new batch from the given arguments
-	 * @throws NullPointerException if one of the arguments is {@code null}
-	 */
-	static <T> Batch
-	of(final Iterable<? extends T> records, final Dctor<? super T> dctor) {
-		requireNonNull(records);
-		requireNonNull(dctor);
-
-		return () -> new Iterator<>() {
-			private final Iterator<? extends T> it = records.iterator();
-			@Override
-			public boolean hasNext() {
-				return it.hasNext();
-			}
-			@Override
-			public Function<Connection, ParamValues> next() {
-				final T record = it.next();
-				return conn -> dctor.unapply(record, conn);
-			}
-		};
-	}
-
-	/**
 	 * Create a new batch from the given rows.
 	 *
 	 * @see #of(List[])
@@ -92,7 +64,7 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 
 		return () -> new Iterator<>() {
 			private final Iterator<? extends List<? extends Param>>
-			it = rows.iterator();
+				it = rows.iterator();
 
 			@Override
 			public boolean hasNext() {
@@ -118,6 +90,34 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 	@SafeVarargs
 	static Batch of(final List<? extends Param>... rows) {
 		return Batch.of(asList(rows));
+	}
+
+	/**
+	 * Create a new batch from the given records (rows) and the deconstructor.
+	 *
+	 * @param records the rows to be inserted by the created batch
+	 * @param dctor the record deconstructor
+	 * @param <T> the row type
+	 * @return a new batch from the given arguments
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 */
+	static <T> Batch
+	of(final Iterable<? extends T> records, final Dctor<? super T> dctor) {
+		requireNonNull(records);
+		requireNonNull(dctor);
+
+		return () -> new Iterator<>() {
+			private final Iterator<? extends T> it = records.iterator();
+			@Override
+			public boolean hasNext() {
+				return it.hasNext();
+			}
+			@Override
+			public Function<Connection, ParamValues> next() {
+				final T record = it.next();
+				return conn -> dctor.unapply(record, conn);
+			}
+		};
 	}
 
 }
