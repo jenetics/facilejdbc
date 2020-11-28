@@ -40,11 +40,13 @@ import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 import java.sql.Statement;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * A {@code Query} represents an executable piece of SQL text.
@@ -201,7 +203,7 @@ public final class Query implements Serializable {
 	/**
 	 * Return a new query object with the given query parameter values.
 	 *
-	 * @see #on(Param...)
+	 * @see #on(BaseParam...)
 	 * @see #on(Map)
 	 * @see #on(Object, Dctor)
 	 *
@@ -209,10 +211,53 @@ public final class Query implements Serializable {
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if the given {@code params} is {@code null}
 	 */
-	public Query on(final List<? extends Param> params) {
+	public Query on(final List<? extends BaseParam> params) {
+		final List<Param> singleParams = new ArrayList<>();
+		final List<MultiParam> multiParams = new ArrayList<>();
+		for (var param : params) {
+			if (param instanceof Param) {
+				singleParams.add((Param)param);
+			} else if (param instanceof MultiParam) {
+				multiParams.add((MultiParam)param);
+			} else {
+				throw new IllegalArgumentException(format(
+					"Type '%s' not allowed.", param.getClass().getName()
+				));
+			}
+		}
+
+		return onSingleParam(singleParams).onMultiParam(multiParams);
+	}
+
+	private Query onSingleParam(final List<Param> params) {
 		return params.isEmpty()
 			? this
 			: new Query(sql, values.andThen(new Params(params)), fetchSize, timeout);
+	}
+
+	private Query onMultiParam(final List<MultiParam> params) {
+		if (params.isEmpty()) {
+			return this;
+		} else {
+			final var parameters = params.stream()
+				.flatMap(Query::toParams)
+				.collect(Collectors.toList());
+
+			IntStream.range(0, params.size());
+
+			var newSql = sql;
+			for (var param : params) {
+				newSql = newSql.expand(param.name(), param.values().size());
+			}
+
+			return new Query(newSql, values.andThen(new Params(parameters)), fetchSize, timeout);
+		}
+	}
+
+	private static Stream<Param> toParams(final MultiParam param) {
+		final var values = param.values();
+		return IntStream.range(0, values.size())
+			.mapToObj(i -> Param.of(Sql.name(param.name(), i), values.get(i)));
 	}
 
 	/**
@@ -222,7 +267,7 @@ public final class Query implements Serializable {
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if the given {@code params} is {@code null}
 	 */
-	public Query on(final Param... params) {
+	public Query on(final BaseParam... params) {
 		return on(asList(params));
 	}
 
@@ -259,10 +304,6 @@ public final class Query implements Serializable {
 			.set(params, stmt);
 
 		return new Query(sql, this.values.andThen(values), fetchSize, timeout);
-	}
-
-	public Query on(final MultiParam... params) {
-		return this;
 	}
 
 	/* *************************************************************************

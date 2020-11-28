@@ -8,14 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public interface MultiParam {
-
-	/**
-	 * Return the parameter name.
-	 *
-	 * @return the parameter name
-	 */
-	String name();
+public interface MultiParam extends BaseParam {
 
 	/**
 	 * Return the parameter value.

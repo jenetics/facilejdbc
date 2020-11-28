@@ -41,14 +41,7 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * @version 1.0
  * @since 1.0
  */
-public interface Param {
-
-	/**
-	 * Return the parameter name.
-	 *
-	 * @return the parameter name
-	 */
-	String name();
+public interface Param extends BaseParam {
 
 	/**
 	 * Return the parameter value.

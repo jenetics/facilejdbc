@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.sql.SQLException;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -52,6 +53,15 @@ public class QueryTest {
 		final String sql = "SELECT * FROM table WHERE id = :id AND name = :name";
 		final Query query = Query.of(sql);
 		Assert.assertEquals(query.rawSql(), sql);
+	}
+
+	@Test
+	public void multiSelect() throws SQLException {
+		final var query = Query.of("SELECT * FROM book WHERE id IN(:ids);")
+			.on(MultiParam.values("ids", 1, 2, 3, 4));
+
+		System.out.println(query.rawSql());
+		System.out.println(query.sql());
 	}
 
 	@Test
