@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Internal representation of an SQL query string. This parses the structure of
@@ -131,7 +132,7 @@ final class Sql {
 	 * @return the original SQL string
 	 */
 	String sql() {
-		final StringBuilder sql = new StringBuilder();
+		final var sql = new StringBuilder();
 
 		int index = 0;
 		for (var param : params) {
@@ -160,6 +161,46 @@ final class Sql {
 		}
 
 		return names;
+	}
+
+	Sql expand(final String name, final int parts) {
+		if (params.isEmpty() || parts <= 1) {
+			return this;
+		}
+
+		final var replacement = Stream.generate(() -> "?")
+			.limit(parts)
+			.collect(Collectors.joining(","));
+
+		final List<Param> parameters = new ArrayList<>();
+		int paramIndexOffset = 0;
+		String newString = string;
+
+		final var out = new StringBuilder(string);
+
+		for (var param : params) {
+			if (param.name.equals(name)) {
+
+				out.insert(param.index + paramIndexOffset, replacement);
+				out.delete(param.index + paramIndexOffset - 1, param.index + paramIndexOffset);
+				//out.delete(param.index + paramIndexOffset, param.index + paramIndexOffset + 1);
+
+				//newString = newString.substring(0, param.index + paramIndexOffset - 1) +
+				//	replacement +
+				//	newString.substring( param.index + paramIndexOffset);
+
+				for (int i =  0; i < parts; ++i) {
+					final var p = new Param( param.index + paramIndexOffset, format("%s[%d]", name, i));
+					parameters.add(p);
+					paramIndexOffset += 2;
+				}
+				paramIndexOffset -= 2;
+			} else {
+				parameters.add(new Param(paramIndexOffset + param.index, param.name));
+			}
+		}
+
+		return new Sql(out.toString(), parameters);
 	}
 
 	@Override
@@ -194,7 +235,7 @@ final class Sql {
 	 */
 	static Sql of(final String sql) {
 		final List<Param> params = new ArrayList<>();
-		final StringBuffer parsed = new StringBuffer();
+		final var parsed = new StringBuilder();
 
 		final Matcher matcher = PARAM_PATTERN.matcher(sql);
 		while (matcher.find()) {
