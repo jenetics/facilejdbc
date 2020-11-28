@@ -173,34 +173,34 @@ final class Sql {
 			.collect(Collectors.joining(","));
 
 		final List<Param> parameters = new ArrayList<>();
-		int paramIndexOffset = 0;
-		String newString = string;
+		final var sql = new StringBuilder(string);
+		int offset = 0;
 
-		final var out = new StringBuilder(string);
 
 		for (var param : params) {
 			if (param.name.equals(name)) {
-
-				out.insert(param.index + paramIndexOffset, replacement);
-				out.delete(param.index + paramIndexOffset - 1, param.index + paramIndexOffset);
-				//out.delete(param.index + paramIndexOffset, param.index + paramIndexOffset + 1);
-
-				//newString = newString.substring(0, param.index + paramIndexOffset - 1) +
-				//	replacement +
-				//	newString.substring( param.index + paramIndexOffset);
+				sql.insert(param.index + offset, replacement);
+				sql.delete(param.index + offset - 1, param.index + offset);
 
 				for (int i =  0; i < parts; ++i) {
-					final var p = new Param( param.index + paramIndexOffset, format("%s[%d]", name, i));
-					parameters.add(p);
-					paramIndexOffset += 2;
+					final var prm = new Param(
+						param.index + offset,
+						name(name, i)
+					);
+					parameters.add(prm);
+					offset += 2;
 				}
-				paramIndexOffset -= 2;
+				offset -= 2;
 			} else {
-				parameters.add(new Param(paramIndexOffset + param.index, param.name));
+				parameters.add(new Param(param.index + offset, param.name));
 			}
 		}
 
-		return new Sql(out.toString(), parameters);
+		return new Sql(sql.toString(), parameters);
+	}
+
+	static String name(final String name, final int index) {
+		return format("%s[%d]", name, index);
 	}
 
 	@Override
