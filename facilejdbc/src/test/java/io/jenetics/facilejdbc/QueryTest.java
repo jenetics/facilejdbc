@@ -20,6 +20,8 @@
 package io.jenetics.facilejdbc;
 
 import static java.util.Arrays.asList;
+import static io.jenetics.facilejdbc.Param.value;
+import static io.jenetics.facilejdbc.Param.values;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -56,9 +58,27 @@ public class QueryTest {
 	}
 
 	@Test
+	public void singleParam() throws SQLException {
+		final var query = Query.of(
+			"SELECT * FROM table WHERE id IN(:ids) " +
+				"AND name LIKE :name OR key IN(:keys);"
+		);
+
+		final var conn = new MockConnection();
+		query
+			.on(
+				values("ids", 10, 20, 30, 40),
+				value("name", "some_name"),
+				values("keys", "k1", "k2"))
+			.execute(conn);
+
+		System.out.println(conn.stmt.data);
+	}
+
+	@Test
 	public void multiSelect() throws SQLException {
 		final var query = Query.of("SELECT * FROM book WHERE id IN(:ids);")
-			.on(MultiParam.values("ids", 1, 2, 3, 4));
+			.on(values("ids", 1, 2, 3, 4));
 
 		System.out.println(query.rawSql());
 		System.out.println(query.sql());

@@ -60,7 +60,7 @@ import java.util.stream.Stream;
  * @see Query
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.1
+ * @version !__version__!
  * @since 1.0
  */
 final class Sql {

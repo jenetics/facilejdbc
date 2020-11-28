@@ -2,11 +2,7 @@ package io.jenetics.facilejdbc;
 
 import static java.util.Objects.requireNonNull;
 
-import static io.jenetics.facilejdbc.spi.SqlTypeMapper.map;
-
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public interface MultiParam extends BaseParam {
 
@@ -36,15 +32,6 @@ public interface MultiParam extends BaseParam {
 				return vals;
 			}
 		};
-	}
-
-	static MultiParam values(final String name, final Object... values) {
-		return of(
-			name,
-			Stream.of(values)
-				.map(v -> (ParamValue)(index, stmt) -> stmt.setObject(index, map(v)))
-				.collect(Collectors.toUnmodifiableList())
-		);
 	}
 
 }

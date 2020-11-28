@@ -68,7 +68,7 @@ import java.util.stream.Stream;
  * This class is immutable and thread-safe.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.2
+ * @version !__version__!
  * @since 1.0
  */
 public final class Query implements Serializable {
