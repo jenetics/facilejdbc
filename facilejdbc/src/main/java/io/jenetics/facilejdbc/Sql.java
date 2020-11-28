@@ -21,6 +21,7 @@ package io.jenetics.facilejdbc;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static java.util.function.Predicate.not;
 import static io.jenetics.facilejdbc.SerialIO.readInt;
 import static io.jenetics.facilejdbc.SerialIO.readString;
 import static io.jenetics.facilejdbc.SerialIO.writeInt;
@@ -105,7 +106,38 @@ final class Sql {
 
 	Sql(final String string, final List<Param> params) {
 		this.string = requireNonNull(string);
+
+		final var invalid = params.stream()
+			.map(p -> p.name)
+			.filter(not(Sql::isIdentifier))
+			.collect(Collectors.toList());
+		if (!invalid.isEmpty()) {
+			throw new IllegalArgumentException(format(
+				"Found invalid parameter names: %s", invalid
+			));
+		}
+
 		this.params = List.copyOf(params);
+	}
+
+	private static boolean isIdentifier(final String name) {
+		if (name.isEmpty()) {
+			return false;
+		}
+		int cp = name.codePointAt(0);
+		if (!Character.isJavaIdentifierStart(cp)) {
+			return false;
+		}
+		for (int i = Character.charCount(cp);
+			 i < name.length();
+			 i += Character.charCount(cp))
+		{
+			cp = name.codePointAt(i);
+			if (!Character.isJavaIdentifierPart(cp)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -232,6 +264,8 @@ final class Sql {
 	 * @param sql the SQL string to parse.
 	 * @return the newly created {@code Sql} object
 	 * @throws NullPointerException if the given SQL string is {@code null}
+	 * @throws IllegalArgumentException if one of the parameter names is not a
+	 *         valid Java identifier
 	 */
 	static Sql of(final String sql) {
 		final List<Param> params = new ArrayList<>();
