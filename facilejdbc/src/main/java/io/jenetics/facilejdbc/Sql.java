@@ -106,17 +106,6 @@ final class Sql {
 
 	Sql(final String string, final List<Param> params) {
 		this.string = requireNonNull(string);
-
-		final var invalid = params.stream()
-			.map(p -> p.name)
-			.filter(not(Sql::isIdentifier))
-			.collect(Collectors.toList());
-		if (!invalid.isEmpty()) {
-			throw new IllegalArgumentException(format(
-				"Found invalid parameter names: %s", invalid
-			));
-		}
-
 		this.params = List.copyOf(params);
 	}
 
@@ -279,6 +268,16 @@ final class Sql {
 			params.add(new Param(index, name));
 		}
 		matcher.appendTail(parsed);
+
+		final var invalid = params.stream()
+			.map(p -> p.name)
+			.filter(not(Sql::isIdentifier))
+			.collect(Collectors.toList());
+		if (!invalid.isEmpty()) {
+			throw new IllegalArgumentException(format(
+				"Found invalid parameter names: %s", invalid
+			));
+		}
 
 		return new Sql(parsed.toString(), params);
 	}
