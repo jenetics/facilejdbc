@@ -42,7 +42,7 @@ public class ParamTest {
 	public void lazy() throws SQLException {
 		final var stmt = new MockPreparedStatement();
 
-		final Param param = Param.lazy("foo", () -> "bar");
+		final Param param = Param.lazyValue("foo", () -> "bar");
 		param.value().set(1, stmt);
 
 		Assert.assertEquals(param.name(),"foo");

@@ -63,7 +63,7 @@ public interface Param extends BaseParam {
 	 * {@code value}.
 	 *
 	 * @see #value(String, Object)
-	 * @see #lazy(String, SqlSupplier)
+	 * @see #lazyValue(String, SqlSupplier)
 	 *
 	 * @param name the parameter name
 	 * @param value the parameter values
@@ -128,7 +128,7 @@ public interface Param extends BaseParam {
 	 * @throws NullPointerException if the given parameter {@code name} is
 	 *         {@code null}
 	 */
-	static Param lazy(final String name, final SqlSupplier<?> value) {
+	static Param lazyValue(final String name, final SqlSupplier<?> value) {
 		requireNonNull(value);
 		return Param.of(
 			name,
