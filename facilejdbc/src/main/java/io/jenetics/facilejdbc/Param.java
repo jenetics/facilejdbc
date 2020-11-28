@@ -19,11 +19,12 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 import static io.jenetics.facilejdbc.spi.SqlTypeMapper.map;
 
+import java.util.Collection;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import io.jenetics.facilejdbc.function.SqlSupplier;
 
@@ -33,15 +34,14 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * {@code Param} objects with eagerly evaluated values.
  *
  * <pre>{@code
- * INSERT_QUERY
- *     .on(
- *         Param.value("forename", "Werner"),
- *         Param.value("birthday", LocalDate.now()),
- *         Param.value("email", "some.email@gmail.com"))
+ * INSERT_QUERY.on(
+ *     Param.value("forename", "Werner"),
+ *     Param.value("birthday", LocalDate.now()),
+ *     Param.value("email", "some.email@gmail.com"))
  * }</pre>
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.0
+ * @version !__version__!
  * @since 1.0
  */
 public interface Param extends BaseParam {
@@ -92,8 +92,14 @@ public interface Param extends BaseParam {
 	}
 
 	/**
-	 * Create a new query parameter object from the given {@code name} and
+	 * Create a new query parameter object for the given {@code name} and
 	 * {@code value}.
+	 *
+	 * <pre>{@code
+	 * final var result = Query.of("SELECT * FROM table WHERE id = :id;")
+	 *     .on(Param.value("id", 43245)
+	 *     .as(PARSER.singleOpt(), conn);
+	 * }</pre>
 	 *
 	 * @param name the parameter name
 	 * @param value the parameter values, which may be {@code null}
@@ -109,12 +115,85 @@ public interface Param extends BaseParam {
 		);
 	}
 
-	static MultiParam values(final String name, final Object... values) {
+	/**
+	 * Create a new (multi) query parameter object for the given {@code name}
+	 * and the given {@code values}.
+	 *
+	 * <pre>{@code
+	 * final var result = Query.of("SELECT * FROM table WHERE id = IN(:ids);")
+	 *     .on(Param.values("ids", List.of(43245, 434, 23, 987, 1239))
+	 *     .as(PARSER.list(), conn);
+	 * }</pre>
+	 *
+	 * @since !__version__!
+	 *
+	 * @see #values(String, Object...)
+	 *
+	 * @param name the parameter name
+	 * @param values the query parameters
+	 * @return a new query parameter object
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 * @throws IllegalArgumentException if the given {@code values} collection
+	 *         is empty
+	 */
+	static MultiParam values(final String name, final Collection<?> values) {
+		if (values.isEmpty()) {
+			throw new IllegalArgumentException("Values must not be empty.");
+		}
+
 		return MultiParam.of(
 			name,
-			Stream.of(values)
+			values.stream()
 				.map(v -> (ParamValue)(index, stmt) -> stmt.setObject(index, map(v)))
 				.collect(Collectors.toUnmodifiableList())
+		);
+	}
+
+	/**
+	 * Create a new (multi) query parameter object for the given {@code name}
+	 * and the given {@code values}.
+	 *
+	 * <pre>{@code
+	 * final var result = Query.of("SELECT * FROM table WHERE id = IN(:ids);")
+	 *     .on(Param.values("ids", 43245, 434, 23, 987, 1239)
+	 *     .as(PARSER.list(), conn);
+	 * }</pre>
+	 *
+	 * @since !__version__!
+	 *
+	 * @see #values(String, Collection)
+	 *
+	 * @param name the parameter name
+	 * @param values the query parameters
+	 * @return a new query parameter object
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 * @throws IllegalArgumentException if the length of the given {@code values}
+	 *         array is zero
+	 */
+	static MultiParam values(final String name, final Object... values) {
+		return values(name, asList(values));
+	}
+
+	/**
+	 * Create a new query parameter object from the given {@code name} and
+	 * lazily evaluated {@code value}.
+	 *
+	 * <pre>{@code
+	 * final var result = Query.of("SELECT * FROM table WHERE date < :date;")
+	 *     .on(Param.lazyValue("date", LocalDate::now)
+	 *     .as(PARSER.singleOpt(), conn);
+	 * }</pre>
+	 *
+	 * @param name the parameter name
+	 * @param value the lazily evaluated parameter value
+	 * @return a new query parameter object
+	 * @throws NullPointerException if one the arguments is {@code null}
+	 */
+	static Param lazyValue(final String name, final SqlSupplier<?> value) {
+		requireNonNull(value);
+		return Param.of(
+			name,
+			(index, stmt) -> stmt.setObject(index, map(value.get()))
 		);
 	}
 
@@ -125,15 +204,72 @@ public interface Param extends BaseParam {
 	 * @param name the parameter name
 	 * @param value the lazily evaluated parameter values
 	 * @return a new query parameter object
-	 * @throws NullPointerException if the given parameter {@code name} is
-	 *         {@code null}
+	 * @throws NullPointerException if one the arguments is {@code null}
+	 * @deprecated use {@link #lazyValue(String, SqlSupplier)} instead
 	 */
-	static Param lazyValue(final String name, final SqlSupplier<?> value) {
-		requireNonNull(value);
-		return Param.of(
+	@Deprecated(forRemoval = true, since = "!__version__!")
+	static Param lazy(final String name, final SqlSupplier<?> value) {
+		return lazyValue(name, value);
+	}
+
+	/**
+	 * Create a new query parameter object for the given {@code name} and
+	 * lazily evaluated {@code values}.
+	 *
+	 * <pre>{@code
+	 * final SqlSupplier<Integer> id1 = ...;
+	 * final SqlSupplier<Integer> id2 = ...;
+	 * final var result = Query.of("SELECT * FROM table WHERE id = IN(:ids);")
+	 *     .on(Param.lazyValues("id", List.of(id1, id2))
+	 *     .as(PARSER.list(), conn);
+	 * }</pre>
+	 *
+	 * @param name the parameter name
+	 * @param values the parameter values
+	 * @return a new query parameter object
+	 * @throws NullPointerException if one the arguments is {@code null}
+	 * @throws IllegalArgumentException if the given {@code values} collection
+	 *         is empty
+	 */
+	static MultiParam lazyValues(
+		final String name,
+		final Collection<? extends SqlSupplier<?>> values
+	) {
+		if (values.isEmpty()) {
+			throw new IllegalArgumentException("Values must not be empty.");
+		}
+
+		return MultiParam.of(
 			name,
-			(index, stmt) -> stmt.setObject(index, map(value.get()))
+			values.stream()
+				.map(v -> (ParamValue)(index, stmt) ->
+					stmt.setObject(index, map(v.get())))
+				.collect(Collectors.toUnmodifiableList())
 		);
+	}
+
+	/**
+	 * Create a new query parameter object for the given {@code name} and
+	 * lazily evaluated {@code values}.
+	 *
+	 * <pre>{@code
+	 * final var result = Query.of("SELECT * FROM table WHERE id = IN(:ids);")
+	 *     .on(Param.lazyValues("id", () -> 324, () -> 9967))
+	 *     .as(PARSER.list(), conn);
+	 * }</pre>
+	 *
+	 * @param name the parameter name
+	 * @param values the parameter values
+	 * @return a new query parameter object
+	 * @throws NullPointerException if one the arguments is {@code null}
+	 * @throws IllegalArgumentException if the length of the given {@code values}
+	 *         array is zero
+	 */
+	static MultiParam lazyValues(
+		final String name,
+		final SqlSupplier<?>... values
+	) {
+		return lazyValues(name, asList(values));
 	}
 
 }
