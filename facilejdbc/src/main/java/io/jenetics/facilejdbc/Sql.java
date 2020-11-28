@@ -185,7 +185,7 @@ final class Sql {
 	}
 
 	Sql expand(final String name, final int parts) {
-		if (params.isEmpty() || parts <= 1) {
+		if (params.isEmpty() || parts < 1) {
 			return this;
 		}
 
@@ -196,7 +196,6 @@ final class Sql {
 		final List<Param> parameters = new ArrayList<>();
 		final var sql = new StringBuilder(string);
 		int offset = 0;
-
 
 		for (var param : params) {
 			if (param.name.equals(name)) {
