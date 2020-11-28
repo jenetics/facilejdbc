@@ -137,10 +137,6 @@ public interface Param extends BaseParam {
 	 *         is empty
 	 */
 	static MultiParam values(final String name, final Collection<?> values) {
-		if (values.isEmpty()) {
-			throw new IllegalArgumentException("Values must not be empty.");
-		}
-
 		return MultiParam.of(
 			name,
 			values.stream()
@@ -235,15 +231,10 @@ public interface Param extends BaseParam {
 		final String name,
 		final Collection<? extends SqlSupplier<?>> values
 	) {
-		if (values.isEmpty()) {
-			throw new IllegalArgumentException("Values must not be empty.");
-		}
-
 		return MultiParam.of(
 			name,
 			values.stream()
-				.map(v -> (ParamValue)(index, stmt) ->
-					stmt.setObject(index, map(v.get())))
+				.map(v -> (ParamValue)(index, stmt) -> stmt.setObject(index, map(v.get())))
 				.collect(Collectors.toUnmodifiableList())
 		);
 	}
