@@ -97,6 +97,31 @@ public class QueryTest {
 		Assert.assertEquals(conn.stmt.data, Map.of(1, 1, 2, 2, 3, 3, 4, 4));
 	}
 
+	@Test(expectedExceptions = IllegalArgumentException.class)
+	public void multiSelectZero() {
+		Query.of("SELECT * FROM book WHERE id IN(:ids);")
+			.on(values("ids"));
+	}
+
+	@Test
+	public void multiSelectOne() throws SQLException {
+		final var query = Query.of("SELECT * FROM book WHERE id IN(:ids);")
+			.on(values("ids", 1));
+
+		Assert.assertEquals(
+			query.rawSql(),
+			"SELECT * FROM book WHERE id IN(:ids[0]);"
+		);
+		Assert.assertEquals(
+			query.sql(),
+			"SELECT * FROM book WHERE id IN(?);"
+		);
+
+		final var conn = new MockConnection();
+		query.execute(conn);
+		Assert.assertEquals(conn.stmt.data, Map.of(1, 1));
+	}
+
 	@Test
 	public void lazyMultiSelect() throws SQLException {
 		final var query = Query.of("SELECT * FROM book WHERE id IN(:ids);")
@@ -114,6 +139,31 @@ public class QueryTest {
 		final var conn = new MockConnection();
 		query.execute(conn);
 		Assert.assertEquals(conn.stmt.data, Map.of(1, 1, 2, 2, 3, 3, 4, 4));
+	}
+
+	@Test(expectedExceptions = IllegalArgumentException.class)
+	public void lazyMultiSelectZero() {
+		Query.of("SELECT * FROM book WHERE id IN(:ids);")
+			.on(lazyValues("ids"));
+	}
+
+	@Test
+	public void lazyMultiSelectOne() throws SQLException {
+		final var query = Query.of("SELECT * FROM book WHERE id IN(:ids);")
+			.on(lazyValues("ids", () -> 1));
+
+		Assert.assertEquals(
+			query.rawSql(),
+			"SELECT * FROM book WHERE id IN(:ids[0]);"
+		);
+		Assert.assertEquals(
+			query.sql(),
+			"SELECT * FROM book WHERE id IN(?);"
+		);
+
+		final var conn = new MockConnection();
+		query.execute(conn);
+		Assert.assertEquals(conn.stmt.data, Map.of(1, 1));
 	}
 
 	@Test
