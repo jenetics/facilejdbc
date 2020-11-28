@@ -41,7 +41,7 @@ import java.util.List;
  * @version !__version__!
  * @since !__version__!
  */
-public interface MultiParam extends BaseParam {
+public /*non-sealed*/ interface MultiParam extends BaseParam {
 
 	/**
 	 * Return the parameter values.

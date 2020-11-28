@@ -210,6 +210,8 @@ public final class Query implements Serializable {
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if the given {@code params} is {@code null}
+	 * @throws IllegalArgumentException if an other type then {@link Param} or
+	 *         {@link MultiParam} is given
 	 */
 	public Query on(final List<? extends BaseParam> params) {
 		final List<Param> singleParams = new ArrayList<>();
@@ -269,6 +271,8 @@ public final class Query implements Serializable {
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if the given {@code params} is {@code null}
+	 * @throws IllegalArgumentException if an other type then {@link Param} or
+	 *         {@link MultiParam} is given
 	 */
 	public Query on(final BaseParam... params) {
 		return on(asList(params));
