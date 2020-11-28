@@ -239,18 +239,21 @@ public final class Query implements Serializable {
 		if (params.isEmpty()) {
 			return this;
 		} else {
-			final var parameters = params.stream()
-				.flatMap(Query::toParams)
-				.collect(Collectors.toList());
+			final var sql = params.stream()
+				.reduce(
+					this.sql,
+					(s, p) -> s.expand(p.name(), p.values().size()),
+					(s1, s2) -> { throw new AssertionError(); });
 
-			IntStream.range(0, params.size());
+			final var values = this.values.andThen(
+				new Params(
+					params.stream()
+						.flatMap(Query::toParams)
+						.collect(Collectors.toList())
+				)
+			);
 
-			var newSql = sql;
-			for (var param : params) {
-				newSql = newSql.expand(param.name(), param.values().size());
-			}
-
-			return new Query(newSql, values.andThen(new Params(parameters)), fetchSize, timeout);
+			return new Query(sql, values, fetchSize, timeout);
 		}
 	}
 
