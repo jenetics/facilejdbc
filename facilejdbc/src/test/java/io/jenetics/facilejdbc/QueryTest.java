@@ -20,6 +20,7 @@
 package io.jenetics.facilejdbc;
 
 import static java.util.Arrays.asList;
+import static io.jenetics.facilejdbc.Param.lazyValues;
 import static io.jenetics.facilejdbc.Param.value;
 import static io.jenetics.facilejdbc.Param.values;
 
@@ -29,6 +30,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.Map;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -80,8 +83,37 @@ public class QueryTest {
 		final var query = Query.of("SELECT * FROM book WHERE id IN(:ids);")
 			.on(values("ids", 1, 2, 3, 4));
 
-		System.out.println(query.rawSql());
-		System.out.println(query.sql());
+		Assert.assertEquals(
+			query.rawSql(),
+			"SELECT * FROM book WHERE id IN(:ids[0],:ids[1],:ids[2],:ids[3]);"
+		);
+		Assert.assertEquals(
+			query.sql(),
+			"SELECT * FROM book WHERE id IN(?,?,?,?);"
+		);
+
+		final var conn = new MockConnection();
+		query.execute(conn);
+		Assert.assertEquals(conn.stmt.data, Map.of(1, 1, 2, 2, 3, 3, 4, 4));
+	}
+
+	@Test
+	public void lazyMultiSelect() throws SQLException {
+		final var query = Query.of("SELECT * FROM book WHERE id IN(:ids);")
+			.on(lazyValues("ids", () -> 1, () -> 2, () -> 3, () -> 4));
+
+		Assert.assertEquals(
+			query.rawSql(),
+			"SELECT * FROM book WHERE id IN(:ids[0],:ids[1],:ids[2],:ids[3]);"
+		);
+		Assert.assertEquals(
+			query.sql(),
+			"SELECT * FROM book WHERE id IN(?,?,?,?);"
+		);
+
+		final var conn = new MockConnection();
+		query.execute(conn);
+		Assert.assertEquals(conn.stmt.data, Map.of(1, 1, 2, 2, 3, 3, 4, 4));
 	}
 
 	@Test
