@@ -203,6 +203,12 @@ public final class Query implements Serializable {
 	/**
 	 * Return a new query object with the given query parameter values.
 	 *
+	 * <pre>{@code
+	 * final var result = Query.of("SELECT * FROM table WHERE id = :id;")
+	 *     .on(List.of(Param.value("id", 43245))
+	 *     .as(PARSER.singleOpt(), conn);
+	 * }</pre>
+	 *
 	 * @see #on(BaseParam...)
 	 * @see #on(Map)
 	 * @see #on(Object, Dctor)
@@ -213,7 +219,7 @@ public final class Query implements Serializable {
 	 * @throws IllegalArgumentException if an other type then {@link Param} or
 	 *         {@link MultiParam} is given
 	 */
-	public Query on(final List<? extends BaseParam> params) {
+	public Query on(final Iterable<? extends BaseParam> params) {
 		final List<Param> singleParams = new ArrayList<>();
 		final List<MultiParam> multiParams = new ArrayList<>();
 		for (var param : params) {
@@ -268,6 +274,12 @@ public final class Query implements Serializable {
 	/**
 	 * Return a new query object with the given query parameter values.
 	 *
+	 * <pre>{@code
+	 * final var result = Query.of("SELECT * FROM table WHERE id = :id;")
+	 *     .on(Param.value("id", 43245)
+	 *     .as(PARSER.singleOpt(), conn);
+	 * }</pre>
+	 *
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if the given {@code params} is {@code null}
@@ -280,6 +292,12 @@ public final class Query implements Serializable {
 
 	/**
 	 * Return a new query object with the given query parameter values.
+	 *
+	 * <pre>{@code
+	 * final var result = Query.of("SELECT * FROM table WHERE id = :id;")
+	 *     .on(Map.of("id", 43245))
+	 *     .as(PARSER.singleOpt(), conn);
+	 * }</pre>
 	 *
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters

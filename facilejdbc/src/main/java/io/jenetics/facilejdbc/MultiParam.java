@@ -21,7 +21,7 @@ package io.jenetics.facilejdbc;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,8 +34,8 @@ import java.util.List;
  * }</pre>
  *
  * @see Param
- * @see Param#values(String, Collection)
- * @see Param#lazyValues(String, Collection)
+ * @see Param#values(String, Iterable)
+ * @see Param#lazyValues(String, Iterable)
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version !__version__!
@@ -65,13 +65,20 @@ public /*non-sealed*/ interface MultiParam extends BaseParam {
 	 * @throws IllegalArgumentException if the given {@code values} collection
 	 *         is empty
 	 */
-	static MultiParam of(final String name, final Collection<ParamValue> values) {
+	static MultiParam of(
+		final String name,
+		final Iterable<? extends ParamValue> values
+	) {
 		requireNonNull(name);
-		if (values.isEmpty()) {
+		final var it = values.iterator();
+		if (!it.hasNext()) {
 			throw new IllegalArgumentException("Values must not be empty.");
 		}
 
-		final var vals = List.copyOf(values);
+		final List<ParamValue> list = new ArrayList<>();
+		values.forEach(list::add);
+		final var vals = List.copyOf(list);
+
 		return new MultiParam() {
 			@Override
 			public String name() {

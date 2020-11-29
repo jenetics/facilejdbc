@@ -25,6 +25,8 @@ import static io.jenetics.facilejdbc.spi.SqlTypeMapper.map;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import io.jenetics.facilejdbc.function.SqlSupplier;
 
@@ -136,13 +138,20 @@ public /*non-sealed*/ interface Param extends BaseParam {
 	 * @throws IllegalArgumentException if the given {@code values} collection
 	 *         is empty
 	 */
-	static MultiParam values(final String name, final Collection<?> values) {
+	static MultiParam values(final String name, final Iterable<?> values) {
 		return MultiParam.of(
 			name,
-			values.stream()
+			stream(values)
 				.map(v -> (ParamValue)(index, stmt) -> stmt.setObject(index, map(v)))
 				.collect(Collectors.toUnmodifiableList())
 		);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> Stream<T> stream(final Iterable<? extends T> values) {
+		return values instanceof Collection<?>
+			? ((Collection<T>)values).stream()
+			: StreamSupport.stream(((Iterable<T>)values).spliterator(), false);
 	}
 
 	/**
@@ -157,7 +166,7 @@ public /*non-sealed*/ interface Param extends BaseParam {
 	 *
 	 * @since !__version__!
 	 *
-	 * @see #values(String, Collection)
+	 * @see #values(String, Iterable)
 	 *
 	 * @param name the parameter name
 	 * @param values the query parameters
@@ -229,12 +238,12 @@ public /*non-sealed*/ interface Param extends BaseParam {
 	 */
 	static MultiParam lazyValues(
 		final String name,
-		final Collection<? extends SqlSupplier<?>> values
+		final Iterable<? extends SqlSupplier<?>> values
 	) {
 		return MultiParam.of(
 			name,
-			values.stream()
-				.map(v -> (ParamValue)(index, stmt) -> stmt.setObject(index, map(v.get())))
+			stream(values)
+				.map(v -> (ParamValue)(i, stmt) -> stmt.setObject(i, map(v.get())))
 				.collect(Collectors.toUnmodifiableList())
 		);
 	}
