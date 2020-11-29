@@ -33,12 +33,26 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
 /**
  * This is the  base interface of the {@link SingleParam} and {@link MultiParam}
  * class.
+ * <p>
+ * Creating single valued parameters:
+ * <pre>{@code
+ * INSERT_QUERY.on(
+ *     Param.value("forename", "Werner"),
+ *     Param.value("birthday", LocalDate.now()),
+ *     Param.value("email", "some.email@gmail.com"))
+ * }</pre>
+ *
+ * Creating multi valued parameters:
+ * <pre>{@code
+ * Query.of("SELECT * FROM table WHERE id = IN(:ids);")
+ *     .on(Param.values("ids", 1, 2, 3, 4))
+ * }</pre>
  *
  * @see SingleParam
  * @see MultiParam
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.3
+ * @version 2.0
  * @since 1.3
  */
 public sealed interface Param permits SingleParam, MultiParam {

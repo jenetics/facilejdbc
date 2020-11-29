@@ -71,7 +71,7 @@ import java.util.stream.Stream;
  * This class is immutable and thread-safe.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
+ * @version 2.0
  * @since 1.0
  */
 public final class Query implements Serializable {
@@ -337,7 +337,7 @@ public final class Query implements Serializable {
 	 * Return a new query object with the given query parameter values. They are
 	 * automatically extracted from the record components.
 	 *
-	 * @since !__version__!
+	 * @since 2.0
 	 *
 	 * @see Dctor#of(Class, Dctor.Field[])
 	 * @see Dctor#of(Class, UnaryOperator, Dctor.Field[])

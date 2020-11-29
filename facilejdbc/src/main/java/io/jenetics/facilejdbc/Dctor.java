@@ -63,7 +63,7 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * @param <T> the record type to be deconstructed
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
+ * @version 2.0
  * @since 1.0
  */
 @FunctionalInterface
@@ -200,7 +200,7 @@ public interface Dctor<T> {
 	/**
 	 * Create a new deconstructor for the given record type.
 	 *
-	 * @since !__version__!
+	 * @since 2.0
 	 *
 	 * @param record the record type to deconstruct
 	 * @param toColumnName function for mapping the component names to the
@@ -272,7 +272,7 @@ public interface Dctor<T> {
 	 * userCreatedAt -> user_created_at
 	 * }</pre>
 	 *
-	 * @since !__version__!
+	 * @since 2.0
 	 *
 	 * @param record the record type to deconstruct
 	 * @param fields the fields which overrides/extends the automatically
