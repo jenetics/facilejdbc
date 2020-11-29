@@ -104,6 +104,23 @@ static final RowParser<Person> PARSER = (row, conn) -> Person.builder()
 
 Since the `RowParser` is a _functional_ interface it can be written as shown. The first function parameter represents the actual selected row and second parameter the JDBC `Connection` used for executing the query. In most cases the `conn` will not be used, but it is quite helpful for fetching dependent DTOs in a sub-query.
 
+### Lazy (stream) select
+
+The _FacileJdbc_ library allows you to lazily fetch results from the DB. This might be useful when the selected data can cause an `OutOfMemoryError`.
+
+```java
+final var select = Query.of("SELECT * FROM person;");
+
+// Make sure to close the returned stream.
+try (var persons = select.as(PARSER.stream(), conn)) {
+    // Do some processing with the person stream.
+    persons.forEach(person -> ...);
+}
+```
+
+It's important to _close_ the returned `Stream`, which will close the underlying `ResultSet` and `PreparedStatement`. Every `SQLException`, thrown while fetching the data from the DB, will be wrapped in an `UncheckedSQLException`.
+
+_By setting the fetch-size, with the `Query.withFetchSize(int)` method, it is possible to control the amount of data fetched at once by the JDBC driver._
 
 ### Inserting objects
 
