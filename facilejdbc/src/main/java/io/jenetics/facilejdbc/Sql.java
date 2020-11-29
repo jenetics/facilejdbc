@@ -169,7 +169,7 @@ final class Sql {
 			return this;
 		}
 
-		final var replacement = Stream.generate(() -> "?")
+		final var expansion = Stream.generate(() -> "?")
 			.limit(parts)
 			.collect(Collectors.joining(","));
 
@@ -179,7 +179,7 @@ final class Sql {
 
 		for (var param : params) {
 			if (param.name.equals(name)) {
-				sql.insert(param.index + offset, replacement);
+				sql.insert(param.index + offset, expansion);
 				sql.delete(param.index + offset - 1, param.index + offset);
 
 				for (int i =  0; i < parts; ++i) {
