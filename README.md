@@ -188,6 +188,25 @@ Query.of("INSERT INTO person(id, name) VALUES(:id, :name)")
     );
 ``` 
 
+### Multi-value parameter
+
+A parameter can be multi-value, like a sequence of IDs. In such case, values will be prepared to be passed appropriately in JDBC.
+
+```java
+final List<Book> results = Query.of("SELECT * FROM book WHERE id IN(:ids);")
+	.on(Param.values("ids", 1, 2, 3, 4))
+	.as(PARSER.list(), conn);
+```
+
+The created JDBC query string will look like this
+
+```sql
+SELECT * FROM book WHERE id IN(?,?,?,?);
+```
+
+filled with the value `1`, `2`, `3` and `4`.
+
+
 ### Selecting/inserting object _graphs_
 
 The previous examples shows the basic usage of the library. It is possible to use this for all needed select and insert queries, as you will do it with plain JDBC. If you need to select or insert _small_ object graphs, this becomes fast tedious as well. 
