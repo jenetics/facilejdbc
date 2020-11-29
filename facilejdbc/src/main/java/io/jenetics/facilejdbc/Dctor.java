@@ -22,7 +22,6 @@ package io.jenetics.facilejdbc;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toMap;
 import static io.jenetics.facilejdbc.spi.SqlTypeMapper.map;
 
 import java.lang.reflect.InvocationTargetException;

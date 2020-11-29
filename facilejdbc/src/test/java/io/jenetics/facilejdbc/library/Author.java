@@ -19,9 +19,8 @@
  */
 package io.jenetics.facilejdbc.library;
 
-import io.jenetics.facilejdbc.Dctor;
-import io.jenetics.facilejdbc.Query;
-import io.jenetics.facilejdbc.RowParser;
+import static java.util.Objects.requireNonNull;
+import static io.jenetics.facilejdbc.Param.value;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -29,10 +28,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static io.jenetics.facilejdbc.Param.value;
-import static java.util.Objects.requireNonNull;
 import io.jenetics.facilejdbc.Dctor;
-import io.jenetics.facilejdbc.MultiParam;
 import io.jenetics.facilejdbc.Query;
 import io.jenetics.facilejdbc.RowParser;
 

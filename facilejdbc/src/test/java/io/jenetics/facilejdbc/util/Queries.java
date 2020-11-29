@@ -19,8 +19,6 @@
  */
 package io.jenetics.facilejdbc.util;
 
-import io.jenetics.facilejdbc.Query;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +27,8 @@ import java.io.Reader;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import io.jenetics.facilejdbc.Query;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>

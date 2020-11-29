@@ -19,10 +19,10 @@
  */
 package io.jenetics.facilejdbc.library;
 
-import io.jenetics.facilejdbc.Batch;
-import io.jenetics.facilejdbc.Dctor;
-import io.jenetics.facilejdbc.Query;
-import io.jenetics.facilejdbc.RowParser;
+import static java.util.Objects.requireNonNull;
+import static io.jenetics.facilejdbc.Dctor.field;
+import static io.jenetics.facilejdbc.Dctor.fieldValue;
+import static io.jenetics.facilejdbc.Param.value;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -31,10 +31,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
-import static io.jenetics.facilejdbc.Dctor.field;
-import static io.jenetics.facilejdbc.Dctor.fieldValue;
-import static io.jenetics.facilejdbc.Param.value;
-import static java.util.Objects.requireNonNull;
+import io.jenetics.facilejdbc.Batch;
+import io.jenetics.facilejdbc.Dctor;
+import io.jenetics.facilejdbc.Query;
+import io.jenetics.facilejdbc.RowParser;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
