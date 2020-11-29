@@ -30,8 +30,8 @@ package io.jenetics.facilejdbc;
  * @see MultiParam
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
+ * @version 1.3
+ * @since 1.3
  */
 public /*sealed*/ interface BaseParam /*permits Param, MultiParam*/ {
 

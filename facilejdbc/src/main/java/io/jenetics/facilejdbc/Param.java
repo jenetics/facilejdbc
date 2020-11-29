@@ -43,7 +43,7 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * }</pre>
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
+ * @version 1.3
  * @since 1.0
  */
 public /*non-sealed*/ interface Param extends BaseParam {
@@ -127,7 +127,7 @@ public /*non-sealed*/ interface Param extends BaseParam {
 	 *     .as(PARSER.list(), conn);
 	 * }</pre>
 	 *
-	 * @since !__version__!
+	 * @since 1.3
 	 *
 	 * @see #values(String, Object...)
 	 *
@@ -164,7 +164,7 @@ public /*non-sealed*/ interface Param extends BaseParam {
 	 *     .as(PARSER.list(), conn);
 	 * }</pre>
 	 *
-	 * @since !__version__!
+	 * @since 1.3
 	 *
 	 * @see #values(String, Iterable)
 	 *
@@ -212,7 +212,7 @@ public /*non-sealed*/ interface Param extends BaseParam {
 	 * @throws NullPointerException if one the arguments is {@code null}
 	 * @deprecated use {@link #lazyValue(String, SqlSupplier)} instead
 	 */
-	@Deprecated(forRemoval = true, since = "!__version__!")
+	@Deprecated(forRemoval = true, since = "1.3")
 	static Param lazy(final String name, final SqlSupplier<?> value) {
 		return lazyValue(name, value);
 	}

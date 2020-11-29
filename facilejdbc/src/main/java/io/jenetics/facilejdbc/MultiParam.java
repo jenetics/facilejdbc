@@ -38,8 +38,8 @@ import java.util.List;
  * @see Param#lazyValues(String, Iterable)
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
+ * @version 1.3
+ * @since 1.3
  */
 public /*non-sealed*/ interface MultiParam extends BaseParam {
 
