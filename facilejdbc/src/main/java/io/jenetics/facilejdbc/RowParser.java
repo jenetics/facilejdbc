@@ -20,6 +20,7 @@
 package io.jenetics.facilejdbc;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.Spliterators.spliteratorUnknownSize;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -31,8 +32,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Spliterator;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
@@ -259,6 +263,44 @@ public interface RowParser<T> {
 				return unmodifiable;
 			}
 		);
+	}
+
+	/**
+	 * Return a new parser witch <em>lazily</em> parses a the selection result.
+	 * It is the responsibility of the caller to close the created stream. This
+	 * closes the underlying {@link ResultSet} and {@link java.sql.Statement}.
+	 * While consuming the result {@link Stream}, possible {@link SQLException}s
+	 * are wrapped into {@link UncheckedSQLException}s.
+	 *
+	 * <pre>{@code
+	 * final var select = Query.of("SELECT * FROM book;");
+	 * try (var stream = select.as(PARSER.stream(), conn)) {
+	 *     final var result = stream.collect(Collectors.toSet());
+	 *      ...
+	 * }
+	 * }</pre>
+	 *
+	 * @since !__version__!
+	 *
+	 * @return a new parser witch <em>lazily</em> parses a the selection result
+	 */
+	default ResultSetParser<Stream<T>> stream() {
+		return (rs, conn) -> {
+			final var spliterator = spliteratorUnknownSize(
+				new RowIterator(rs),
+				Spliterator.ORDERED
+			);
+
+			return StreamSupport.stream(spliterator, false)
+				.map(r -> {
+					try {
+						return parse(r, conn);
+					} catch (SQLException e) {
+						throw new UncheckedSQLException(e);
+					}
+				});
+
+		};
 	}
 
 
