@@ -178,21 +178,6 @@ public sealed interface Param permits SingleParam, MultiParam {
 	}
 
 	/**
-	 * Create a new query parameter object from the given {@code name} and
-	 * lazily evaluated {@code value}.
-	 *
-	 * @param name the parameter name
-	 * @param value the lazily evaluated parameter values
-	 * @return a new query parameter object
-	 * @throws NullPointerException if one the arguments is {@code null}
-	 * @deprecated use {@link #lazyValue(String, SqlSupplier)} instead
-	 */
-	@Deprecated(forRemoval = true, since = "1.3")
-	static SingleParam lazy(final String name, final SqlSupplier<?> value) {
-		return lazyValue(name, value);
-	}
-
-	/**
 	 * Create a new query parameter object for the given {@code name} and
 	 * lazily evaluated {@code values}.
 	 *
