@@ -24,6 +24,7 @@ import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
+import java.io.Closeable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.Externalizable;
@@ -358,6 +359,11 @@ public final class Query implements Serializable {
 	)
 		throws SQLException
 	{
+		if (parser instanceof AutoCloseable) {
+
+		} else {
+
+		}
 		try (var stmt = prepare(conn); var rs = stmt.executeQuery()) {
 			return parser.parse(rs, conn);
 		}

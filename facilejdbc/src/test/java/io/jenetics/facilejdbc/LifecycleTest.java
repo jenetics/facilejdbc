@@ -34,7 +34,6 @@ import org.testng.annotations.Test;
 
 import io.jenetics.facilejdbc.Lifecycle.CloseableValue;
 import io.jenetics.facilejdbc.Lifecycle.ExtendedCloseable;
-import io.jenetics.facilejdbc.Lifecycle.UncheckedCloseable;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
@@ -136,7 +135,7 @@ public class LifecycleTest {
 	}
 
 	@Test(expectedExceptions = IOException.class)
-	public void close1() throws IOException {
+	public void close1() throws Exception {
 		final var count = new AtomicInteger();
 
 		try {
@@ -147,14 +146,14 @@ public class LifecycleTest {
 				count::incrementAndGet
 			);
 			closeables.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			Assert.assertEquals(3, count.get());
 			throw e;
 		}
 	}
 
 	@Test(expectedExceptions = IOException.class)
-	public void close2() throws IOException {
+	public void close2() throws Exception {
 		final var count = new AtomicInteger();
 
 		try {
@@ -177,16 +176,8 @@ public class LifecycleTest {
 		}
 	}
 
-	@Test(expectedExceptions = UncheckedIOException.class)
-	public void uncheckedCloseable() {
-		final var closeable = UncheckedCloseable.of(
-			() -> { throw new IOException(); }
-		);
-		closeable.close();
-	}
-
 	@Test(expectedExceptions = IOException.class)
-	public void extendedCloseableClose() throws IOException {
+	public void extendedCloseableClose() throws Exception {
 		final var closeable = ExtendedCloseable.of(
 			() -> { throw new IOException(); }
 		);
@@ -237,7 +228,7 @@ public class LifecycleTest {
 	}
 
 	@Test
-	public void buildCloseableValue() throws IOException {
+	public void buildCloseableValue() throws Exception {
 		final var resource1 = atomic();
 		final var resource2 = atomic();
 		final var resource3 = atomic();
@@ -267,7 +258,7 @@ public class LifecycleTest {
 	}
 
 	@Test(expectedExceptions = IOException.class)
-	public void buildCloseableValueWithError() throws IOException {
+	public void buildCloseableValueWithError() throws Exception {
 		final var resource1 = atomic();
 		final var resource2 = atomic();
 		final var resource3 = atomic();
@@ -288,7 +279,7 @@ public class LifecycleTest {
 	}
 
 	@Test
-	public void closeableValueMap() throws IOException {
+	public void closeableValueMap() throws Exception {
 		final var file = CloseableValue.of(
 			Files.createTempFile("Lifecycle", "TEST"),
 			Files::deleteIfExists
@@ -309,7 +300,7 @@ public class LifecycleTest {
 	}
 
 	@Test
-	public void closeableValueTrying() throws IOException {
+	public void closeableValueTrying() throws Exception {
 		final var file = tempFile();
 		file.trying(f -> f.toFile().deleteOnExit());
 
