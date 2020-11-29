@@ -194,8 +194,8 @@ A parameter can be multi-value, like a sequence of IDs. In such case, values wil
 
 ```java
 final List<Book> results = Query.of("SELECT * FROM book WHERE id IN(:ids);")
-	.on(Param.values("ids", 1, 2, 3, 4))
-	.as(PARSER.list(), conn);
+    .on(Param.values("ids", 1, 2, 3, 4))
+    .as(PARSER.list(), conn);
 ```
 
 The created JDBC query string will look like this
