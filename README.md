@@ -206,6 +206,25 @@ SELECT * FROM book WHERE id IN(?,?,?,?);
 
 filled with the value `1`, `2`, `3` and `4`.
 
+### Custom parameter
+
+Sometimes it is not possible to use the available object conversions, available in the library. E.g. if you want to insert some _raw_ byte content via an `InputStream`.
+
+```java
+final var query = Query.of("INSERT INTO book(name, pdf) VALUES(:name, :pdf)");
+try (var in = Files.newInputStream(Path.of("./book.pdf"))) {
+    final long id = query
+        .on(
+            Param.value("name", "For Whom the Bell Tolls"),
+            // Call a "special" statement set-method, when setting the parameter.
+            Param.of("pdf", (index, stmt) -> stmt.setBinaryStream(index, in)))
+        .executeInsert(conn)
+        .orElseThrow();
+
+    System.out.println("Inserted book with ID: " + id);
+}
+```
+
 
 ### Selecting/inserting object _graphs_
 
