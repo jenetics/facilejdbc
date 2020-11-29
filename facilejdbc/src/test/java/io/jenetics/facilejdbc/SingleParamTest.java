@@ -42,7 +42,7 @@ public class SingleParamTest {
 	public void lazy() throws SQLException {
 		final var stmt = new MockPreparedStatement();
 
-		final SingleParam param = SingleParam.lazyValue("foo", () -> "bar");
+		final SingleParam param = Param.lazyValue("foo", () -> "bar");
 		param.value().set(1, stmt);
 
 		Assert.assertEquals(param.name(),"foo");
@@ -53,7 +53,7 @@ public class SingleParamTest {
 	public void value() throws SQLException {
 		final var stmt = new MockPreparedStatement();
 
-		final SingleParam param = SingleParam.value("foo", "bar");
+		final SingleParam param = Param.value("foo", "bar");
 		param.value().set(1, stmt);
 
 		Assert.assertEquals(param.name(),"foo");

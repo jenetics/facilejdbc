@@ -308,7 +308,7 @@ public final class Query implements Serializable {
 	public Query on(final Map<String, ?> params) {
 		return on(
 			params.entrySet().stream()
-				.map(e -> SingleParam.value(e.getKey(), e.getValue()))
+				.map(e -> Param.value(e.getKey(), e.getValue()))
 				.collect(Collectors.toList())
 		);
 	}
