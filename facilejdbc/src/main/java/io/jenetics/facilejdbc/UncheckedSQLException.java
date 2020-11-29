@@ -53,8 +53,11 @@ public class UncheckedSQLException extends RuntimeException {
 	/**
 	 * Called to read the object from a stream.
 	 *
+	 * @param s the input stream
 	 * @throws InvalidObjectException if the object is invalid or has a cause
 	 *         that is not an {@code SQLException}
+	 * @throws ClassNotFoundException if some error occurs while creating the
+	 *         serialised exception
 	 */
 	private void readObject(final ObjectInputStream s)
 		throws IOException, ClassNotFoundException

@@ -33,7 +33,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -287,9 +286,8 @@ public interface RowParser<T> {
 	 */
 	default ResultSetParser<Stream<T>> stream() {
 		return (rs, conn) -> {
-			final var iterator = new RowIterator(rs);
 			final var spliterator = spliteratorUnknownSize(
-				iterator,
+				new RowIterator(rs),
 				Spliterator.ORDERED
 			);
 
