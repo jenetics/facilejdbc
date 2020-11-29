@@ -300,7 +300,6 @@ public interface RowParser<T> {
 						throw new UncheckedSQLException(e);
 					}
 				});
-
 		};
 	}
 
