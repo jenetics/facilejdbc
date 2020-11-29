@@ -267,7 +267,6 @@ public class MockConnection implements Connection {
 
 	@Override
 	public void setSchema(String schema) {
-
 	}
 
 	@Override
