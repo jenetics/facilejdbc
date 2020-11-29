@@ -109,26 +109,6 @@ final class Sql {
 		this.params = List.copyOf(params);
 	}
 
-	private static boolean isIdentifier(final String name) {
-		if (name.isEmpty()) {
-			return false;
-		}
-		int cp = name.codePointAt(0);
-		if (!Character.isJavaIdentifierStart(cp)) {
-			return false;
-		}
-		for (int i = Character.charCount(cp);
-			 i < name.length();
-			 i += Character.charCount(cp))
-		{
-			cp = name.codePointAt(i);
-			if (!Character.isJavaIdentifierPart(cp)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
 	/**
 	 * Return the prepared SQL string. All parameter names has been replaced
 	 * with '?' placeholders.
@@ -281,6 +261,25 @@ final class Sql {
 		return new Sql(parsed.toString(), params);
 	}
 
+	private static boolean isIdentifier(final String name) {
+		if (name.isEmpty()) {
+			return false;
+		}
+		int cp = name.codePointAt(0);
+		if (!Character.isJavaIdentifierStart(cp)) {
+			return false;
+		}
+		for (int i = Character.charCount(cp);
+			 i < name.length();
+			 i += Character.charCount(cp))
+		{
+			cp = name.codePointAt(i);
+			if (!Character.isJavaIdentifierPart(cp)) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	/* *************************************************************************
 	 *  Serialization methods
