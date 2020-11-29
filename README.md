@@ -206,7 +206,7 @@ SELECT * FROM book WHERE id IN(?,?,?,?);
 
 filled with the value `1`, `2`, `3` and `4`.
 
-### Custom parameter
+### Custom parameter type
 
 Sometimes it is not possible to use the available object conversions, available in the library. E.g. if you want to insert some _raw_ byte content via an `InputStream`.
 
