@@ -25,6 +25,7 @@ import static java.util.Objects.requireNonNull;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -102,11 +103,16 @@ final class Lifecycle {
 		R apply(final A arg) throws E;
 	}
 
+	public interface SQLCloseable extends AutoCloseable {
+		@Override
+		void close() throws SQLException;
+	}
+
 	/**
 	 * Extends the {@link Closeable} with methods for wrapping the thrown
-	 * exception into an {@link RuntimeException} or ignoring them.
+	 * exception into an {@link UncheckedIOException} or ignoring them.
 	 */
-	public interface ExtendedCloseable extends AutoCloseable {
+	public interface ExtendedCloseable extends SQLCloseable {
 
 		/**
 		 * Calls the {@link #close()} method and wraps thrown {@link IOException}
@@ -118,10 +124,8 @@ final class Lifecycle {
 		default void uncheckedClose() {
 			try {
 				close();
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			} catch (Exception e) {
-				throw new RuntimeException(e);
+			} catch (SQLException e) {
+				throw new UncheckedSQLException(e);
 			}
 		}
 
@@ -151,21 +155,6 @@ final class Lifecycle {
 		}
 
 		/**
-		 * Wraps a given {@code closeable} object and returns an
-		 * {@link ExtendedCloseable}.
-		 *
-		 * @param closeable the <em>normal</em> closeable object to wrap
-		 * @return a new extended closeable with the given underlying
-		 *         {@code closeable} object
-		 * @throws NullPointerException if the given {@code closeable} is
-		 *         {@code null}
-		 */
-		static ExtendedCloseable of(final AutoCloseable closeable) {
-			requireNonNull(closeable);
-			return closeable::close;
-		}
-
-		/**
 		 * Create a new {@code ExtendedCloseable} object with the given initial
 		 * {@code closeables} objects. The given list of objects are closed in
 		 * reversed order.
@@ -178,7 +167,7 @@ final class Lifecycle {
 		 * @throws NullPointerException if one of the {@code closeables} is
 		 *         {@code null}
 		 */
-		static ExtendedCloseable of(final AutoCloseable... closeables) {
+		static ExtendedCloseable of(final SQLCloseable... closeables) {
 			return of(Arrays.asList(closeables));
 		}
 
@@ -187,7 +176,7 @@ final class Lifecycle {
 		 * {@code closeables} objects. The given list of objects are closed in
 		 * reversed order.
 		 *
-		 * @see #of(AutoCloseable...)
+		 * @see #of(SQLCloseable...)
 		 *
 		 * @param closeables the initial closeables objects
 		 * @return a new closeable object which collects the given
@@ -196,8 +185,8 @@ final class Lifecycle {
 		 *         {@code null}
 		 */
 		static ExtendedCloseable
-		of(final Collection<? extends AutoCloseable> closeables) {
-			final List<AutoCloseable> list = new ArrayList<>();
+		of(final Collection<? extends SQLCloseable> closeables) {
+			final List<SQLCloseable> list = new ArrayList<>();
 			closeables.forEach(c -> list.add(requireNonNull(c)));
 			Collections.reverse(list);
 
@@ -205,7 +194,7 @@ final class Lifecycle {
 				if (list.size() == 1) {
 					list.get(0).close();
 				} else if (list.size() > 1) {
-					Lifecycle.invokeAll(AutoCloseable::close, list);
+					Lifecycle.invokeAll(SQLCloseable::close, list);
 				}
 			};
 		}
@@ -239,45 +228,6 @@ final class Lifecycle {
 	public interface CloseableValue<T> extends Supplier<T>, ExtendedCloseable {
 
 		/**
-		 * Applies the give {@code block} to the closeable value. If the
-		 * {@code block} throws an exception, {@code this} value is closed. The
-		 * typical use case for this method is when additional initialization
-		 * of the value is needed.
-		 *
-		 * <pre>{@code
-		 * final var file = CloseableValue.of(
-		 *     Files.createTempFile("Lifecycle", "TEST"),
-		 *     Files::deleteIfExists
-		 * );
-		 * file.trying(f -> f.toFile().deleteOnExit());
-		 *
-		 * try (file) {
-		 *     // Do something with temp file.
-		 * }
-		 * }</pre>
-		 *
-		 * @param block the codec block which is applied to the value
-		 * @param closeables additional {@code closeables}, which are also
-		 *        closed in the case of an error
-		 * @param <E> the thrown exception type
-		 * @throws E if applying the {@code block} throws an exception
-		 */
-		default <E extends Exception> void trying(
-			final ThrowingMethod<? super T, ? extends E> block,
-			final Closeable... closeables
-		)
-			throws E
-		{
-			try {
-				block.apply(get());
-			} catch (Throwable error) {
-				ExtendedCloseable.of(closeables).silentClose(error);
-				silentClose(error);
-				throw error;
-			}
-		}
-
-		/**
 		 * Create a new closeable value with the given {@code value} and the
 		 * {@code close} method.
 		 *
@@ -289,7 +239,7 @@ final class Lifecycle {
 		 */
 		static <T> CloseableValue<T> of(
 			final T value,
-			final ThrowingMethod<? super T, ? extends Exception> close
+			final ThrowingMethod<? super T, ? extends SQLException> close
 		) {
 			requireNonNull(value);
 			requireNonNull(close);
@@ -300,7 +250,7 @@ final class Lifecycle {
 					return value;
 				}
 				@Override
-				public void close() throws Exception {
+				public void close() throws SQLException {
 					close.apply(get());
 				}
 				@Override
@@ -313,7 +263,7 @@ final class Lifecycle {
 		/**
 		 * Opens a kind of {@code try-catch} with resources block. The difference
 		 * is, that the resources, registered with the
-		 * {@link ResourceCollector#add(AutoCloseable)} method, are only closed in
+		 * {@link ResourceCollector#add(SQLCloseable)} method, are only closed in
 		 * the case of an error. If the <em>value</em> could be created, the
 		 * caller is responsible for closing the opened <em>resources</em> by
 		 * calling the {@link CloseableValue#close()} method.
@@ -400,7 +350,7 @@ final class Lifecycle {
 		 * @param <C> the closeable type
 		 * @return the registered closeable
 		 */
-		<C extends AutoCloseable> C add(final C closeable);
+		<C extends SQLCloseable> C add(final C closeable);
 
 		/**
 		 * Create a new closeable object from a snapshot of the currently
@@ -413,7 +363,7 @@ final class Lifecycle {
 		ExtendedCloseable toCloseable();
 
 		@Override
-		default void close() throws Exception {
+		default void close() throws SQLException {
 			toCloseable().close();
 		}
 
@@ -421,7 +371,7 @@ final class Lifecycle {
 		 * Create a new {@code ResourceCollector} object with the given initial
 		 * {@code closeables} objects.
 		 *
-		 * @see #of(Closeable...)
+		 * @see #of(SQLCloseable...)
 		 *
 		 * @param closeables the initial closeables objects
 		 * @return a new resource collector object which collects the given
@@ -430,13 +380,13 @@ final class Lifecycle {
 		 *         {@code null}
 		 */
 		static ResourceCollector
-		of(final Collection<? extends AutoCloseable> closeables) {
-			final List<AutoCloseable> resources = new ArrayList<>();
+		of(final Collection<? extends SQLCloseable> closeables) {
+			final List<SQLCloseable> resources = new ArrayList<>();
 			closeables.forEach(c -> resources.add(requireNonNull(c)));
 
 			return new ResourceCollector() {
 				@Override
-				public synchronized <C extends AutoCloseable>
+				public synchronized <C extends SQLCloseable>
 				C add(final C closeable) {
 					resources.add(requireNonNull(closeable));
 					return closeable;
@@ -460,7 +410,7 @@ final class Lifecycle {
 		 * @throws NullPointerException if one of the {@code closeables} is
 		 *         {@code null}
 		 */
-		static ResourceCollector of(final Closeable... closeables) {
+		static ResourceCollector of(final SQLCloseable... closeables) {
 			return of(Arrays.asList(closeables));
 		}
 

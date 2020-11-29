@@ -360,7 +360,7 @@ public final class Query implements Serializable {
 		throws SQLException
 	{
 		if (parser instanceof AutoCloseable) {
-
+			
 		} else {
 
 		}
