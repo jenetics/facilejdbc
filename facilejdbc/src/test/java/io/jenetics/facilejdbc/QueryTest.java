@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.Map;
 
 import org.testng.Assert;
@@ -164,6 +163,41 @@ public class QueryTest {
 		final var conn = new MockConnection();
 		query.execute(conn);
 		Assert.assertEquals(conn.stmt.data, Map.of(1, 1));
+	}
+
+	@Test
+	public void multipleMultiples() {
+		var query = Query
+			.of("SELECT * FROM book WHERE id IN(:ids) AND name LIKE :name;");
+
+		Assert.assertEquals(
+			query.sql(),
+			"SELECT * FROM book WHERE id IN(?) AND name LIKE ?;"
+		);
+		Assert.assertEquals(
+			query.rawSql(),
+			"SELECT * FROM book WHERE id IN(:ids) AND name LIKE :name;"
+		);
+
+		query = query.on(values("ids", 1, 2, 3));
+		Assert.assertEquals(
+			query.sql(),
+			"SELECT * FROM book WHERE id IN(?,?,?) AND name LIKE ?;"
+		);
+		Assert.assertEquals(
+			query.rawSql(),
+			"SELECT * FROM book WHERE id IN(:ids[0],:ids[1],:ids[2]) AND name LIKE :name;"
+		);
+
+		query = query.on(values("ids[1]", 1, 2, 3));
+		Assert.assertEquals(
+			query.sql(),
+			"SELECT * FROM book WHERE id IN(?,?,?,?,?) AND name LIKE ?;"
+		);
+		Assert.assertEquals(
+			query.rawSql(),
+			"SELECT * FROM book WHERE id IN(:ids[0],:ids[1][0],:ids[1][1],:ids[1][2],:ids[2]) AND name LIKE :name;"
+		);
 	}
 
 	@Test
