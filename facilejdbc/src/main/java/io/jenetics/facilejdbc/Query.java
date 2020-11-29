@@ -366,15 +366,17 @@ public final class Query implements Serializable {
 			return parser.parse(rs, conn);
 		});
 
+		return prepare(result);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> T prepare(final CloseableValue<T, SQLException> result)
+		throws SQLException
+	{
 		if (result.get() instanceof Stream<?>) {
-			var stream = (Stream<?>)result.get();
-			stream = stream.onClose(() ->
+			return (T)((Stream<?>)result.get()).onClose(() ->
 				result.uncheckedClose(UncheckedSQLException::new)
 			);
-
-			@SuppressWarnings("unchecked")
-			final var value = (T)stream;
-			return value;
 		} else {
 			try (result) {
 				return result.get();
