@@ -266,6 +266,25 @@ public interface RowParser<T> {
 		);
 	}
 
+	/**
+	 * Return a new parser witch <em>lazily</em> parses a the selection result.
+	 * It is the responsibility of the caller to close the created stream. This
+	 * closes the underlying {@link ResultSet} and {@link java.sql.Statement}.
+	 * While consuming the result {@link Stream}, possible {@link SQLException}s
+	 * are wrapped into {@link UncheckedSQLException}s.
+	 *
+	 * <pre>{@code
+	 * final var select = Query.of("SELECT * FROM book;");
+	 * try (var stream = select.as(PARSER.stream(), conn)) {
+	 *     final var result = stream.collect(Collectors.toSet());
+	 *      ...
+	 * }
+	 * }</pre>
+	 *
+	 * @since !__version__!
+	 *
+	 * @return a new parser witch <em>lazily</em> parses a the selection result
+	 */
 	default ResultSetParser<Stream<T>> stream() {
 		return (rs, conn) -> {
 			final var iterator = new RowIterator(rs);

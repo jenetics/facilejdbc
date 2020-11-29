@@ -9,7 +9,8 @@ import java.io.ObjectInputStream;
 import java.sql.SQLException;
 
 /**
- * Wraps an {@link SQLException} with an unchecked exception.
+ * Wraps an {@link SQLException} with an unchecked exception. This exception is
+ * used when <em>stream</em> processing the query results.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @since !__version__!
