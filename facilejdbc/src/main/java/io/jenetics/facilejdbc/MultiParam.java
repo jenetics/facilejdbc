@@ -33,9 +33,9 @@ import java.util.List;
  * SELECT_QUERY.on(Param.values("ids", 1, 2, 3, 4))
  * }</pre>
  *
- * @see Param
- * @see Param#values(String, Iterable)
- * @see Param#lazyValues(String, Iterable)
+ * @see SingleParam
+ * @see SingleParam#values(String, Iterable)
+ * @see SingleParam#lazyValues(String, Iterable)
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version 1.3

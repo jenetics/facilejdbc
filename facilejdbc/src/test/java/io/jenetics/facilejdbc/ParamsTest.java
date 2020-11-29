@@ -35,11 +35,11 @@ public class ParamsTest {
 		final var stmt = new MockPreparedStatement();
 
 		final Params params = new Params(List.of(
-			Param.value("name_1", "value_1"),
-			Param.value("name_2", "value_2"),
-			Param.value("name_3", "value_3"),
-			Param.value("name_4", "value_4"),
-			Param.value("name_5", "value_5")
+			SingleParam.value("name_1", "value_1"),
+			SingleParam.value("name_2", "value_2"),
+			SingleParam.value("name_3", "value_3"),
+			SingleParam.value("name_4", "value_4"),
+			SingleParam.value("name_5", "value_5")
 		));
 
 		params.set(List.of("name_2", "name_5", "name_1"), stmt);

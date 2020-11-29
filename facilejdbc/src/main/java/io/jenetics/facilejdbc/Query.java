@@ -219,15 +219,15 @@ public final class Query implements Serializable {
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if the given {@code params} is {@code null}
-	 * @throws IllegalArgumentException if an other type then {@link Param} or
+	 * @throws IllegalArgumentException if an other type then {@link SingleParam} or
 	 *         {@link MultiParam} is given
 	 */
 	public Query on(final Iterable<? extends BaseParam> params) {
-		final List<Param> singleParams = new ArrayList<>();
+		final List<SingleParam> singleParams = new ArrayList<>();
 		final List<MultiParam> multiParams = new ArrayList<>();
 		for (var param : params) {
-			if (param instanceof Param) {
-				singleParams.add((Param)param);
+			if (param instanceof SingleParam) {
+				singleParams.add((SingleParam)param);
 			} else if (param instanceof MultiParam) {
 				multiParams.add((MultiParam)param);
 			} else {
@@ -240,7 +240,7 @@ public final class Query implements Serializable {
 		return onSingleParam(singleParams).onMultiParam(multiParams);
 	}
 
-	private Query onSingleParam(final List<Param> params) {
+	private Query onSingleParam(final List<SingleParam> params) {
 		return params.isEmpty()
 			? this
 			: new Query(sql, values.andThen(new Params(params)), fetchSize, timeout);
@@ -268,10 +268,10 @@ public final class Query implements Serializable {
 		}
 	}
 
-	private static Stream<Param> toParams(final MultiParam param) {
+	private static Stream<SingleParam> toParams(final MultiParam param) {
 		final var values = param.values();
 		return IntStream.range(0, values.size())
-			.mapToObj(i -> Param.of(Sql.name(param.name(), i), values.get(i)));
+			.mapToObj(i -> SingleParam.of(Sql.name(param.name(), i), values.get(i)));
 	}
 
 	/**
@@ -286,7 +286,7 @@ public final class Query implements Serializable {
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if the given {@code params} is {@code null}
-	 * @throws IllegalArgumentException if an other type then {@link Param} or
+	 * @throws IllegalArgumentException if an other type then {@link SingleParam} or
 	 *         {@link MultiParam} is given
 	 */
 	public Query on(final BaseParam... params) {
@@ -309,7 +309,7 @@ public final class Query implements Serializable {
 	public Query on(final Map<String, ?> params) {
 		return on(
 			params.entrySet().stream()
-				.map(e -> Param.value(e.getKey(), e.getValue()))
+				.map(e -> SingleParam.value(e.getKey(), e.getValue()))
 				.collect(Collectors.toList())
 		);
 	}

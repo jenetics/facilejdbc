@@ -46,7 +46,7 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * @version 1.3
  * @since 1.0
  */
-public /*non-sealed*/ interface Param extends BaseParam {
+public /*non-sealed*/ interface SingleParam extends BaseParam {
 
 	/**
 	 * Return the parameter value.
@@ -73,11 +73,11 @@ public /*non-sealed*/ interface Param extends BaseParam {
 	 * @throws NullPointerException if the given parameter {@code name} is
 	 *         {@code null}
 	 */
-	static Param of(final String name, final ParamValue value) {
+	static SingleParam of(final String name, final ParamValue value) {
 		requireNonNull(name);
 		requireNonNull(value);
 
-		return new Param() {
+		return new SingleParam() {
 			@Override
 			public String name() {
 				return name;
@@ -109,9 +109,9 @@ public /*non-sealed*/ interface Param extends BaseParam {
 	 * @throws NullPointerException if the given parameter {@code name} is
 	 *         {@code null}
 	 */
-	static Param value(final String name, final Object value) {
+	static SingleParam value(final String name, final Object value) {
 		requireNonNull(value);
-		return Param.of(
+		return SingleParam.of(
 			name,
 			(index, stmt) -> stmt.setObject(index, map(value))
 		);
@@ -194,9 +194,9 @@ public /*non-sealed*/ interface Param extends BaseParam {
 	 * @return a new query parameter object
 	 * @throws NullPointerException if one the arguments is {@code null}
 	 */
-	static Param lazyValue(final String name, final SqlSupplier<?> value) {
+	static SingleParam lazyValue(final String name, final SqlSupplier<?> value) {
 		requireNonNull(value);
-		return Param.of(
+		return SingleParam.of(
 			name,
 			(index, stmt) -> stmt.setObject(index, map(value.get()))
 		);
@@ -213,7 +213,7 @@ public /*non-sealed*/ interface Param extends BaseParam {
 	 * @deprecated use {@link #lazyValue(String, SqlSupplier)} instead
 	 */
 	@Deprecated(forRemoval = true, since = "1.3")
-	static Param lazy(final String name, final SqlSupplier<?> value) {
+	static SingleParam lazy(final String name, final SqlSupplier<?> value) {
 		return lazyValue(name, value);
 	}
 

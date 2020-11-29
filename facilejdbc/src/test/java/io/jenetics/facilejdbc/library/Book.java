@@ -22,7 +22,7 @@ package io.jenetics.facilejdbc.library;
 import static java.util.Objects.requireNonNull;
 import static io.jenetics.facilejdbc.Dctor.field;
 import static io.jenetics.facilejdbc.Dctor.fieldValue;
-import static io.jenetics.facilejdbc.Param.value;
+import static io.jenetics.facilejdbc.SingleParam.value;
 
 import java.sql.Connection;
 import java.sql.Date;

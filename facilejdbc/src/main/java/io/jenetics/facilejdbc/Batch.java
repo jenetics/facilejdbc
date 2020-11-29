@@ -59,11 +59,11 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 	 * @return a new batch from the given arguments
 	 * @throws NullPointerException if the given {@code rows} are {@code null}
 	 */
-	static Batch of(final Iterable<? extends List<? extends Param>> rows) {
+	static Batch of(final Iterable<? extends List<? extends SingleParam>> rows) {
 		requireNonNull(rows);
 
 		return () -> new Iterator<>() {
-			private final Iterator<? extends List<? extends Param>>
+			private final Iterator<? extends List<? extends SingleParam>>
 				it = rows.iterator();
 
 			@Override
@@ -88,7 +88,7 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 	 * @throws NullPointerException if the given {@code rows} are {@code null}
 	 */
 	@SafeVarargs
-	static Batch of(final List<? extends Param>... rows) {
+	static Batch of(final List<? extends SingleParam>... rows) {
 		return Batch.of(asList(rows));
 	}
 

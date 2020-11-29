@@ -27,12 +27,12 @@ import org.testng.annotations.Test;
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-public class ParamTest {
+public class SingleParamTest {
 
 	@Test
 	public void of() {
 		final ParamValue value = (index, stmt) -> {};
-		final Param param = Param.of("foo", value);
+		final SingleParam param = SingleParam.of("foo", value);
 
 		Assert.assertEquals(param.name(),"foo");
 		Assert.assertEquals(param.value(), value);
@@ -42,7 +42,7 @@ public class ParamTest {
 	public void lazy() throws SQLException {
 		final var stmt = new MockPreparedStatement();
 
-		final Param param = Param.lazyValue("foo", () -> "bar");
+		final SingleParam param = SingleParam.lazyValue("foo", () -> "bar");
 		param.value().set(1, stmt);
 
 		Assert.assertEquals(param.name(),"foo");
@@ -53,7 +53,7 @@ public class ParamTest {
 	public void value() throws SQLException {
 		final var stmt = new MockPreparedStatement();
 
-		final Param param = Param.value("foo", "bar");
+		final SingleParam param = SingleParam.value("foo", "bar");
 		param.value().set(1, stmt);
 
 		Assert.assertEquals(param.name(),"foo");

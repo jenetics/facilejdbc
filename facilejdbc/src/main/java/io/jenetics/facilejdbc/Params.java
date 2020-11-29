@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Collects a list of {@link Param} object into a {@link ParamValues} object.
+ * Collects a list of {@link SingleParam} object into a {@link ParamValues} object.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version 1.0
@@ -38,18 +38,18 @@ import java.util.Map;
  */
 final class Params implements ParamValues {
 
-	private final Map<String, Param> params;
+	private final Map<String, SingleParam> params;
 
-	private Params(final Map<String, Param> params) {
+	private Params(final Map<String, SingleParam> params) {
 		this.params = requireNonNull(params);
 	}
 
-	Params(final List<? extends Param> params) {
+	Params(final List<? extends SingleParam> params) {
 		this(
 			params.isEmpty()
 				? Map.of()
 				: params.stream().collect(
-					groupingBy(Param::name, reducing(null, (a, b) -> b)))
+					groupingBy(SingleParam::name, reducing(null, (a, b) -> b)))
 		);
 	}
 
@@ -60,7 +60,7 @@ final class Params implements ParamValues {
 		int index = 0;
 		for (String name : paramNames) {
 			++index;
-			final Param param = params.get(name);
+			final SingleParam param = params.get(name);
 			if (param != null) {
 				param.value().set(index, stmt);
 			}
@@ -75,7 +75,7 @@ final class Params implements ParamValues {
 	}
 
 	private Params andThen(final Params after) {
-		final Map<String, Param> params = new HashMap<>(this.params);
+		final Map<String, SingleParam> params = new HashMap<>(this.params);
 		params.putAll(after.params);
 		return new Params(params);
 	}

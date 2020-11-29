@@ -20,9 +20,9 @@
 package io.jenetics.facilejdbc;
 
 import static java.util.Arrays.asList;
-import static io.jenetics.facilejdbc.Param.lazyValues;
-import static io.jenetics.facilejdbc.Param.value;
-import static io.jenetics.facilejdbc.Param.values;
+import static io.jenetics.facilejdbc.SingleParam.lazyValues;
+import static io.jenetics.facilejdbc.SingleParam.value;
+import static io.jenetics.facilejdbc.SingleParam.values;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
