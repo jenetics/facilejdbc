@@ -225,6 +225,60 @@ try (var in = Files.newInputStream(Path.of("./book.pdf"))) {
 }
 ```
 
+### Custom parameter conversion
+
+It is possible to create automatic parameter value conversion via the SPI `SqlTypeMapper` class. Usually, it is not possible to insert an `URI` field directly into the DB. You have to convert it into a string object first.
+
+```java
+@Value
+public static final class Person {
+    private final String name;
+    private final URI link;
+}
+
+static final Dctor<Person> DCTOR = Dctor.of(
+    field("name", Person::name),
+    field("email", p -> p.link().toString())
+);
+```
+
+If a mapper for the `URI` class is defined, it is possible to write the deconstructor more concise.
+
+```java
+static final Dctor<Person> DCTOR = Dctor.of(
+    field("name", Person::name),
+    field("email", Person::link)
+);
+```
+
+The implementation of such a mapping is quite simple and will look like showed
+in the following code snippet.
+
+```java
+public class URIMapper extends SqlTypeMapper {
+    public Object convert(final Object value) {
+        if (value instanceof URI) {
+            return value.toString();
+        } else {
+            return value;
+        }
+    }
+}
+```
+
+Add the following line
+
+```java
+org.acme.URIMapper
+```
+
+to the service definition file
+
+```java
+META-INF/services/io.jenetics.facilejdbc.spi.SqlTypeMapper
+```
+
+and you are done.
 
 ### Selecting/inserting object _graphs_
 
