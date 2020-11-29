@@ -46,7 +46,7 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * @version 1.3
  * @since 1.0
  */
-public /*non-sealed*/ interface SingleParam extends BaseParam {
+public /*non-sealed*/ interface SingleParam extends Param {
 
 	/**
 	 * Return the parameter value.

@@ -212,7 +212,7 @@ public final class Query implements Serializable {
 	 *     .as(PARSER.singleOpt(), conn);
 	 * }</pre>
 	 *
-	 * @see #on(BaseParam...)
+	 * @see #on(Param...)
 	 * @see #on(Map)
 	 * @see #on(Object, Dctor)
 	 *
@@ -222,7 +222,7 @@ public final class Query implements Serializable {
 	 * @throws IllegalArgumentException if an other type then {@link SingleParam} or
 	 *         {@link MultiParam} is given
 	 */
-	public Query on(final Iterable<? extends BaseParam> params) {
+	public Query on(final Iterable<? extends Param> params) {
 		final List<SingleParam> singleParams = new ArrayList<>();
 		final List<MultiParam> multiParams = new ArrayList<>();
 		for (var param : params) {
@@ -289,7 +289,7 @@ public final class Query implements Serializable {
 	 * @throws IllegalArgumentException if an other type then {@link SingleParam} or
 	 *         {@link MultiParam} is given
 	 */
-	public Query on(final BaseParam... params) {
+	public Query on(final Param... params) {
 		return on(asList(params));
 	}
 
