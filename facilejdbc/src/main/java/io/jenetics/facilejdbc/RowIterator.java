@@ -30,8 +30,8 @@ import java.util.NoSuchElementException;
  * Converts the cursor like {@link ResultSet} into a {@link Row} iterator.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
+ * @version 1.3
+ * @since 1.3
  */
 final class RowIterator implements Iterator<Row> {
 

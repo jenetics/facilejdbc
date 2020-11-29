@@ -35,8 +35,8 @@ import java.util.function.Supplier;
  * Helper methods/interfaces for handling AutoCloseable objects.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @since !__version__!
- * @version !__version__!
+ * @since 1.3
+ * @version 1.3
  */
 final class Lifecycle {
 

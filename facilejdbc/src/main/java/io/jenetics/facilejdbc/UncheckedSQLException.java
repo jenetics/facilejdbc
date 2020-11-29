@@ -13,8 +13,8 @@ import java.sql.SQLException;
  * used when <em>stream</em> processing the query results.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @since !__version__!
- * @version !__version__!
+ * @since 1.3
+ * @version 1.3
  */
 public class UncheckedSQLException extends RuntimeException {
 	private static final long serialVersionUID = 1;

@@ -280,7 +280,7 @@ public interface RowParser<T> {
 	 * }
 	 * }</pre>
 	 *
-	 * @since !__version__!
+	 * @since 1.3
 	 *
 	 * @return a new parser witch <em>lazily</em> parses a the selection result
 	 */
