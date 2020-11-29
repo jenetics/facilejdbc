@@ -219,20 +219,19 @@ public final class Query implements Serializable {
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if the given {@code params} is {@code null}
-	 * @throws IllegalArgumentException if an other type then {@link SingleParam} or
-	 *         {@link MultiParam} is given
 	 */
 	public Query on(final Iterable<? extends Param> params) {
 		final List<SingleParam> singleParams = new ArrayList<>();
 		final List<MultiParam> multiParams = new ArrayList<>();
 		for (var param : params) {
-			if (param instanceof SingleParam) {
-				singleParams.add((SingleParam)param);
-			} else if (param instanceof MultiParam) {
-				multiParams.add((MultiParam)param);
+
+			if (param instanceof SingleParam p) {
+				singleParams.add(p);
+			} else if (param instanceof MultiParam p) {
+				multiParams.add(p);
 			} else {
-				throw new IllegalArgumentException(format(
-					"Type '%s' not allowed.", param.getClass().getName()
+				throw new AssertionError(format(
+					"Type '%s' not expected.", param.getClass().getName()
 				));
 			}
 		}
