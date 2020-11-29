@@ -20,11 +20,8 @@
 package io.jenetics.facilejdbc;
 
 /**
- * This is the, effectively sealed, base interface of the {@link SingleParam} and
- * {@link MultiParam} class. Since it is currently not possible to enforce this
- * behavior (until the <em>sealed classes</em> feature is released) an exception
- * is thrown at runtime, when an other implementation than {@link SingleParam} or
- * {@link MultiParam} is detected in the {@link Query#on(Param...)} method.
+ * This is the  base interface of the {@link SingleParam} and {@link MultiParam}
+ * class.
  *
  * @see SingleParam
  * @see MultiParam
@@ -33,7 +30,7 @@ package io.jenetics.facilejdbc;
  * @version 1.3
  * @since 1.3
  */
-public /*sealed*/ interface Param /*permits Param, MultiParam*/ {
+public sealed interface Param permits SingleParam, MultiParam {
 
 	/**
 	 * Return the parameter name.
