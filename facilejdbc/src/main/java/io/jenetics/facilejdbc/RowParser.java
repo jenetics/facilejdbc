@@ -266,7 +266,7 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Return a new parser witch <em>lazily</em> parses a the selection result.
+	 * Return a new parser witch <em>lazily</em> parses the selection result.
 	 * It is the responsibility of the caller to close the created stream. This
 	 * closes the underlying {@link ResultSet} and {@link java.sql.Statement}.
 	 * While consuming the result {@link Stream}, possible {@link SQLException}s
@@ -282,7 +282,7 @@ public interface RowParser<T> {
 	 *
 	 * @since 1.3
 	 *
-	 * @return a new parser witch <em>lazily</em> parses a the selection result
+	 * @return a new parser witch <em>lazily</em> parses the selection result
 	 */
 	default ResultSetParser<Stream<T>> stream() {
 		return (rs, conn) -> {
