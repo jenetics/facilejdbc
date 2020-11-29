@@ -56,7 +56,7 @@ public final record Book(
 	 * DB access
 	 * ************************************************************************/
 
-	private static final RowParser<Book> PARSER = (row, conn) -> new Book(
+	static final RowParser<Book> PARSER = (row, conn) -> new Book(
 		row.getString("title"),
 		row.getString("isbn"),
 		row.getInt("pages"),

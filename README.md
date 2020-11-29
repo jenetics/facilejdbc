@@ -188,6 +188,98 @@ Query.of("INSERT INTO person(id, name) VALUES(:id, :name)")
     );
 ``` 
 
+### Multi-value parameter
+
+A parameter can be multi-value, like a sequence of IDs. In such case, values will be prepared to be passed appropriately in JDBC.
+
+```java
+final List<Book> results = Query.of("SELECT * FROM book WHERE id IN(:ids);")
+    .on(Param.values("ids", 1, 2, 3, 4))
+    .as(PARSER.list(), conn);
+```
+
+The created JDBC query string will look like this
+
+```sql
+SELECT * FROM book WHERE id IN(?,?,?,?);
+```
+
+filled with the value `1`, `2`, `3` and `4`.
+
+### Custom parameter type
+
+Sometimes it is not possible to use the available object conversions, available in the library. E.g. if you want to insert some _raw_ byte content via an `InputStream`.
+
+```java
+final var query = Query.of("INSERT INTO book(name, pdf) VALUES(:name, :pdf)");
+try (var in = Files.newInputStream(Path.of("./book.pdf"))) {
+    final long id = query
+        .on(
+            Param.value("name", "For Whom the Bell Tolls"),
+            // Call a "special" statement set-method, when setting the parameter.
+            Param.of("pdf", (index, stmt) -> stmt.setBinaryStream(index, in)))
+        .executeInsert(conn)
+        .orElseThrow();
+
+    System.out.println("Inserted book with ID: " + id);
+}
+```
+
+### Custom parameter conversion
+
+It is possible to create automatic parameter value conversion via the SPI `SqlTypeMapper` class. Usually, it is not possible to insert an `URI` field directly into the DB. You have to convert it into a string object first.
+
+```java
+@Value
+public static final class Person {
+    private final String name;
+    private final URI link;
+}
+
+static final Dctor<Person> DCTOR = Dctor.of(
+    field("name", Person::name),
+    field("email", p -> p.link().toString())
+);
+```
+
+If a mapper for the `URI` class is defined, it is possible to write the deconstructor more concise.
+
+```java
+static final Dctor<Person> DCTOR = Dctor.of(
+    field("name", Person::name),
+    field("email", Person::link)
+);
+```
+
+The implementation of such a mapping is quite simple and will look like showed
+in the following code snippet.
+
+```java
+public class URIMapper extends SqlTypeMapper {
+    public Object convert(final Object value) {
+        if (value instanceof URI) {
+            return value.toString();
+        } else {
+            return value;
+        }
+    }
+}
+```
+
+Add the following line
+
+```java
+org.acme.URIMapper
+```
+
+to the service definition file
+
+```java
+META-INF/services/io.jenetics.facilejdbc.spi.SqlTypeMapper
+```
+
+and you are done.
+
 ### Selecting/inserting object _graphs_
 
 The previous examples shows the basic usage of the library. It is possible to use this for all needed select and insert queries, as you will do it with plain JDBC. If you need to select or insert _small_ object graphs, this becomes fast tedious as well. 

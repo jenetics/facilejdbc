@@ -31,6 +31,10 @@ import java.util.Optional;
 
 import static io.jenetics.facilejdbc.Param.value;
 import static java.util.Objects.requireNonNull;
+import io.jenetics.facilejdbc.Dctor;
+import io.jenetics.facilejdbc.MultiParam;
+import io.jenetics.facilejdbc.Query;
+import io.jenetics.facilejdbc.RowParser;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
@@ -90,6 +94,13 @@ public final record Author(String name, LocalDate birthDay) {
 		Long authorId = SELECT_ID_BY_NAME
 			.on(value("name", author.name()))
 			.as(RowParser.int64("id").singleNull(), conn);
+
+		/*
+		SELECT_BY_BOOK_ID
+			.on(MultiParam.values("ids", 1, 2, 3, 4, 5))
+			.on(value("name", author.name()))
+			.as(RowParser.int64("id").singleNull(), conn);
+		 */
 
 		if (authorId == null) {
 			authorId = INSERT
