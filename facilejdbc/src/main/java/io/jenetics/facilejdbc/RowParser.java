@@ -275,10 +275,11 @@ public interface RowParser<T> {
 	 * <pre>{@code
 	 * final var select = Query.of("SELECT * FROM book;");
 	 * try (var stream = select.as(PARSER.stream(), conn)) {
-	 *     final var result = stream.collect(Collectors.toSet());
-	 *      ...
+	 *     stream.forEach(book -> ...);
 	 * }
 	 * }</pre>
+	 *
+	 * @see UncheckedSQLException
 	 *
 	 * @since 1.3
 	 *
