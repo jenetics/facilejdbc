@@ -20,6 +20,7 @@
 package io.jenetics.facilejdbc;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.Spliterators.spliteratorUnknownSize;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -31,8 +32,12 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
@@ -260,6 +265,27 @@ public interface RowParser<T> {
 			}
 		);
 	}
+
+	default ResultSetParser<Stream<T>> stream() {
+		return (rs, conn) -> {
+			final var iterator = new RowIterator(rs);
+			final var spliterator = spliteratorUnknownSize(
+				iterator,
+				Spliterator.ORDERED
+			);
+
+			return StreamSupport.stream(spliterator, false)
+				.map(r -> {
+					try {
+						return parse(r, conn);
+					} catch (SQLException e) {
+						throw new UncheckedSQLException(e);
+					}
+				});
+
+		};
+	}
+
 
 
 	/* *************************************************************************
