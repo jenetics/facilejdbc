@@ -591,8 +591,6 @@ public final class Query implements Serializable {
 	 * @param sql the SQL string of the created query
 	 * @return a new query object from the given SQL string
 	 * @throws NullPointerException if the given SQL string is {@code null}
-	 * @throws IllegalArgumentException if one of the parameter names is not a
-	 *         valid Java identifier
 	 */
 	public static Query of(final String sql) {
 		return new Query(Sql.of(sql), ParamValues.EMPTY, null, null);
