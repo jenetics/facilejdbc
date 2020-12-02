@@ -26,6 +26,10 @@ import java.util.Arrays;
 
 /**
  * Helper class for exporting DB result to CSV string.
+ *
+ * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @version 1.3
+ * @since 1.3
  */
 final class CSV {
 	private CSV() {}
