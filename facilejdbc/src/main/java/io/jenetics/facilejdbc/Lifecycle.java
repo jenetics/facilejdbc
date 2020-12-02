@@ -249,25 +249,26 @@ final class Lifecycle {
 		 *
 		 * @param builder the builder method
 		 * @param <T> the value type of the created <em>closeable</em> value
-		 * @param <E> the thrown exception type while building the value
+		 * @param <E1> the exception thrown by the close method of the returned
+		 *        closeable value
+		 * @param <E2> the thrown exception type while building the value
 		 * @return the closeable built value
-		 * @throws E in the case of an error. If this exception is thrown, all
-		 *         <em>registered</em> resources are closed.
+		 * @throws E2 the exception thrown while building the value
 		 * @throws NullPointerException if the given {@code builder} is
 		 *         {@code null}
 		 */
-		static <T, E extends Exception> CloseableValue<T, E>
+		static <T, E1 extends Exception, E2 extends Exception> CloseableValue<T, E1>
 		build(
 			final ThrowingFunction<
-				? super ResourceCollector<E>,
+				? super ResourceCollector<E1>,
 				? extends T,
-				? extends E> builder
+				? extends E2> builder
 		)
-			throws E
+			throws E2
 		{
 			requireNonNull(builder);
 
-			final var resources = ResourceCollector.<E>of();
+			final var resources = ResourceCollector.<E1>of();
 			try {
 				return CloseableValue.of(
 					builder.apply(resources),
