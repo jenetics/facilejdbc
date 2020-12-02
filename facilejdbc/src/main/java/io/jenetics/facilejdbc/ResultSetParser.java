@@ -22,7 +22,6 @@ package io.jenetics.facilejdbc;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 
 /**
  * This interface is responsible for parsing a {@link ResultSet} to a record of
@@ -50,7 +49,7 @@ import java.util.Arrays;
  * no need for <em>implementing</em> this interface directly.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.0
+ * @version !__version__!
  * @since 1.0
  */
 @FunctionalInterface
@@ -67,60 +66,29 @@ public interface ResultSetParser<T> {
 	T parse(final ResultSet rs, final Connection conn)
 		throws SQLException;
 
-
+	/**
+	 * Return a {@link ResultSet} parser, which converts the query result to a
+	 * CSV string.
+	 *
+	 * <pre>{@code
+	 * final var select = Query.of("SELECT * FROM book;");
+	 * final var csv = select.as(ResultSetParser.csv(), conn);
+	 * System.out.println(csv);
+	 * }</pre>
+	 * The CSV output will look like this:
+	 * <pre>
+	 * "ID","PUBLISHED_AT","TITLE","ISBN","PAGES"
+	 * "0","1987-02-04","Auf der Suche nach der verlorenen Zeit","978-3518061756","5100"
+	 * "1","1945-01-04","Database Design for Mere Mortals","978-0321884497","654"
+	 * "2","1887-02-04","Der alte Mann und das Meer","B00JM4RD2S","142"
+	 * </pre>
+	 *
+	 * @since !__version__!
+	 *
+	 * @return a CSV {@link ResultSet} parser
+	 */
 	static ResultSetParser<String> csv() {
-		return ResultSetParser::csv;
-	}
-
-	private static String csv(final ResultSet rs, final Connection conn)
-		throws SQLException
-	{
-		final var out = new StringBuilder();
-		final var md = rs.getMetaData();
-
-		final var row = new Object[md.getColumnCount()];
-		final var cols = Arrays.asList(row);
-
-		// Header
-		for (int i = 0; i < row.length; ++i) {
-			row[i] = md.getColumnLabel(i + 1);
-		}
-		out.append(join(cols)).append("\n");
-
-		// Rows
-		while (rs.next()) {
-			for (int i = 0; i < row.length; ++i) {
-				row[i] = rs.getObject(i + 1);
-			}
-			out.append(join(cols)).append("\n");
-		}
-
-		return out.toString();
-	}
-
-	private static String join(final Iterable<?> cols) {
-		final var row = new StringBuilder(32);
-
-		final var it = cols.iterator();
-		while (it.hasNext()) {
-			final var column = it.next();
-			row.append(escape(column));
-			if (it.hasNext()) {
-				row.append(",");
-			}
-		}
-
-		return row.toString();
-	}
-
-	private static String escape(final Object value) {
-		if (value == null) {
-			return "";
-		} else {
-			var stringValue = value.toString();
-			stringValue = stringValue.replace("\"", "\"\"");
-			return "\"" + stringValue + "\"";
-		}
+		return CSV::string;
 	}
 
 }
