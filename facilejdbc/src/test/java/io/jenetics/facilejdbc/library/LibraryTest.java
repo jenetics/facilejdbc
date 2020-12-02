@@ -35,6 +35,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import io.jenetics.facilejdbc.Query;
+import io.jenetics.facilejdbc.ResultSetParser;
 import io.jenetics.facilejdbc.Transactional;
 import io.jenetics.facilejdbc.util.Queries;
 
@@ -179,6 +180,21 @@ public class LibraryTest {
 				final var actual = stream.collect(Collectors.toSet());
 				Assert.assertTrue(actual.isEmpty());
 			}
+		});
+	}
+
+	@Test(dependsOnMethods = "selectEmptyStream")
+	public void selectToCSV() throws SQLException {
+		db.transaction().accept(conn -> {
+			final var select = Query.of("SELECT * FROM book ORDER BY id;");
+			final var csv = select.as(ResultSetParser.csv(), conn);
+
+			final var expected =
+				"\"ID\",\"PUBLISHED_AT\",\"TITLE\",\"ISBN\",\"PAGES\"\r\n" +
+				"\"0\",\"1987-02-04\",\"Auf der Suche nach der verlorenen Zeit\",\"978-3518061756\",\"5100\"\r\n" +
+				"\"1\",\"1945-01-04\",\"Database Design for Mere Mortals\",\"978-0321884497\",\"654\"\r\n" +
+				"\"2\",\"1887-02-04\",\"Der alte Mann und das Meer\",\"B00JM4RD2S\",\"142\"\r\n";
+			Assert.assertEquals(csv, expected);
 		});
 	}
 

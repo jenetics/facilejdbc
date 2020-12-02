@@ -49,7 +49,7 @@ import java.sql.SQLException;
  * no need for <em>implementing</em> this interface directly.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.0
+ * @version !__version__!
  * @since 1.0
  */
 @FunctionalInterface
@@ -65,5 +65,30 @@ public interface ResultSetParser<T> {
 	 */
 	T parse(final ResultSet rs, final Connection conn)
 		throws SQLException;
+
+	/**
+	 * Return a {@link ResultSet} parser, which converts the query result to a
+	 * CSV string.
+	 *
+	 * <pre>{@code
+	 * final var select = Query.of("SELECT * FROM book;");
+	 * final var csv = select.as(ResultSetParser.csv(), conn);
+	 * System.out.println(csv);
+	 * }</pre>
+	 * The CSV output will look like this:
+	 * <pre>
+	 * "ID","PUBLISHED_AT","TITLE","ISBN","PAGES"
+	 * "0","1987-02-04","Auf der Suche nach der verlorenen Zeit","978-3518061756","5100"
+	 * "1","1945-01-04","Database Design for Mere Mortals","978-0321884497","654"
+	 * "2","1887-02-04","Der alte Mann und das Meer","B00JM4RD2S","142"
+	 * </pre>
+	 *
+	 * @since !__version__!
+	 *
+	 * @return a CSV {@link ResultSet} parser
+	 */
+	static ResultSetParser<String> csv() {
+		return CSV::string;
+	}
 
 }
