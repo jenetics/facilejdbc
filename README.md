@@ -141,7 +141,7 @@ The printed CSV string will look like the following example.
 "2","1887-02-04","Der alte Mann und das Meer","B00JM4RD2S","142"
 ```
 
-For a big result set, it is possible to lazily stream the selected rows into a file.
+For a big result set it is possible to lazily stream the selected rows into a file.
 
 ```java
 final var select = Query.of("SELECT * FROM book ORDER BY id;");
