@@ -145,8 +145,8 @@ For a big result set, it is possible to lazily stream the selected rows into a f
 
 ```java
 final var select = Query.of("SELECT * FROM book ORDER BY id;");
-try (var lines = select.as(RowParser.csv().stream(), conn);
-    var out = Files.newBufferedWriter(Path.of("out.csv")))
+try (Stream<String> lines = select.as(RowParser.csv().stream(), conn);
+    Writer out = Files.newBufferedWriter(Path.of("out.csv")))
 {
     lines.forEach(line -> {
         try {
