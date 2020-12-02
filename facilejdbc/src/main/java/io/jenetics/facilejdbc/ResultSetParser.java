@@ -85,6 +85,8 @@ public interface ResultSetParser<T> {
 	 *
 	 * @since 1.3
 	 *
+	 * @see RowParser#csv()
+	 *
 	 * @return a CSV {@link ResultSet} parser
 	 */
 	static ResultSetParser<String> csv() {
