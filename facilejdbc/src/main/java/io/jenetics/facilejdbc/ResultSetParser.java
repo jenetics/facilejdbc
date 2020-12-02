@@ -49,7 +49,7 @@ import java.sql.SQLException;
  * no need for <em>implementing</em> this interface directly.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
+ * @version 1.3
  * @since 1.0
  */
 @FunctionalInterface
@@ -83,7 +83,7 @@ public interface ResultSetParser<T> {
 	 * "2","1887-02-04","Der alte Mann und das Meer","B00JM4RD2S","142"
 	 * </pre>
 	 *
-	 * @since !__version__!
+	 * @since 1.3
 	 *
 	 * @return a CSV {@link ResultSet} parser
 	 */
