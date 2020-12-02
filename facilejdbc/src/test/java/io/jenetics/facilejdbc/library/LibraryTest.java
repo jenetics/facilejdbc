@@ -35,6 +35,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import io.jenetics.facilejdbc.Query;
+import io.jenetics.facilejdbc.ResultSetParser;
 import io.jenetics.facilejdbc.Transactional;
 import io.jenetics.facilejdbc.util.Queries;
 
@@ -179,6 +180,16 @@ public class LibraryTest {
 				final var actual = stream.collect(Collectors.toSet());
 				Assert.assertTrue(actual.isEmpty());
 			}
+		});
+	}
+
+	@Test(dependsOnMethods = "selectEmptyStream")
+	public void selectToCSV() throws SQLException {
+		db.transaction().accept(conn -> {
+			final var select = Query.of("SELECT * FROM book;");
+			final var csv = select.as(ResultSetParser.csv(), conn);
+
+			System.out.println(csv);
 		});
 	}
 

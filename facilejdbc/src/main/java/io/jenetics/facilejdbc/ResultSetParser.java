@@ -22,6 +22,7 @@ package io.jenetics.facilejdbc;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 /**
  * This interface is responsible for parsing a {@link ResultSet} to a record of
@@ -65,5 +66,61 @@ public interface ResultSetParser<T> {
 	 */
 	T parse(final ResultSet rs, final Connection conn)
 		throws SQLException;
+
+
+	static ResultSetParser<String> csv() {
+		return ResultSetParser::csv;
+	}
+
+	private static String csv(final ResultSet rs, final Connection conn)
+		throws SQLException
+	{
+		final var out = new StringBuilder();
+		final var md = rs.getMetaData();
+
+		final var row = new Object[md.getColumnCount()];
+		final var cols = Arrays.asList(row);
+
+		// Header
+		for (int i = 0; i < row.length; ++i) {
+			row[i] = md.getColumnLabel(i + 1);
+		}
+		out.append(join(cols)).append("\n");
+
+		// Rows
+		while (rs.next()) {
+			for (int i = 0; i < row.length; ++i) {
+				row[i] = rs.getObject(i + 1);
+			}
+			out.append(join(cols)).append("\n");
+		}
+
+		return out.toString();
+	}
+
+	private static String join(final Iterable<?> cols) {
+		final var row = new StringBuilder(32);
+
+		final var it = cols.iterator();
+		while (it.hasNext()) {
+			final var column = it.next();
+			row.append(escape(column));
+			if (it.hasNext()) {
+				row.append(",");
+			}
+		}
+
+		return row.toString();
+	}
+
+	private static String escape(final Object value) {
+		if (value == null) {
+			return "";
+		} else {
+			var stringValue = value.toString();
+			stringValue = stringValue.replace("\"", "\"\"");
+			return "\"" + stringValue + "\"";
+		}
+	}
 
 }
