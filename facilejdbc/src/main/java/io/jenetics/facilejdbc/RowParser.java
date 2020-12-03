@@ -25,6 +25,8 @@ import static java.util.Spliterators.spliteratorUnknownSize;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -468,6 +470,26 @@ public interface RowParser<T> {
 	}
 
 	/**
+	 * Return a row parser for int values for the given column name.
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Integer> int32(final String name) {
+		return (row, conn) -> row.getInt(name);
+	}
+
+	/**
+	 * Return a row parser for int values for the given column index.
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Integer> int32(final int index) {
+		return (row, conn) -> row.getInt(index);
+	}
+
+	/**
 	 * Return a row parser for long values for the given column name.
 	 *
 	 * @param name the column name
@@ -488,31 +510,43 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Return a row parser for int values for the given column name.
+	 * Return a row parser for float values for the given column name.
 	 *
 	 * @param name the column name
 	 * @return the row-parser for the given column
 	 */
-	static RowParser<Integer> int32(final String name) {
-		return (row, conn) -> row.getInt(name);
+	static RowParser<Float> float32(final String name) {
+		return (row, conn) -> row.getFloat(name);
 	}
 
 	/**
-	 * Return a row parser for int values for the given column index.
+	 * Return a row parser for float values for the given column index.
 	 *
 	 * @param index the column index
 	 * @return the row-parser for the given column
 	 */
-	static RowParser<Integer> int32(final int index) {
-		return (row, conn) -> row.getInt(index);
+	static RowParser<Float> float32(final int index) {
+		return (row, conn) -> row.getFloat(index);
 	}
 
-	static RowParser<Float> real32(final String name) {
-		return (row, conn) -> row.getFloat(name);
-	}
-
-	static RowParser<Double> real64(final String name) {
+	/**
+	 * Return a row parser for double values for the given column name.
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Double> float64(final String name) {
 		return (row, conn) -> row.getDouble(name);
+	}
+
+	/**
+	 * Return a row parser for double values for the given column index.
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Double> float64(final int index) {
+		return (row, conn) -> row.getDouble(index);
 	}
 
 	/**
@@ -533,6 +567,46 @@ public interface RowParser<T> {
 	 */
 	static RowParser<String> string(final int index) {
 		return (row, conn) -> row.getString(index);
+	}
+
+	/**
+	 * Return a row parser for timestamp values for the given column name.
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Timestamp> timestamp(final String name) {
+		return (row, conn) -> row.getTimestamp(name);
+	}
+
+	/**
+	 * Return a row parser for timestamp values for the given column index.
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Timestamp> timestamp(final int index) {
+		return (row, conn) -> row.getTimestamp(index);
+	}
+
+	/**
+	 * Return a row parser for instant values for the given column name.
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Instant> instant(final String name) {
+		return timestamp(name).map(Timestamp::toInstant);
+	}
+
+	/**
+	 * Return a row parser for instant values for the given column index.
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Instant> instant(final int index) {
+		return timestamp(index).map(Timestamp::toInstant);
 	}
 
 	/**
