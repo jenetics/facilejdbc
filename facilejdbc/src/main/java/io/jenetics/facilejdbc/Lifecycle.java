@@ -149,11 +149,7 @@ final class Lifecycle {
 					try {
 						c.close();
 					} catch (Exception e) {
-						if (e instanceof RuntimeException) {
-							throw (RuntimeException)e;
-						} else {
-							raise(e);
-						}
+						raise(e);
 					}
 				},
 				list
