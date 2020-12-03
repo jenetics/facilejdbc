@@ -49,6 +49,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import io.jenetics.facilejdbc.Lifecycle.CloseableValue;
+
 /**
  * A {@code Query} represents an executable piece of SQL text.
  *
@@ -381,8 +383,27 @@ public final class Query implements Serializable {
 	)
 		throws SQLException
 	{
-		try (var stmt = prepare(conn); var rs = stmt.executeQuery()) {
+		final CloseableValue<T, SQLException> result = CloseableValue.build(resources -> {
+			final var stmt = resources.add(prepare(conn));
+			final var rs = resources.add(stmt.executeQuery());
 			return parser.parse(rs, conn);
+		});
+
+		return prepare(result);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> T prepare(final CloseableValue<T, SQLException> result)
+		throws SQLException
+	{
+		if (result.get() instanceof Stream<?>) {
+			return (T)((Stream<?>)result.get()).onClose(() ->
+				result.uncheckedClose(UncheckedSQLException::new)
+			);
+		} else {
+			try (result) {
+				return result.get();
+			}
 		}
 	}
 

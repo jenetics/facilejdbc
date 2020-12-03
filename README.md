@@ -104,6 +104,68 @@ static final RowParser<Person> PARSER = (row, conn) -> Person.builder()
 
 Since the `RowParser` is a _functional_ interface it can be written as shown. The first function parameter represents the actual selected row and second parameter the JDBC `Connection` used for executing the query. In most cases the `conn` will not be used, but it is quite helpful for fetching dependent DTOs in a sub-query.
 
+### Lazy (stream) select
+
+The _FacileJdbc_ library allows you to lazily fetch results from the DB. This might be useful when the selected data can cause an `OutOfMemoryError`.
+
+```java
+final var select = Query.of("SELECT * FROM person;");
+
+// Make sure to close the returned stream.
+try (var persons = select.as(PARSER.stream(), conn)) {
+    // Do some processing with the person stream.
+    persons.forEach(person -> ...);
+}
+```
+
+It's important to _close_ the returned `Stream`, which will close the underlying `ResultSet` and `PreparedStatement`. Every `SQLException`, thrown while fetching the data from the DB, will be wrapped in an `UncheckedSQLException`.
+
+_By setting the fetch-size, with the `Query.withFetchSize(int)` method, it is possible to control the amount of data fetched at once by the JDBC driver._
+
+### Export selection result to CSV
+
+Sometime it is convenient to export the whole selection result as CSV string.
+
+```java
+final var select = Query.of("SELECT * FROM book;");
+final var csv = select.as(ResultSetParser.csv(), conn);
+System.out.println(csv);
+```
+
+The printed CSV string will look like the following example.
+
+```
+"ID","PUBLISHED_AT","TITLE","ISBN","PAGES"
+"0","1987-02-04","Auf der Suche nach der verlorenen Zeit","978-3518061756","5100"
+"1","1945-01-04","Database Design for Mere Mortals","978-0321884497","654"
+"2","1887-02-04","Der alte Mann und das Meer","B00JM4RD2S","142"
+```
+
+For a big result set it is possible to lazily stream the selected rows into a file.
+
+```java
+final var select = Query.of("SELECT * FROM book ORDER BY id;");
+try (Stream<String> lines = select.as(RowParser.csv().stream(), conn);
+    Writer out = Files.newBufferedWriter(Path.of("out.csv")))
+{
+    lines.forEach(line -> {
+        try {
+            out.write(line);
+            out.write("\r\n");
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    });
+}
+```
+
+The rows are written _without_ a header into the CSV file.
+
+```
+"0","1987-02-04","Auf der Suche nach der verlorenen Zeit","978-3518061756","5100"
+"1","1945-01-04","Database Design for Mere Mortals","978-0321884497","654"
+"2","1887-02-04","Der alte Mann und das Meer","B00JM4RD2S","142"
+```
 
 ### Inserting objects
 

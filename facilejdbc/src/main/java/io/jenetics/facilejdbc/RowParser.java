@@ -20,6 +20,7 @@
 package io.jenetics.facilejdbc;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.Spliterators.spliteratorUnknownSize;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -31,8 +32,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Spliterator;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
@@ -261,6 +265,44 @@ public interface RowParser<T> {
 		);
 	}
 
+	/**
+	 * Return a new parser witch <em>lazily</em> parses the selection result.
+	 * It is the responsibility of the caller to close the created stream. This
+	 * closes the underlying {@link ResultSet} and {@link java.sql.Statement}.
+	 * While consuming the result {@link Stream}, possible {@link SQLException}s
+	 * are wrapped into {@link UncheckedSQLException}s.
+	 *
+	 * <pre>{@code
+	 * final var select = Query.of("SELECT * FROM book;");
+	 * try (var stream = select.as(PARSER.stream(), conn)) {
+	 *     stream.forEach(book -> ...);
+	 * }
+	 * }</pre>
+	 *
+	 * @see UncheckedSQLException
+	 *
+	 * @since 1.3
+	 *
+	 * @return a new parser witch <em>lazily</em> parses the selection result
+	 */
+	default ResultSetParser<Stream<T>> stream() {
+		return (rs, conn) -> {
+			final var spliterator = spliteratorUnknownSize(
+				new RowIterator(rs),
+				Spliterator.ORDERED
+			);
+
+			return StreamSupport.stream(spliterator, false)
+				.map(r -> {
+					try {
+						return parse(r, conn);
+					} catch (SQLException e) {
+						throw new UncheckedSQLException(e);
+					}
+				});
+		};
+	}
+
 
 	/* *************************************************************************
 	 * Static factory methods.
@@ -342,6 +384,51 @@ public interface RowParser<T> {
 	 */
 	static RowParser<String> string(final int index) {
 		return (row, conn) -> row.getString(index);
+	}
+
+	/**
+	 * Return a row parser which converts a DB row into a CSV row. This parser
+	 * can be used for exporting a huge amount of data into a file. The
+	 * following example shows how to stream a DB result into a file.
+	 *
+	 * <pre>{@code
+	 * final var select = Query.of("SELECT * FROM book ORDER BY id;");
+	 * try (var lines = select.as(RowParser.csv().stream(), conn);
+	 *     var out = Files.newBufferedWriter(Path.of("out.csv")))
+	 * {
+	 *     lines.forEach(line -> {
+	 *         try {
+	 *             out.write(line);
+	 *             out.write("\r\n");
+	 *         } catch (IOException e) {
+	 *             throw new UncheckedIOException(e);
+	 *         }
+	 *     });
+	 * }
+	 * }</pre>
+	 *
+	 * The rows are written without a CSV header and will look like this:
+	 * <pre>
+	 * "0","1987-02-04","Auf der Suche nach der verlorenen Zeit","978-3518061756","5100"
+	 * "1","1945-01-04","Database Design for Mere Mortals","978-0321884497","654"
+	 * "2","1887-02-04","Der alte Mann und das Meer","B00JM4RD2S","142"
+	 * </pre>
+	 *
+	 * @since 1.3
+	 *
+	 * @see ResultSetParser#csv()
+	 *
+	 * @return a row parser which converts a DB row into a CSV row
+	 */
+	static RowParser<String> csv() {
+		return (row, conn) -> {
+			final var md = row.getMetaData();
+			final List<Object> cols = new ArrayList<>(md.getColumnCount());
+			for (int i = 1; i <= md.getColumnCount(); ++i) {
+				cols.add(row.getObject(i));
+			}
+			return CSV.join(cols);
+		};
 	}
 
 }
