@@ -33,6 +33,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -431,4 +432,50 @@ public interface RowParser<T> {
 		};
 	}
 
+	@SafeVarargs
+	static <T extends Record> RowParser<T> of(
+		final Class<T> type,
+		final SqlFunction2<? super String, ? super Row, ?>... fields
+	) {
+		return null;
+	}
+
+	static <T> RowParser<T> of(final Ctor<T> ctor) {
+		return null;
+	}
+
+	static <T> RowParser<T> of(
+		final Function<? super Object[], ? extends T> ctor,
+		final RowParser<?>... fields
+	) {
+		return (row, conn) -> {
+			final var params = new Object[fields.length];
+			for (int i = 0; i < fields.length; ++i) {
+				params[i] = fields[i].parse(row, conn);
+			}
+			return ctor.apply(params);
+		};
+	}
+
+}
+
+class Main {
+
+	final record Foo(String name, int count, long max){}
+
+	static void foo() throws Exception {
+		final var col = Ctor.Column.of("name", (row, conn) -> row.getString("name"));
+
+
+		final RowParser<Foo> parser = RowParser.of(
+			params -> new Foo(
+				(String)params[0],
+				(int)params[1],
+				(long)params[2]
+			),
+			RowParser.string("name"),
+			RowParser.int32("count"),
+			RowParser.int64("max")
+		);
+	}
 }
