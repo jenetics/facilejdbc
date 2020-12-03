@@ -67,7 +67,7 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * @param <T> the row type
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.1
+ * @version 1.3
  * @since 1.0
  */
 @FunctionalInterface
@@ -82,6 +82,11 @@ public interface RowParser<T> {
 	 * @throws SQLException if reading of the current row fails
 	 */
 	T parse(final Row row, final Connection conn) throws SQLException;
+
+
+	/* *************************************************************************
+	 * Default methods.
+	 * ************************************************************************/
 
 	/**
 	 * Returns a parser that will apply given {@code mapper} to the result of
