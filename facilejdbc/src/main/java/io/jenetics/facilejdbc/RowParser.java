@@ -517,6 +517,8 @@ public interface RowParser<T> {
 	/**
 	 * Return a row parser for float values for the given column name.
 	 *
+	 * @since 1.3
+	 *
 	 * @param name the column name
 	 * @return the row-parser for the given column
 	 */
@@ -526,6 +528,8 @@ public interface RowParser<T> {
 
 	/**
 	 * Return a row parser for float values for the given column index.
+	 *
+	 * @since 1.3
 	 *
 	 * @param index the column index
 	 * @return the row-parser for the given column
@@ -537,6 +541,8 @@ public interface RowParser<T> {
 	/**
 	 * Return a row parser for double values for the given column name.
 	 *
+	 * @since 1.3
+	 *
 	 * @param name the column name
 	 * @return the row-parser for the given column
 	 */
@@ -546,6 +552,8 @@ public interface RowParser<T> {
 
 	/**
 	 * Return a row parser for double values for the given column index.
+	 *
+	 * @since 1.3
 	 *
 	 * @param index the column index
 	 * @return the row-parser for the given column
@@ -577,6 +585,8 @@ public interface RowParser<T> {
 	/**
 	 * Return a row parser for timestamp values for the given column name.
 	 *
+	 * @since 1.3
+	 *
 	 * @param name the column name
 	 * @return the row-parser for the given column
 	 */
@@ -586,6 +596,8 @@ public interface RowParser<T> {
 
 	/**
 	 * Return a row parser for timestamp values for the given column index.
+	 *
+	 * @since 1.3
 	 *
 	 * @param index the column index
 	 * @return the row-parser for the given column
@@ -597,6 +609,8 @@ public interface RowParser<T> {
 	/**
 	 * Return a row parser for instant values for the given column name.
 	 *
+	 * @since 1.3
+	 *
 	 * @param name the column name
 	 * @return the row-parser for the given column
 	 */
@@ -606,6 +620,8 @@ public interface RowParser<T> {
 
 	/**
 	 * Return a row parser for instant values for the given column index.
+	 *
+	 * @since 1.3
 	 *
 	 * @param index the column index
 	 * @return the row-parser for the given column
