@@ -91,13 +91,6 @@ public final record Author(String name, LocalDate birthDay) {
 			.on(value("name", author.name()))
 			.as(RowParser.int64("id").singleNull(), conn);
 
-		/*
-		SELECT_BY_BOOK_ID
-			.on(MultiParam.values("ids", 1, 2, 3, 4, 5))
-			.on(value("name", author.name()))
-			.as(RowParser.int64("id").singleNull(), conn);
-		 */
-
 		if (authorId == null) {
 			authorId = INSERT
 				.on(author, DCTOR)

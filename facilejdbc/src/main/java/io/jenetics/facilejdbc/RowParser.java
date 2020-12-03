@@ -25,8 +25,11 @@ import static java.util.Spliterators.spliteratorUnknownSize;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -65,7 +68,7 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * @param <T> the row type
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.1
+ * @version 1.3
  * @since 1.0
  */
 @FunctionalInterface
@@ -80,6 +83,11 @@ public interface RowParser<T> {
 	 * @throws SQLException if reading of the current row fails
 	 */
 	T parse(final Row row, final Connection conn) throws SQLException;
+
+
+	/* *************************************************************************
+	 * Default methods.
+	 * ************************************************************************/
 
 	/**
 	 * Returns a parser that will apply given {@code mapper} to the result of
@@ -98,7 +106,7 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Returns a parser that will apply given {@code mapper} to the result of
+	 * Returns a parser that will apply the given {@code mapper} to the result of
 	 * {@code this} first parser. If the current parser is not successful, the
 	 * new one will return encountered exception.
 	 *
@@ -111,6 +119,31 @@ public interface RowParser<T> {
 	default <U> RowParser<U>
 	map(final SqlFunction2<? super T, ? super Connection, ? extends U> mapper) {
 		return (row, conn) -> mapper.apply(parse(row, conn), conn);
+	}
+
+	/**
+	 * Returns a parser that will apply the given {@code mapper} to the result
+	 * of {@code this} first parser, which will then be used for parsing the
+	 * final result. This allows to combine existing row parsers.
+	 *
+	 * <pre>{@code
+	 * static final RowParser<Book> PARSER =
+	 * RowParser.string("title").flatMap(title ->
+	 *     RowParser.string("isbn").flatMap(isbn ->
+	 *         RowParser.int32("pages").map(pages -> new Book(title, isbn, pages))
+	 *     )
+	 * );
+	 * }</pre>
+	 *
+	 * @since 1.3
+	 *
+	 * @param mapper the mapping function
+	 * @param <U> the type of the value returned from the mapping function
+	 * @return the new row parser with the flat-mapped types
+	 */
+	default <U> RowParser<U>
+	flatMap(final SqlFunction<? super T, ? extends RowParser<? extends U>> mapper) {
+		return (row, conn) -> mapper.apply(parse(row, conn)).parse(row, conn);
 	}
 
 	/**
@@ -382,33 +415,64 @@ public interface RowParser<T> {
 	 *     .as(scalar(String.class).single(), conn);
 	 * }</pre>
 	 *
+	 * @see #scalar(int, Class)
+	 * @see #scalar(String, Class)
+	 *
 	 * @param type the type class of the scala
 	 * @param <T> the scalar type
 	 * @return a parser for a scalar not-null value
 	 * @throws NullPointerException if the give {@code type} is {@code null}
 	 */
 	static <T> RowParser<T> scalar(final Class<T> type) {
-		return (row, conn) -> row.getObject(1, type);
+		return scalar(1, type);
 	}
 
 	/**
-	 * Return a row parser for long values for the given column name.
+	 * Returns a parser for a scalar not-null value.
 	 *
-	 * @param name the column name
-	 * @return the row-parser for the given column
-	 */
-	static RowParser<Long> int64(final String name) {
-		return (row, conn) -> row.getLong(name);
-	}
-
-	/**
-	 * Return a row parser for long values for the given column index.
+	 * <pre>{@code
+	 * final String name = Query.of("SELECT id, name FROM person WHERE id = :id")
+	 *     .on(value("id", 23))
+	 *     .as(scalar(2, String.class).single(), conn);
+	 * }</pre>
+	 *
+	 * @since 1.3
+	 *
+	 * @see #scalar(Class)
+	 * @see #scalar(String, Class)
 	 *
 	 * @param index the column index
-	 * @return the row-parser for the given column
+	 * @param type the type class of the scala
+	 * @param <T> the scalar type
+	 * @return a parser for a scalar not-null value
+	 * @throws NullPointerException if the give {@code type} is {@code null}
 	 */
-	static RowParser<Long> int64(final int index) {
-		return (row, conn) -> row.getLong(index);
+	static <T> RowParser<T> scalar(final int index, final Class<T> type) {
+		return (row, conn) -> row.getObject(index, type);
+	}
+
+	/**
+	 * Returns a parser for a scalar not-null value.
+	 *
+	 * <pre>{@code
+	 * final String name = Query.of("SELECT id, name FROM person WHERE id = :id")
+	 *     .on(value("id", 23))
+	 *     .as(scalar("name", String.class).single(), conn);
+	 * }</pre>
+	 *
+	 * @since 1.3
+	 *
+	 * @see #scalar(Class)
+	 * @see #scalar(int, Class)
+	 *
+	 * @param name the column name
+	 * @param type the type class of the scala
+	 * @param <T> the scalar type
+	 * @return a parser for a scalar not-null value
+	 * @throws NullPointerException if the give {@code type} is {@code null}
+	 */
+	static <T> RowParser<T> scalar(final String name, final Class<T> type) {
+		return (row, conn) -> row.getObject(name, type);
 	}
 
 	/**
@@ -437,6 +501,74 @@ public interface RowParser<T> {
 	 * @param name the column name
 	 * @return the row-parser for the given column
 	 */
+	static RowParser<Long> int64(final String name) {
+		return (row, conn) -> row.getLong(name);
+	}
+
+	/**
+	 * Return a row parser for long values for the given column index.
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Long> int64(final int index) {
+		return (row, conn) -> row.getLong(index);
+	}
+
+	/**
+	 * Return a row parser for float values for the given column name.
+	 *
+	 * @since 1.3
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Float> float32(final String name) {
+		return (row, conn) -> row.getFloat(name);
+	}
+
+	/**
+	 * Return a row parser for float values for the given column index.
+	 *
+	 * @since 1.3
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Float> float32(final int index) {
+		return (row, conn) -> row.getFloat(index);
+	}
+
+	/**
+	 * Return a row parser for double values for the given column name.
+	 *
+	 * @since 1.3
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Double> float64(final String name) {
+		return (row, conn) -> row.getDouble(name);
+	}
+
+	/**
+	 * Return a row parser for double values for the given column index.
+	 *
+	 * @since 1.3
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Double> float64(final int index) {
+		return (row, conn) -> row.getDouble(index);
+	}
+
+	/**
+	 * Return a row parser for long values for the given column name.
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
 	static RowParser<String> string(final String name) {
 		return (row, conn) -> row.getString(name);
 	}
@@ -449,6 +581,54 @@ public interface RowParser<T> {
 	 */
 	static RowParser<String> string(final int index) {
 		return (row, conn) -> row.getString(index);
+	}
+
+	/**
+	 * Return a row parser for timestamp values for the given column name.
+	 *
+	 * @since 1.3
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Timestamp> timestamp(final String name) {
+		return (row, conn) -> row.getTimestamp(name);
+	}
+
+	/**
+	 * Return a row parser for timestamp values for the given column index.
+	 *
+	 * @since 1.3
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Timestamp> timestamp(final int index) {
+		return (row, conn) -> row.getTimestamp(index);
+	}
+
+	/**
+	 * Return a row parser for instant values for the given column name.
+	 *
+	 * @since 1.3
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Instant> instant(final String name) {
+		return timestamp(name).map(Timestamp::toInstant);
+	}
+
+	/**
+	 * Return a row parser for instant values for the given column index.
+	 *
+	 * @since 1.3
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Instant> instant(final int index) {
+		return timestamp(index).map(Timestamp::toInstant);
 	}
 
 	/**
@@ -482,17 +662,33 @@ public interface RowParser<T> {
 	 * @since 1.3
 	 *
 	 * @see ResultSetParser#csv()
+	 * @see #row(Function)
 	 *
 	 * @return a row parser which converts a DB row into a CSV row
 	 */
 	static RowParser<String> csv() {
+		return row(CSV::join);
+	}
+
+	/**
+	 * Return a row parser which converts the columns of one row into an object.
+	 *
+	 * @since 1.3
+	 *
+	 * @param <T> the type of the constructed row object
+	 * @param ctor the function used for combining the column values to one
+	 *        value
+	 * @return a row parser which combines the row values into one object
+	 */
+	static <T> RowParser<T>
+	row(final Function<? super List<?>, ? extends T> ctor) {
 		return (row, conn) -> {
 			final var md = row.getMetaData();
 			final List<Object> cols = new ArrayList<>(md.getColumnCount());
 			for (int i = 1; i <= md.getColumnCount(); ++i) {
 				cols.add(row.getObject(i));
 			}
-			return CSV.join(cols);
+			return ctor.apply(Collections.unmodifiableList(cols));
 		};
 	}
 
