@@ -22,6 +22,7 @@ package io.jenetics.facilejdbc.library;
 import static io.jenetics.facilejdbc.library.Book.PARSER;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -36,6 +37,7 @@ import org.testng.annotations.Test;
 
 import io.jenetics.facilejdbc.Query;
 import io.jenetics.facilejdbc.ResultSetParser;
+import io.jenetics.facilejdbc.RowParser;
 import io.jenetics.facilejdbc.Transactional;
 import io.jenetics.facilejdbc.util.Queries;
 
@@ -197,5 +199,22 @@ public class LibraryTest {
 			Assert.assertEquals(csv, expected);
 		});
 	}
+
+	@Test(dependsOnMethods = "insertAndSelectAuthor")
+	public void selectAllAndParseWithFlatMap() throws SQLException {
+		final var parser = RowParser.string("name").flatMap(name ->
+			RowParser.scalar("birth_day", Date.class).map(bd -> {
+				final var date = bd != null ? bd.toLocalDate() : null;
+				return new Author(name, date);
+			})
+		);
+
+		final var query = Query.of("SELECT * FROM author ORDER BY id;");
+		final var authors = db.transaction()
+			.apply(conn -> query.as(parser.list(), conn));
+
+		Assert.assertEquals(authors.size(), 3);
+	}
+
 
 }

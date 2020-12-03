@@ -98,7 +98,7 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Returns a parser that will apply given {@code mapper} to the result of
+	 * Returns a parser that will apply the given {@code mapper} to the result of
 	 * {@code this} first parser. If the current parser is not successful, the
 	 * new one will return encountered exception.
 	 *
@@ -111,6 +111,31 @@ public interface RowParser<T> {
 	default <U> RowParser<U>
 	map(final SqlFunction2<? super T, ? super Connection, ? extends U> mapper) {
 		return (row, conn) -> mapper.apply(parse(row, conn), conn);
+	}
+
+	/**
+	 * Returns a parser that will apply the given {@code mapper} to the result
+	 * of {@code this} first parser, which will then be used for parsing the
+	 * final result. This allows to combine existing row parsers.
+	 *
+	 * <pre>{@code
+	 * static final RowParser<Book> PARSER =
+	 * RowParser.string("title").flatMap(title ->
+	 *     RowParser.string("isbn").flatMap(isbn ->
+	 *         RowParser.int32("pages").map(pages -> new Book(title, isbn, pages))
+	 *     )
+	 * );
+	 * }</pre>
+	 *
+	 * @since 1.3
+	 *
+	 * @param mapper the mapping function
+	 * @param <U> the type of the value returned from the mapping function
+	 * @return the new row parser with the flat-mapped types
+	 */
+	default <U> RowParser<U>
+	flatMap(final SqlFunction<? super T, ? extends RowParser<? extends U>> mapper) {
+		return (row, conn) -> mapper.apply(parse(row, conn)).parse(row, conn);
 	}
 
 	/**
@@ -382,13 +407,64 @@ public interface RowParser<T> {
 	 *     .as(scalar(String.class).single(), conn);
 	 * }</pre>
 	 *
+	 * @see #scalar(int, Class)
+	 * @see #scalar(String, Class)
+	 *
 	 * @param type the type class of the scala
 	 * @param <T> the scalar type
 	 * @return a parser for a scalar not-null value
 	 * @throws NullPointerException if the give {@code type} is {@code null}
 	 */
 	static <T> RowParser<T> scalar(final Class<T> type) {
-		return (row, conn) -> row.getObject(1, type);
+		return scalar(1, type);
+	}
+
+	/**
+	 * Returns a parser for a scalar not-null value.
+	 *
+	 * <pre>{@code
+	 * final String name = Query.of("SELECT id, name FROM person WHERE id = :id")
+	 *     .on(value("id", 23))
+	 *     .as(scalar(2, String.class).single(), conn);
+	 * }</pre>
+	 *
+	 * @since 1.3
+	 *
+	 * @see #scalar(Class)
+	 * @see #scalar(String, Class)
+	 *
+	 * @param index the column index
+	 * @param type the type class of the scala
+	 * @param <T> the scalar type
+	 * @return a parser for a scalar not-null value
+	 * @throws NullPointerException if the give {@code type} is {@code null}
+	 */
+	static <T> RowParser<T> scalar(final int index, final Class<T> type) {
+		return (row, conn) -> row.getObject(index, type);
+	}
+
+	/**
+	 * Returns a parser for a scalar not-null value.
+	 *
+	 * <pre>{@code
+	 * final String name = Query.of("SELECT id, name FROM person WHERE id = :id")
+	 *     .on(value("id", 23))
+	 *     .as(scalar("name", String.class).single(), conn);
+	 * }</pre>
+	 *
+	 * @since 1.3
+	 *
+	 * @see #scalar(Class)
+	 * @see #scalar(int, Class)
+	 *
+	 * @param name the column name
+	 * @param type the type class of the scala
+	 * @param <T> the scalar type
+	 * @return a parser for a scalar not-null value
+	 * @throws NullPointerException if the give {@code type} is {@code null}
+	 */
+	static <T> RowParser<T> scalar(final String name, final Class<T> type) {
+		return (row, conn) -> row.getObject(name, type);
 	}
 
 	/**
@@ -429,6 +505,14 @@ public interface RowParser<T> {
 	 */
 	static RowParser<Integer> int32(final int index) {
 		return (row, conn) -> row.getInt(index);
+	}
+
+	static RowParser<Float> real32(final String name) {
+		return (row, conn) -> row.getFloat(name);
+	}
+
+	static RowParser<Double> real64(final String name) {
+		return (row, conn) -> row.getDouble(name);
 	}
 
 	/**
