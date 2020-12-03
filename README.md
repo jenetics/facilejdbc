@@ -122,6 +122,51 @@ It's important to _close_ the returned `Stream`, which will close the underlying
 
 _By setting the fetch-size, with the `Query.withFetchSize(int)` method, it is possible to control the amount of data fetched at once by the JDBC driver._
 
+### Export selection result to CSV
+
+Sometime it is convenient to export the whole selection result as CSV string.
+
+```java
+final var select = Query.of("SELECT * FROM book;");
+final var csv = select.as(ResultSetParser.csv(), conn);
+System.out.println(csv);
+```
+
+The printed CSV string will look like the following example.
+
+```
+"ID","PUBLISHED_AT","TITLE","ISBN","PAGES"
+"0","1987-02-04","Auf der Suche nach der verlorenen Zeit","978-3518061756","5100"
+"1","1945-01-04","Database Design for Mere Mortals","978-0321884497","654"
+"2","1887-02-04","Der alte Mann und das Meer","B00JM4RD2S","142"
+```
+
+For a big result set it is possible to lazily stream the selected rows into a file.
+
+```java
+final var select = Query.of("SELECT * FROM book ORDER BY id;");
+try (Stream<String> lines = select.as(RowParser.csv().stream(), conn);
+    Writer out = Files.newBufferedWriter(Path.of("out.csv")))
+{
+    lines.forEach(line -> {
+        try {
+            out.write(line);
+            out.write("\r\n");
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    });
+}
+```
+
+The rows are written _without_ a header into the CSV file.
+
+```
+"0","1987-02-04","Auf der Suche nach der verlorenen Zeit","978-3518061756","5100"
+"1","1945-01-04","Database Design for Mere Mortals","978-0321884497","654"
+"2","1887-02-04","Der alte Mann und das Meer","B00JM4RD2S","142"
+```
+
 ### Inserting objects
 
 For inserting one new `Person` into the DB an _insert_ query have to be defined. 
