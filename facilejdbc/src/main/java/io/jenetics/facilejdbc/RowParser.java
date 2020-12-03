@@ -29,6 +29,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -661,17 +662,33 @@ public interface RowParser<T> {
 	 * @since 1.3
 	 *
 	 * @see ResultSetParser#csv()
+	 * @see #row(Function)
 	 *
 	 * @return a row parser which converts a DB row into a CSV row
 	 */
 	static RowParser<String> csv() {
+		return row(CSV::join);
+	}
+
+	/**
+	 * Return a row parser which converts the columns of one row into an object.
+	 *
+	 * @since 1.3
+	 *
+	 * @param <T> the type of the constructed row object
+	 * @param ctor the function used for combining the column values to one
+	 *        value
+	 * @return a row parser which combines the row values into one object
+	 */
+	static <T> RowParser<T>
+	row(final Function<? super List<?>, ? extends T> ctor) {
 		return (row, conn) -> {
 			final var md = row.getMetaData();
 			final List<Object> cols = new ArrayList<>(md.getColumnCount());
 			for (int i = 1; i <= md.getColumnCount(); ++i) {
 				cols.add(row.getObject(i));
 			}
-			return CSV.join(cols);
+			return ctor.apply(Collections.unmodifiableList(cols));
 		};
 	}
 
