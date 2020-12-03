@@ -496,29 +496,8 @@ public interface RowParser<T> {
 		};
 	}
 
-	@SafeVarargs
-	static <T extends Record> RowParser<T> of(
-		final Class<T> type,
-		final SqlFunction2<? super String, ? super Row, ?>... fields
-	) {
-		return null;
-	}
-
 	static <T> RowParser<T> of(final Ctor<T> ctor) {
 		return null;
-	}
-
-	static <T> RowParser<T> of(
-		final Function<? super Object[], ? extends T> ctor,
-		final RowParser<?>... fields
-	) {
-		return (row, conn) -> {
-			final var params = new Object[fields.length];
-			for (int i = 0; i < fields.length; ++i) {
-				params[i] = fields[i].parse(row, conn);
-			}
-			return ctor.apply(params);
-		};
 	}
 
 }
