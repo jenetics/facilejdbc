@@ -33,6 +33,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -429,6 +430,70 @@ public interface RowParser<T> {
 			}
 			return CSV.join(cols);
 		};
+	}
+
+	/**
+	 * Creates a new {@link RowParser} from the given {@code fields}, given as
+	 * {@code RowParser}s, and the composition function, {@code ctor}.
+	 *
+	 * @see #of(BiFunction, RowParser, RowParser)
+	 *
+	 * @since !__version__!
+	 *
+	 * @param ctor the composition function, which creates an object of type
+	 *        {@code T}, from the given {@code fields}
+	 * @param fields the fields from where to create the object of type {@code T}
+	 * @param <T> the created object type
+	 * @return a new {@code RowParser}
+	 * @throws NullPointerException if one of the given arguments is {@code null}
+	 */
+	static <T> RowParser<T> of(
+		final Function<? super Object[], ? extends T> ctor,
+		final RowParser<?>... fields
+	) {
+		requireNonNull(ctor);
+		requireNonNull(fields);
+
+		return (row, conn) -> {
+			final var params = new Object[fields.length];
+			for (int i = 0; i < fields.length; ++i) {
+				params[i] = fields[i].parse(row, conn);
+			}
+			return ctor.apply(params);
+		};
+	}
+
+	/**
+	 * Creates a new {@link RowParser} from the given {@code fields}, given as
+	 * {@code RowParser}s, and the composition function, {@code ctor}.
+	 *
+	 * @see #of(Function, RowParser[])
+	 *
+	 * @since !__version__!
+	 *
+	 * @param ctor the composition function, which creates an object of type
+	 *        {@code T}, from the given fields
+	 * @param field1 the first field
+	 * @param field2 the second field
+	 * @param <A> the type of the first field
+	 * @param <B> the type of the second field
+	 * @param <T> the type of the created object
+	 * @return a new {@code RowParser}
+	 * @throws NullPointerException if one of the given arguments is {@code null}
+	 */
+	static <A, B, T> RowParser<T> of(
+		final BiFunction<? super A, ? super B, ? extends T> ctor,
+		final RowParser<? extends A> field1,
+		final RowParser<? extends B> field2
+	) {
+		requireNonNull(ctor);
+		requireNonNull(field1);
+		requireNonNull(field2);
+
+		return (row, conn) -> ctor.apply(
+			field1.parse(row, conn),
+			field2.parse(row, conn)
+		);
 	}
 
 }
