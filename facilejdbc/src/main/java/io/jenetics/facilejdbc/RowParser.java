@@ -438,7 +438,7 @@ public interface RowParser<T> {
 	 *
 	 * @see #of(BiFunction, RowParser, RowParser)
 	 *
-	 * @since !__version__!
+	 * @since 1.3
 	 *
 	 * @param ctor the composition function, which creates an object of type
 	 *        {@code T}, from the given {@code fields}
@@ -469,7 +469,7 @@ public interface RowParser<T> {
 	 *
 	 * @see #of(Function, RowParser[])
 	 *
-	 * @since !__version__!
+	 * @since 1.3
 	 *
 	 * @param ctor the composition function, which creates an object of type
 	 *        {@code T}, from the given fields
