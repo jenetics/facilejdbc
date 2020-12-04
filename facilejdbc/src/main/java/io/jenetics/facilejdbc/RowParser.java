@@ -681,14 +681,14 @@ public interface RowParser<T> {
 	 * @return a row parser which combines the row values into one object
 	 */
 	static <T> RowParser<T>
-	row(final Function<? super List<?>, ? extends T> ctor) {
+	row(final Function<? super Object[], ? extends T> ctor) {
 		return (row, conn) -> {
 			final var md = row.getMetaData();
-			final List<Object> cols = new ArrayList<>(md.getColumnCount());
+			final var cols = new Object[md.getColumnCount()];
 			for (int i = 1; i <= md.getColumnCount(); ++i) {
-				cols.add(row.getObject(i));
+				cols[i - 1] = row.getObject(i);
 			}
-			return ctor.apply(Collections.unmodifiableList(cols));
+			return ctor.apply(cols);
 		};
 	}
 
