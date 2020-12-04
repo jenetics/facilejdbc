@@ -20,3 +20,10 @@ CREATE TABLE book_author(
 
     CONSTRAINT c_book_author_id UNIQUE (book_id, author_id)
 );
+
+CREATE TABLE test_table(
+    id BIGINT IDENTITY PRIMARY KEY,
+    string_value VARCHAR(255),
+    int_value INT,
+    float_value DOUBLE
+);

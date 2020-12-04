@@ -28,13 +28,16 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import io.jenetics.facilejdbc.Batch;
 import io.jenetics.facilejdbc.Query;
 import io.jenetics.facilejdbc.ResultSetParser;
 import io.jenetics.facilejdbc.RowParser;
@@ -112,6 +115,21 @@ public class LibraryTest {
 		);
 
 		Assert.assertTrue(id >= 0);
+
+		final var random = new Random();
+		final var objects = Stream.generate(() -> TestTable.next(random))
+			.limit(25)
+			.collect(Collectors.toList());
+		final var batch = Batch.of(objects, TestTable.DCTOR);
+		db.transaction().accept(conn -> TestTable.INSERT.execute(batch, conn));
+	}
+
+	@Test(dependsOnMethods = "insert")
+	public void selectTestTable() throws SQLException {
+		db.transaction().accept(conn -> {
+			final var result = TestTable.SELECT.as(RowParser.foo(TestTable.CTOR).list(), conn);
+			result.forEach(System.out::println);
+		});
 	}
 
 	@Test(dependsOnMethods = "insert")

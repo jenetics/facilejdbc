@@ -290,11 +290,11 @@ public interface Dctor<T> {
 		return of(record, Dctor::toSnakeCase, fields);
 	}
 
-	private static String toSnakeCase(final String str) {
+	private static String toSnakeCase(final String name) {
 		final var result = new StringBuilder();
 
-		for (int i = 0; i < str.length(); i++) {
-			final char ch = str.charAt(i);
+		for (int i = 0; i < name.length(); i++) {
+			final char ch = name.charAt(i);
 			if (Character.isUpperCase(ch)) {
 				result.append('_');
 				result.append(Character.toLowerCase(ch));

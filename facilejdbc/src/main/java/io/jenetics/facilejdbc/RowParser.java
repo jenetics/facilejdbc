@@ -703,7 +703,7 @@ public interface RowParser<T> {
 
 			for (int i = 1; i <= md.getColumnCount(); ++i) {
 				final var field = new Ctor.Field<>(
-					md.getCatalogName(i),
+					md.getColumnLabel(i),
 					row.getObject(i)
 				);
 				fields.add(field);
