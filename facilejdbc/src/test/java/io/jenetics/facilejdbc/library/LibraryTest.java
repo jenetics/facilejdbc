@@ -128,7 +128,7 @@ public class LibraryTest {
 	public void selectTestTable() throws SQLException {
 		db.transaction().accept(conn -> {
 			final var result = TestTable.SELECT.as(RowParser.foo(TestTable.CTOR).list(), conn);
-			result.forEach(System.out::println);
+			//result.forEach(System.out::println);
 		});
 	}
 
