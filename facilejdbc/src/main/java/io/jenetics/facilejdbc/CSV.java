@@ -65,6 +65,10 @@ final class CSV {
 		return out.toString();
 	}
 
+	static String join(final Object[] cols) {
+		return join(Arrays.asList(cols));
+	}
+
 	static String join(final Iterable<?> cols) {
 		final var row = new StringBuilder(32);
 
