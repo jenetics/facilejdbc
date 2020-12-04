@@ -20,12 +20,17 @@
 package io.jenetics.facilejdbc;
 
 import static java.util.Arrays.asList;
+import static io.jenetics.facilejdbc.Param.lazyValues;
+import static io.jenetics.facilejdbc.Param.value;
+import static io.jenetics.facilejdbc.Param.values;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.sql.SQLException;
+import java.util.Map;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -52,6 +57,147 @@ public class QueryTest {
 		final String sql = "SELECT * FROM table WHERE id = :id AND name = :name";
 		final Query query = Query.of(sql);
 		Assert.assertEquals(query.rawSql(), sql);
+	}
+
+	@Test
+	public void singleParam() throws SQLException {
+		final var query = Query.of(
+			"SELECT * FROM table WHERE id IN(:ids) " +
+				"AND name LIKE :name OR key IN(:keys);"
+		);
+
+		final var conn = new MockConnection();
+		query
+			.on(
+				values("ids", 10, 20, 30, 40),
+				value("name", "some_name"),
+				values("keys", "k1", "k2"))
+			.execute(conn);
+
+		System.out.println(conn.stmt.data);
+	}
+
+	@Test
+	public void multiSelect() throws SQLException {
+		final var query = Query.of("SELECT * FROM book WHERE id IN(:ids);")
+			.on(values("ids", 1, 2, 3, 4));
+
+		Assert.assertEquals(
+			query.rawSql(),
+			"SELECT * FROM book WHERE id IN(:ids[0],:ids[1],:ids[2],:ids[3]);"
+		);
+		Assert.assertEquals(
+			query.sql(),
+			"SELECT * FROM book WHERE id IN(?,?,?,?);"
+		);
+
+		final var conn = new MockConnection();
+		query.execute(conn);
+		Assert.assertEquals(conn.stmt.data, Map.of(1, 1, 2, 2, 3, 3, 4, 4));
+	}
+
+	@Test(expectedExceptions = IllegalArgumentException.class)
+	public void multiSelectZero() {
+		Query.of("SELECT * FROM book WHERE id IN(:ids);")
+			.on(values("ids"));
+	}
+
+	@Test
+	public void multiSelectOne() throws SQLException {
+		final var query = Query.of("SELECT * FROM book WHERE id IN(:ids);")
+			.on(values("ids", 1));
+
+		Assert.assertEquals(
+			query.rawSql(),
+			"SELECT * FROM book WHERE id IN(:ids[0]);"
+		);
+		Assert.assertEquals(
+			query.sql(),
+			"SELECT * FROM book WHERE id IN(?);"
+		);
+
+		final var conn = new MockConnection();
+		query.execute(conn);
+		Assert.assertEquals(conn.stmt.data, Map.of(1, 1));
+	}
+
+	@Test
+	public void lazyMultiSelect() throws SQLException {
+		final var query = Query.of("SELECT * FROM book WHERE id IN(:ids);")
+			.on(lazyValues("ids", () -> 1, () -> 2, () -> 3, () -> 4));
+
+		Assert.assertEquals(
+			query.rawSql(),
+			"SELECT * FROM book WHERE id IN(:ids[0],:ids[1],:ids[2],:ids[3]);"
+		);
+		Assert.assertEquals(
+			query.sql(),
+			"SELECT * FROM book WHERE id IN(?,?,?,?);"
+		);
+
+		final var conn = new MockConnection();
+		query.execute(conn);
+		Assert.assertEquals(conn.stmt.data, Map.of(1, 1, 2, 2, 3, 3, 4, 4));
+	}
+
+	@Test(expectedExceptions = IllegalArgumentException.class)
+	public void lazyMultiSelectZero() {
+		Query.of("SELECT * FROM book WHERE id IN(:ids);")
+			.on(lazyValues("ids"));
+	}
+
+	@Test
+	public void lazyMultiSelectOne() throws SQLException {
+		final var query = Query.of("SELECT * FROM book WHERE id IN(:ids);")
+			.on(lazyValues("ids", () -> 1));
+
+		Assert.assertEquals(
+			query.rawSql(),
+			"SELECT * FROM book WHERE id IN(:ids[0]);"
+		);
+		Assert.assertEquals(
+			query.sql(),
+			"SELECT * FROM book WHERE id IN(?);"
+		);
+
+		final var conn = new MockConnection();
+		query.execute(conn);
+		Assert.assertEquals(conn.stmt.data, Map.of(1, 1));
+	}
+
+	@Test
+	public void multipleMultiples() {
+		var query = Query
+			.of("SELECT * FROM book WHERE id IN(:ids) AND name LIKE :name;");
+
+		Assert.assertEquals(
+			query.sql(),
+			"SELECT * FROM book WHERE id IN(?) AND name LIKE ?;"
+		);
+		Assert.assertEquals(
+			query.rawSql(),
+			"SELECT * FROM book WHERE id IN(:ids) AND name LIKE :name;"
+		);
+
+		query = query.on(values("ids", 1, 2, 3));
+		Assert.assertEquals(
+			query.sql(),
+			"SELECT * FROM book WHERE id IN(?,?,?) AND name LIKE ?;"
+		);
+		Assert.assertEquals(
+			query.rawSql(),
+			"SELECT * FROM book WHERE id IN(:ids[0],:ids[1],:ids[2]) AND name LIKE :name;"
+		);
+
+		query = query.on(values("ids[1]", 1, 2, 3));
+		Assert.assertEquals(
+			query.sql(),
+			"SELECT * FROM book WHERE id IN(?,?,?,?,?) AND name LIKE ?;"
+		);
+		Assert.assertEquals(
+			query.rawSql(),
+			"SELECT * FROM book WHERE id IN(:ids[0],:ids[1][0],:ids[1][1],:ids[1][2],:ids[2]) AND name LIKE :name;"
+		);
 	}
 
 	@Test

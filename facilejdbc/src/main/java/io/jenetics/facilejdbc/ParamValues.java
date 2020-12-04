@@ -29,7 +29,7 @@ import java.util.List;
  * This represents a whole Sql row (parameter set). Instead of representing the
  * row directly, a row is defined it's <em>insertion</em> strategy.
  *
- * @see Param
+ * @see SingleParam
  * @see ParamValue
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>

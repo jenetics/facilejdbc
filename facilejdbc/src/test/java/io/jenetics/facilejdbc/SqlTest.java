@@ -84,4 +84,14 @@ public class SqlTest {
 		};
 	}
 
+	@Test
+	public void expand() {
+		final var sql = Sql.of(":ids SELECT * FROM book WHERE id IN(:ids) or foo(:at) or id IN(:ids) ;");
+		System.out.println(sql.string());
+		System.out.println(sql.sql());
+
+		System.out.println(sql.expand("ids", 3));
+		System.out.println(sql.expand("ids", 3).sql());
+	}
+
 }

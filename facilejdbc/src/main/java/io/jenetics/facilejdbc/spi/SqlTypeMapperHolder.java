@@ -67,8 +67,8 @@ final class SqlTypeMapperHolder {
 
 	private static Object toNullable(final Object value) {
 		Object result = value;
-		while (result instanceof Optional) {
-			result = ((Optional<?>)result).orElse(null);
+		while (result instanceof Optional<?> opt) {
+			result = opt.orElse(null);
 		}
 		return result;
 	}
