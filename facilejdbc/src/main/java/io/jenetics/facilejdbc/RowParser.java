@@ -24,6 +24,7 @@ import static java.util.Spliterators.spliteratorUnknownSize;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -32,6 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -692,8 +694,33 @@ public interface RowParser<T> {
 		};
 	}
 
-	static <T> RowParser<T> of(final Ctor<T> ctor) {
-		return null;
+	static <T> RowParser<T>
+	foo(final Function<? super List<Ctor.Field<?>>, ? extends T> ctor) {
+		return (row, conn) -> {
+			final var md = row.getMetaData();
+			final var names = names(md);
+			final var fields = new ArrayList<Ctor.Field<?>>();
+
+			for (int i = 1; i <= md.getColumnCount(); ++i) {
+				final var field = new Ctor.Field<>(
+					md.getCatalogName(i),
+					row.getObject(i)
+				);
+				fields.add(field);
+			}
+
+			return ctor.apply(fields);
+		};
+	}
+
+	private static List<String> names(final ResultSetMetaData md)
+		throws SQLException
+	{
+		final List<String> names = new ArrayList<>(md.getColumnCount());
+		for (int i = 1; i <= md.getColumnCount(); ++i) {
+			names.add(md.getColumnLabel(i));
+		}
+		return names;
 	}
 
 }
@@ -703,8 +730,6 @@ class Main {
 	final record Foo(String name, int count, long max){}
 
 	static void foo() throws Exception {
-		final var col = Ctor.Column.of("name", (row, conn) -> row.getString("name"));
-
 
 		final RowParser<Foo> parser = RowParser.of(
 			params -> new Foo(
