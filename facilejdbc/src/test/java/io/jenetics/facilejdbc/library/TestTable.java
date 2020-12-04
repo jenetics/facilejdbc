@@ -6,7 +6,7 @@ import io.jenetics.facilejdbc.Ctor;
 import io.jenetics.facilejdbc.Dctor;
 import io.jenetics.facilejdbc.Query;
 
-public record TestTable(String stringValue, Integer intValue, Double floatValue) {
+public record TestTable(String stringValue, Integer intValue, Float floatValue) {
 
 	public static final Ctor<TestTable> CTOR = Ctor.of(TestTable.class);
 	public static final Dctor<TestTable> DCTOR = Dctor.of(TestTable.class);
@@ -23,7 +23,7 @@ public record TestTable(String stringValue, Integer intValue, Double floatValue)
 		return new TestTable(
 			"value_" + Math.abs(random.nextInt()),
 			random.nextInt(),
-			random.nextDouble()
+			(float)random.nextDouble()
 		);
 	}
 

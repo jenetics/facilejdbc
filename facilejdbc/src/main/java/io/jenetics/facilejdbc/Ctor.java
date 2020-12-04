@@ -1,5 +1,7 @@
 package io.jenetics.facilejdbc;
 
+import static io.jenetics.facilejdbc.Mappings.mapTo;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.RecordComponent;
@@ -39,7 +41,7 @@ public interface Ctor<T> extends Function<List<? extends Ctor.Field<?>>, T> {
 				final var name = toFieldName.apply(field.name());
 				final var index = indexes.get(name);
 				if (index != null) {
-					objects[index] = field.value();
+					objects[index] = mapTo(comps[index].getType(), field.value());
 				}
 			}
 
