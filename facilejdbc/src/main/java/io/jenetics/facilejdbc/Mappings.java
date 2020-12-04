@@ -7,9 +7,7 @@ import java.math.BigInteger;
 import java.util.Map;
 import java.util.function.Function;
 
-final class Jdbc2Java {
-
-	final record Mapping(Class<?> jdbc, Class<?> java){}
+final class Mappings {
 
 	static final Map<Class<?>, Map<Class<?>, Function<?, ?>>> MAPPINGS = Map.ofEntries(
 		entry(BigDecimal.class, Map.ofEntries(
