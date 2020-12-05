@@ -694,12 +694,10 @@ public interface RowParser<T> {
 		};
 	}
 
-	static <T> RowParser<T>
-	foo(final Function<? super List<Ctor.Field<?>>, ? extends T> ctor) {
+	static <T> RowParser<T> foo(final Ctor<? extends T> ctor) {
 		return (row, conn) -> {
 			final var md = row.getMetaData();
-			final var names = names(md);
-			final var fields = new ArrayList<Ctor.Field<?>>();
+			final var fields = new ArrayList<Ctor.Field<?>>(md.getColumnCount());
 
 			for (int i = 1; i <= md.getColumnCount(); ++i) {
 				final var field = new Ctor.Field<>(
@@ -711,16 +709,6 @@ public interface RowParser<T> {
 
 			return ctor.apply(fields);
 		};
-	}
-
-	private static List<String> names(final ResultSetMetaData md)
-		throws SQLException
-	{
-		final List<String> names = new ArrayList<>(md.getColumnCount());
-		for (int i = 1; i <= md.getColumnCount(); ++i) {
-			names.add(md.getColumnLabel(i));
-		}
-		return names;
 	}
 
 }
