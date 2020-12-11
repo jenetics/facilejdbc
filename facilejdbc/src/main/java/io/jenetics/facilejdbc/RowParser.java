@@ -693,7 +693,7 @@ public interface RowParser<T> {
 		};
 	}
 
-	static <T> RowParser<T> foo(final Ctor<? extends T> ctor) {
+	static <T> RowParser<T> of(final Ctor<? extends T> ctor) {
 		return (row, conn) -> {
 			final var md = row.getMetaData();
 			final var fields = new ArrayList<Ctor.Field<?>>(md.getColumnCount());
@@ -710,6 +710,10 @@ public interface RowParser<T> {
 		};
 	}
 
+	static <T extends Record> RowParser<T> of(final Class<T> type) {
+		return of(Ctor.of(type));
+	}
+
 }
 
 class Main {
@@ -718,7 +722,7 @@ class Main {
 
 	static void foo() throws Exception {
 
-		final RowParser<Foo> parser = RowParser.of(
+		final RowParser<Foo> parser = RowParser.compose(
 			params -> new Foo(
 				(String)params[0],
 				(int)params[1],

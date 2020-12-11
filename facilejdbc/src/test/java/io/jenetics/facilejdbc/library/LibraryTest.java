@@ -127,7 +127,9 @@ public class LibraryTest {
 	@Test(dependsOnMethods = "insert")
 	public void selectTestTable() throws SQLException {
 		db.transaction().accept(conn -> {
-			final var result = TestTable.SELECT.as(RowParser.foo(TestTable.CTOR).list(), conn);
+			final var result = TestTable.SELECT
+				.as(RowParser.of(TestTable.class).list(), conn);
+
 			//result.forEach(System.out::println);
 		});
 	}
