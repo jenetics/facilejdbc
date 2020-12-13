@@ -1,5 +1,25 @@
+/*
+ * Facile JDBC Library (@__identifier__@).
+ * Copyright (c) @__year__@ Franz Wilhelmstötter
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Author:
+ *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
+ */
 package io.jenetics.facilejdbc;
 
+import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 import java.lang.reflect.Constructor;
@@ -7,7 +27,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.RecordComponent;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -52,7 +71,7 @@ public interface Ctor<T> {
 	 * @param type the record type
 	 * @param toFieldName maps the DB column names to the corresponding field
 	 *        names of the created <em>data</em> object
-	 * @param toFieldValue maps the DB value into the corresponding field type,
+	 * @param fieldMapping maps the DB value into the corresponding field type,
 	 *        needed by the created <em>data</em> object
 	 * @param <T> the record type
 	 * @return a new constructor function for the given record {@code type}
@@ -61,11 +80,11 @@ public interface Ctor<T> {
 	static <T extends Record> Ctor<T> of(
 		final Class<T> type,
 		final UnaryOperator<String> toFieldName,
-		final BiFunction<? super Class<?>, ? super Object, ?> toFieldValue
+		final Mapping fieldMapping
 	) {
 		requireNonNull(type);
 		requireNonNull(toFieldName);
-		requireNonNull(toFieldValue);
+		requireNonNull(fieldMapping);
 
 		final var comps = type.getRecordComponents();
 		final var indexes = IntStream.range(0, comps.length)
@@ -80,15 +99,38 @@ public interface Ctor<T> {
 				final var name = toFieldName.apply(field.name());
 				final var index = indexes.get(name);
 				if (index != null) {
-					objects[index] = toFieldValue.apply(
+					objects[index] = map(
+						field.value(),
 						comps[index].getType(),
-						field.value()
+						fieldMapping
 					);
 				}
 			}
 
 			return create(ctor, objects);
 		};
+	}
+
+	private static Object
+	map(final Object source, final Class<?> target, final Mapping mapping) {
+		if (source != null) {
+			final var sourceType = source.getClass();
+			if (target == sourceType) {
+				return target.cast(source);
+			}
+
+			final var mapper = mapping.mapper(sourceType, target);
+			if (mapper != null) {
+				return mapper.apply(source);
+			} else {
+				throw new ClassCastException(format(
+					"Mapping (%s -> %s) not supported for '%s'.",
+					sourceType.getName(), target.getName(), source
+				));
+			}
+		} else {
+			return null;
+		}
 	}
 
 	private static <T> T create(final Constructor<T> ctor, final Object[] args) {
@@ -132,7 +174,7 @@ public interface Ctor<T> {
 	 *         {@code null}
 	 */
 	static <T extends Record> Ctor<T> of(final Class<T> type) {
-		return of(type, Ctor::toCamelCase, Mappings::mapTo);
+		return of(type, Ctor::toCamelCase, Mappings::mapper);
 	}
 
 	private static String toCamelCase(final String name) {

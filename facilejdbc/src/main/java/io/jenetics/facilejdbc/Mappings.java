@@ -3,6 +3,7 @@ package io.jenetics.facilejdbc;
 import static java.lang.String.format;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Map.entry;
+import static java.util.Objects.requireNonNull;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -132,26 +133,13 @@ final class Mappings {
 		))
 	);
 
-	static <T> T mapTo(final Class<T> targetType, final Object value) {
-		if (value != null) {
-			final var sourceType = value.getClass();
-			if (targetType == sourceType) {
-				return targetType.cast(value);
-			}
-
-			final var sourceMapper = MAPPINGS.get(sourceType);
-			if (sourceMapper != null) {
-				@SuppressWarnings("unchecked")
-				final var targetMapper = (Function<Object,  Object>)sourceMapper.get(targetType);
-				if (targetMapper != null) {
-					return targetType.cast(targetMapper.apply(value));
-				}
-			}
-
-			throw new ClassCastException(format(
-				"Mapping (%s -> %s) not supported for '%s'.",
-				sourceType.getName(), targetType.getName(), value
-			));
+	static Function<Object, Object>
+	mapper(final Class<?> source, final Class<?> target) {
+		final var sm = MAPPINGS.get(source);
+		if (sm != null) {
+			@SuppressWarnings("unchecked")
+			final var tm = (Function<Object,  Object>)sm.get(target);
+			return tm;
 		} else {
 			return null;
 		}
