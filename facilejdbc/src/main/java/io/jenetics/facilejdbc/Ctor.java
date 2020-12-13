@@ -61,7 +61,7 @@ public interface Ctor<T> {
 	static <T extends Record> Ctor<T> of(
 		final Class<T> type,
 		final UnaryOperator<String> toFieldName,
-		final BiFunction<? super Class<?>, Object, Object> toFieldValue
+		final BiFunction<? super Class<?>, ? super Object, ?> toFieldValue
 	) {
 		requireNonNull(type);
 		requireNonNull(toFieldName);
