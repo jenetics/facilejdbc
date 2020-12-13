@@ -698,14 +698,14 @@ public interface RowParser<T> {
 	static <T> RowParser<T> of(final Ctor<? extends T> ctor) {
 		return (row, conn) -> {
 			final var md = row.getMetaData();
-			final var fields = new ArrayList<Ctor.Field<?>>(md.getColumnCount());
+			final var fields = new Ctor.Field[md.getColumnCount()];
 
-			for (int i = 1; i <= md.getColumnCount(); ++i) {
-				final var field = new Ctor.Field<>(
+			for (int i = 1; i <= fields.length; ++i) {
+				final var field = new Ctor.Field(
 					md.getColumnLabel(i),
 					row.getObject(i)
 				);
-				fields.add(field);
+				fields[i - 1] = field;
 			}
 
 			return ctor.apply(fields);

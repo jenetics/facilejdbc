@@ -28,11 +28,10 @@ public interface Ctor<T> {
 	 * Contains the record field name and its value. These fields are read from
 	 * the DB.
 	 *
-	 * @param <T> the (SQL) field type
 	 * @param name the name of the DB column
 	 * @param value the SQL value, read from the DB
 	 */
-	final record Field<T>(String name, T value){}
+	final record Field(String name, Object value){}
 
 	/**
 	 * Constructs a <em>data</em> object from the given DB fields.
@@ -40,7 +39,7 @@ public interface Ctor<T> {
 	 * @param fields the DB fields from where the object can be created from
 	 * @return a newly created <em>data</em> object
 	 */
-	T apply(final Iterable<? extends Field<?>> fields);
+	T apply(final Field[] fields);
 
 
 	/* *************************************************************************
