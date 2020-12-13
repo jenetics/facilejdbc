@@ -691,6 +691,7 @@ public interface RowParser<T> {
 			for (int i = 0; i < cols.length; ++i) {
 				cols[i] = row.getObject(i + 1);
 			}
+
 			return ctor.apply(cols);
 		};
 	}
@@ -699,13 +700,11 @@ public interface RowParser<T> {
 		return (row, conn) -> {
 			final var md = row.getMetaData();
 			final var fields = new Ctor.Field[md.getColumnCount()];
-
 			for (int i = 1; i <= fields.length; ++i) {
-				final var field = new Ctor.Field(
+				fields[i - 1] = new Ctor.Field(
 					md.getColumnLabel(i),
 					row.getObject(i)
 				);
-				fields[i - 1] = field;
 			}
 
 			return ctor.apply(fields);
