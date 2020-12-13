@@ -663,16 +663,18 @@ public interface RowParser<T> {
 	 * @since 1.3
 	 *
 	 * @see ResultSetParser#csv()
-	 * @see #row(Function)
+	 * @see #ofColumns(Function)
 	 *
 	 * @return a row parser which converts a DB row into a CSV row
 	 */
 	static RowParser<String> csv() {
-		return row(CSV::join);
+		return ofColumns(CSV::join);
 	}
 
 	/**
 	 * Return a row parser which converts the columns of one row into an object.
+	 * The columns are given as {@code Object[]} array and are arranged in the
+	 * order as defined in the <em>SELECT</em> query.
 	 *
 	 * @since 1.3
 	 *
@@ -682,12 +684,12 @@ public interface RowParser<T> {
 	 * @return a row parser which combines the row values into one object
 	 */
 	static <T> RowParser<T>
-	row(final Function<? super Object[], ? extends T> ctor) {
+	ofColumns(final Function<? super Object[], ? extends T> ctor) {
 		return (row, conn) -> {
 			final var md = row.getMetaData();
 			final var cols = new Object[md.getColumnCount()];
-			for (int i = 1; i <= md.getColumnCount(); ++i) {
-				cols[i - 1] = row.getObject(i);
+			for (int i = 0; i < cols.length; ++i) {
+				cols[i] = row.getObject(i + 1);
 			}
 			return ctor.apply(cols);
 		};
