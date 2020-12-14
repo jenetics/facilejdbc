@@ -42,7 +42,7 @@ public interface Mapping {
 	Mapping DEFAULT = Mappings::mapper;
 
 	/**
-	 * Return a <em>mapping</em> function from the given {@code source} to the
+	 * Return a <em>mapping</em> function for the given {@code source} to the
 	 * given {@code target} type. The returned function may be {@code null} if
 	 * no mapping function is available.
 	 *
