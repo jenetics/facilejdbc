@@ -1,9 +1,7 @@
 package io.jenetics.facilejdbc;
 
-import static java.lang.String.format;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Map.entry;
-import static java.util.Objects.requireNonNull;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -132,6 +130,8 @@ final class Mappings {
 			UUID.class, (Function<String, Object>)UUID::fromString
 		))
 	);
+
+	static final Mapping MAPPING = Mappings::mapper;
 
 	static Function<Object, Object>
 	mapper(final Class<?> source, final Class<?> target) {

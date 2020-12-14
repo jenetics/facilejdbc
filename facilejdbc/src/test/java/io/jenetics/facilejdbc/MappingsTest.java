@@ -8,10 +8,7 @@ public class MappingsTest {
 
 	@Test
 	public void map() {
-		final var value = Mappings
-			.mapper(Integer.class, BigDecimal.class)
-			.apply(2);
-
+		final var value = Mappings.MAPPING.map(2, BigDecimal.class);
 		System.out.println(value);
 
 		int count = 0;

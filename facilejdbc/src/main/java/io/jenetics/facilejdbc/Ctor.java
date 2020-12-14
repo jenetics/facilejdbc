@@ -19,7 +19,6 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 import java.lang.reflect.Constructor;
@@ -99,38 +98,15 @@ public interface Ctor<T> {
 				final var name = toFieldName.apply(field.name());
 				final var index = indexes.get(name);
 				if (index != null) {
-					objects[index] = map(
+					objects[index] = fieldMapping.map(
 						field.value(),
-						comps[index].getType(),
-						fieldMapping
+						comps[index].getType()
 					);
 				}
 			}
 
 			return create(ctor, objects);
 		};
-	}
-
-	private static Object
-	map(final Object source, final Class<?> target, final Mapping mapping) {
-		if (source != null) {
-			final var sourceType = source.getClass();
-			if (target == sourceType) {
-				return target.cast(source);
-			}
-
-			final var mapper = mapping.mapper(sourceType, target);
-			if (mapper != null) {
-				return mapper.apply(source);
-			} else {
-				throw new ClassCastException(format(
-					"Mapping (%s -> %s) not supported for '%s'.",
-					sourceType.getName(), target.getName(), source
-				));
-			}
-		} else {
-			return null;
-		}
 	}
 
 	private static <T> T create(final Constructor<T> ctor, final Object[] args) {
