@@ -131,8 +131,6 @@ final class Mappings {
 		))
 	);
 
-	static final Mapping MAPPING = Mappings::mapper;
-
 	static Function<Object, Object>
 	mapper(final Class<?> source, final Class<?> target) {
 		final var sm = MAPPINGS.get(source);

@@ -37,8 +37,14 @@ import java.util.function.Function;
 public interface Mapping {
 
 	/**
+	 * The <em>default</em> JDBC -> Java mapping.
+	 */
+	Mapping DEFAULT = Mappings::mapper;
+
+	/**
 	 * Return a <em>mapping</em> function from the given {@code source} to the
-	 * given {@code target} type.
+	 * given {@code target} type. The returned function may be {@code null} if
+	 * no mapping function is available.
 	 *
 	 * @param source the source type
 	 * @param target the target type
@@ -58,8 +64,8 @@ public interface Mapping {
 	 * @return the mapped {@code source} object
 	 * @throws NullPointerException if the given {@code target} type is
 	 *         {@code null}
-	 * @throws ClassCastException if there is no mapping function to the given
-	 *         {@code target} type
+	 * @throws ClassCastException if there is no mapping function for the given
+	 *         {@code source} object and {@code target} type
 	 */
 	default <T> T map(final Object source, final Class<? extends T> target) {
 		requireNonNull(target);
@@ -86,7 +92,7 @@ public interface Mapping {
 	}
 
 	/**
-	 * Appends the {@code other} mapping to {@code this} on. If no mapping
+	 * Appends the {@code other} mapping to {@code this} mapping. If no mapping
 	 * function can be found for a given pair of {@code source} and
 	 * {@code target} type, the {@code other} mapping is tried.
 	 *
