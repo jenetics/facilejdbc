@@ -67,7 +67,7 @@ import java.util.stream.Stream;
  */
 final class Sql {
 
-	private static final record Param(int index, String name){}
+	private record Param(int index, String name){}
 
 	private static final Pattern PARAM_PATTERN = Pattern.compile(
 		"(?<!:):\\w+\\b(?=(?:[^\"'\\\\]*" +
