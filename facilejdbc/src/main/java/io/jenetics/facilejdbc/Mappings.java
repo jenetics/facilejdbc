@@ -1,4 +1,26 @@
+/*
+ * Facile JDBC Library (@__identifier__@).
+ * Copyright (c) @__year__@ Franz Wilhelmstötter
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Author:
+ *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
+ */
 package io.jenetics.facilejdbc;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toMap;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -9,19 +31,30 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
-import static java.time.ZoneOffset.UTC;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toMap;
-
+/**
+ * Default JDBC type mappings.
+ *
+ * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @version !__version__!
+ * @since !__version__!
+ */
 final class Mappings {
 	private Mappings() {}
 
+	/**
+	 * Helper class which represents a specific mapping.
+	 *
+	 * @param <A> the source type
+	 * @param <B> the target type
+	 */
 	private record Mapping<A, B>(
 		Class<A> source,
 		Class<B> target,
@@ -29,6 +62,9 @@ final class Mappings {
 	){}
 
 	private static final List<Mapping<?, ?>> MAPPINGS_LIST = List.of(
+		/* *********************************************************************
+		 * Numeric conversions.
+		 * ********************************************************************/
 		mapping(BigDecimal.class, BigInteger.class, BigDecimal::toBigInteger),
 		mapping(BigDecimal.class, Double.class, BigDecimal::doubleValue),
 		mapping(BigDecimal.class, Float.class, BigDecimal::floatValue),
@@ -98,30 +134,58 @@ final class Mappings {
 		mapping(Boolean.class, Short.class, v -> v ? (short)1 : (short)0),
 		mapping(Boolean.class, Byte.class, v -> v ? (byte)1 : (byte)0),
 
-		mapping(Date.class, java.util.Date.class, Date::getTime, java.util.Date::new),
-		mapping(Date.class, Instant.class, Date::toInstant),
+		/* *********************************************************************
+		 * Date/Time conversions.
+		 * ********************************************************************/
+
 		mapping(Date.class, Long.class, Date::getTime),
+		mapping(Date.class, Instant.class, Date::toInstant),
+		mapping(Date.class, java.util.Date.class, Date::getTime, java.util.Date::new),
 		mapping(Date.class, LocalDate.class, Date::toLocalDate),
-		mapping(Date.class, LocalDateTime.class, v -> LocalDateTime.ofInstant(v.toInstant(), UTC)),
-		mapping(Date.class, ZonedDateTime.class, v -> ZonedDateTime.ofInstant(v.toInstant(), UTC)),
+		mapping(Date.class, LocalDateTime.class, Date::toInstant, Mappings::toLocalDateTime),
+		mapping(Date.class, OffsetDateTime.class, Date::toInstant, Mappings::toOffsetDateTime),
+		mapping(Date.class, ZonedDateTime.class, Date::toInstant, Mappings::toZonedDateTime),
 
-		mapping(Time.class, Instant.class, Time::toInstant),
 		mapping(Time.class, Long.class, Time::getTime),
+		mapping(Time.class, Instant.class, Time::toInstant),
 		mapping(Time.class, LocalTime.class, Time::toLocalTime),
-		mapping(Time.class, ZonedDateTime.class, v -> ZonedDateTime.ofInstant(v.toInstant(), UTC)),
 
-		mapping(Timestamp.class, java.util.Date.class, Timestamp::getTime, java.util.Date::new),
-		mapping(Timestamp.class, Instant.class, Timestamp::toInstant),
 		mapping(Timestamp.class, Long.class, Timestamp::getTime),
-		mapping(Timestamp.class, LocalDate.class, v -> LocalDate.ofInstant(v.toInstant(), UTC)),
+		mapping(Timestamp.class, Instant.class, Timestamp::toInstant),
+		mapping(Timestamp.class, java.util.Date.class, Timestamp::getTime, java.util.Date::new),
+		mapping(Timestamp.class, LocalDate.class, Timestamp::toInstant, Mappings::toLocalDate),
 		mapping(Timestamp.class, LocalDateTime.class, Timestamp::toLocalDateTime),
-		mapping(Timestamp.class, ZonedDateTime.class, v -> ZonedDateTime.ofInstant(v.toInstant(), UTC)),
+		mapping(Timestamp.class, OffsetDateTime.class, Timestamp::toInstant, Mappings::toOffsetDateTime),
+		mapping(Timestamp.class, ZonedDateTime.class, Timestamp::toInstant, Mappings::toZonedDateTime),
+
+		/* *********************************************************************
+		 * Other conversions.
+		 * ********************************************************************/
 
 		mapping(String.class, UUID.class, UUID::fromString)
 	);
 
-	private static final Map<Class<?>, Map<Class<?>, Function<?, ?>>> MAPPINGS = MAPPINGS_LIST.stream()
-		.collect(groupingBy(Mapping::source, toMap(Mapping::target, Mapping::mapper)));
+	private static LocalDate toLocalDate(final Instant instant) {
+		return LocalDate.ofInstant(instant, ZoneId.systemDefault());
+	}
+
+	private static LocalDateTime toLocalDateTime(final Instant instant) {
+		return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+	}
+
+	private static ZonedDateTime toZonedDateTime(final Instant instant) {
+		return ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
+	}
+
+	private static OffsetDateTime toOffsetDateTime(final Instant instant) {
+		return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());
+	}
+
+	private static final Map<Class<?>, Map<Class<?>, Function<?, ?>>>
+		MAPPINGS = MAPPINGS_LIST.stream()
+			.collect(groupingBy(
+				Mapping::source,
+				toMap(Mapping::target, Mapping::mapper)));
 
 	private static <A, B> Mapping<A, B> mapping(
 		final Class<A> source,
