@@ -204,6 +204,14 @@ final class Mappings {
 		return new Mapping<>(source, target, mapper.compose(converter));
 	}
 
+	/**
+	 * The mapping function. Return the mapper for the given {@code source} and
+	 * {@code target} type, or {@code null} if no mapper is available.
+	 *
+	 * @param source the source type
+	 * @param target the target type
+	 * @return the mapping function, or {@code null}
+	 */
 	static Function<Object, Object>
 	mapper(final Class<?> source, final Class<?> target) {
 		final var sm = MAPPINGS.get(source);
