@@ -1,8 +1,5 @@
 package io.jenetics.facilejdbc;
 
-import static java.time.ZoneOffset.UTC;
-import static java.util.Map.entry;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Date;
@@ -13,123 +10,135 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+import static java.time.ZoneOffset.UTC;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toMap;
+
 final class Mappings {
+	private Mappings() {}
 
-	static final Map<Class<?>, Map<Class<?>, Function<?, ?>>> MAPPINGS = Map.ofEntries(
-		// Mapping of numerical types.
-		entry(BigDecimal.class, Map.of(
-			BigInteger.class, (Function<BigDecimal, Object>)BigDecimal::toBigInteger,
-			Double.class, (Function<BigDecimal, Object>)BigDecimal::doubleValue,
-			Float.class, (Function<BigDecimal, Object>)BigDecimal::floatValue,
-			Long.class, (Function<BigDecimal, Object>)BigDecimal::longValue,
-			Integer.class, (Function<BigDecimal, Object>)BigDecimal::intValue,
-			Short.class, (Function<BigDecimal, Object>)BigDecimal::shortValue,
-			Byte.class, (Function<BigDecimal, Object>)BigDecimal::byteValue
-		)),
-		entry(Double.class, Map.of(
-			BigDecimal.class, (Function<Double, Object>)BigDecimal::new,
-			BigInteger.class, (Function<Double, Object>)v -> BigInteger.valueOf(v.longValue()),
-			Float.class, (Function<Double, Object>)Double::floatValue,
-			Long.class, (Function<Double, Object>)Double::longValue,
-			Integer.class, (Function<Double, Object>)Double::intValue,
-			Short.class, (Function<Double, Object>)Double::shortValue,
-			Byte.class, (Function<Double, Object>)Double::byteValue
-		)),
-		entry(Float.class, Map.of(
-			BigDecimal.class, (Function<Float, Object>)BigDecimal::new,
-			BigInteger.class, (Function<Float, Object>)v -> BigInteger.valueOf(v.longValue()),
-			Double.class, (Function<Float, Object>)Float::doubleValue,
-			Long.class, (Function<Float, Object>)Float::longValue,
-			Integer.class, (Function<Float, Object>)Float::intValue,
-			Short.class, (Function<Float, Object>)Float::shortValue,
-			Byte.class, (Function<Float, Object>)Float::byteValue
-		)),
-		entry(BigInteger.class, Map.of(
-			BigDecimal.class, (Function<BigInteger, Object>)BigDecimal::new,
-			Double.class, (Function<BigInteger, Object>)BigInteger::doubleValue,
-			Float.class, (Function<BigInteger, Object>)BigInteger::floatValue,
-			Long.class, (Function<BigInteger, Object>)BigInteger::longValue,
-			Integer.class, (Function<BigInteger, Object>)BigInteger::intValue,
-			Short.class, (Function<BigInteger, Object>)BigInteger::shortValue,
-			Byte.class, (Function<BigInteger, Object>)BigInteger::byteValue
-		)),
-		entry(Long.class, Map.of(
-			BigDecimal.class, (Function<Long, Object>)BigDecimal::new,
-			BigInteger.class, (Function<Long, Object>)BigInteger::valueOf,
-			Double.class, (Function<Long, Object>)Long::doubleValue,
-			Float.class, (Function<Long, Object>)Long::floatValue,
-			Integer.class, (Function<Long, Object>)Long::intValue,
-			Short.class, (Function<Long, Object>)Long::shortValue,
-			Byte.class, (Function<Long, Object>)Long::byteValue
-		)),
-		entry(Integer.class, Map.of(
-			BigDecimal.class, (Function<Integer, Object>)BigDecimal::new,
-			BigInteger.class, (Function<Integer, Object>)BigInteger::valueOf,
-			Double.class, (Function<Integer, Object>)Integer::doubleValue,
-			Float.class, (Function<Integer, Object>)Integer::floatValue,
-			Long.class, (Function<Integer, Object>)Integer::longValue,
-			Short.class, (Function<Integer, Object>)Integer::shortValue,
-			Byte.class, (Function<Integer, Object>)Integer::byteValue
-		)),
-		entry(Short.class, Map.of(
-			BigDecimal.class, (Function<Short, Object>)BigDecimal::new,
-			BigInteger.class, (Function<Short, Object>)BigInteger::valueOf,
-			Double.class, (Function<Short, Object>)Short::doubleValue,
-			Float.class, (Function<Short, Object>)Short::floatValue,
-			Long.class, (Function<Short, Object>)Short::longValue,
-			Integer.class, (Function<Short, Object>)Short::intValue,
-			Byte.class, (Function<Short, Object>)Short::byteValue
-		)),
-		entry(Byte.class, Map.of(
-			BigDecimal.class, (Function<Byte, Object>)BigDecimal::valueOf,
-			BigInteger.class, (Function<Byte, Object>)BigInteger::valueOf,
-			Double.class, (Function<Byte, Object>)Byte::doubleValue,
-			Float.class, (Function<Byte, Object>)Byte::floatValue,
-			Long.class, (Function<Byte, Object>)Byte::longValue,
-			Integer.class, (Function<Byte, Object>)Byte::intValue,
-			Short.class, (Function<Byte, Object>)Byte::shortValue
-		)),
-		entry(Boolean.class, Map.of(
-			Long.class, (Function<Boolean, Object>)v -> v ? (long)1 : (long)0,
-			Integer.class, (Function<Boolean, Object>)v -> v ? 1 : 0,
-			Short.class, (Function<Boolean, Object>)v -> v ? (short)1 : (short)0,
-			Byte.class, (Function<Boolean, Object>)v -> v ? (byte)1 : (byte)0
-		)),
+	private record Mapping<A, B>(
+		Class<A> source,
+		Class<B> target,
+		Function<A, B> mapper
+	){}
 
-		// Mapping of time types.
-		entry(Date.class, Map.of(
-			java.util.Date.class, (Function<Date, Object>)v -> new java.util.Date(v.getTime()),
-			Instant.class, (Function<Date, Object>)Date::toInstant,
-			Long.class, (Function<Date, Object>)Date::getTime,
-			LocalDate.class, (Function<Date, Object>)Date::toLocalDate,
-			LocalDateTime.class, (Function<Date, Object>)v -> LocalDateTime.ofInstant(v.toInstant(), UTC),
-			ZonedDateTime.class, (Function<Time, Object>)v -> ZonedDateTime.ofInstant(v.toInstant(), UTC)
+	private static final List<Mapping<?, ?>> MAPPINGS_LIST = List.of(
+		mapping(BigDecimal.class, BigInteger.class, BigDecimal::toBigInteger),
+		mapping(BigDecimal.class, Double.class, BigDecimal::doubleValue),
+		mapping(BigDecimal.class, Float.class, BigDecimal::floatValue),
+		mapping(BigDecimal.class, Long.class, BigDecimal::longValue),
+		mapping(BigDecimal.class, Integer.class, BigDecimal::intValue),
+		mapping(BigDecimal.class, Short.class, BigDecimal::shortValue),
+		mapping(BigDecimal.class, Byte.class, BigDecimal::byteValue),
 
-		)),
-		entry(Time.class, Map.of(
-			Instant.class, (Function<Time, Object>)Time::toInstant,
-			Long.class, (Function<Time, Object>)Time::getTime,
-			LocalTime.class, (Function<Time, Object>)Time::toLocalTime,
-			ZonedDateTime.class, (Function<Time, Object>)v -> ZonedDateTime.ofInstant(v.toInstant(), UTC)
-		)),
-		entry(Timestamp.class, Map.of(
-			java.util.Date.class, (Function<Timestamp, Object>)v -> new java.util.Date(v.getTime()),
-			Instant.class, (Function<Timestamp, Object>)Timestamp::toInstant,
-			Long.class, (Function<Timestamp, Object>)Timestamp::getTime,
-			LocalDate.class, (Function<Timestamp, Object>)v -> LocalDate.ofInstant(v.toInstant(), UTC),
-			LocalDateTime.class, (Function<Timestamp, Object>)Timestamp::toLocalDateTime,
-			ZonedDateTime.class, (Function<Timestamp, Object>)v -> ZonedDateTime.ofInstant(v.toInstant(), UTC)
-		)),
+		mapping(BigInteger.class, BigDecimal.class, BigDecimal::new),
+		mapping(BigInteger.class, Double.class, BigInteger::doubleValue),
+		mapping(BigInteger.class, Float.class, BigInteger::floatValue),
+		mapping(BigInteger.class, Long.class, BigInteger::longValue),
+		mapping(BigInteger.class, Integer.class, BigInteger::intValue),
+		mapping(BigInteger.class, Short.class, BigInteger::shortValue),
+		mapping(BigInteger.class, Byte.class, BigInteger::byteValue),
 
-		// Additional mappings.
-		entry(String.class, Map.of(
-			UUID.class, (Function<String, Object>)UUID::fromString
-		))
+		mapping(Double.class, BigDecimal.class, BigDecimal::new),
+		mapping(Double.class, BigInteger.class, Double::longValue, BigInteger::valueOf),
+		mapping(Double.class, Float.class, Double::floatValue),
+		mapping(Double.class, Long.class, Double::longValue),
+		mapping(Double.class, Integer.class, Double::intValue),
+		mapping(Double.class, Short.class, Double::shortValue),
+		mapping(Double.class, Byte.class, Double::byteValue),
+
+		mapping(Float.class, BigDecimal.class, BigDecimal::new),
+		mapping(Float.class, BigInteger.class, Float::longValue, BigInteger::valueOf),
+		mapping(Float.class, Double.class, Float::doubleValue),
+		mapping(Float.class, Long.class, Float::longValue),
+		mapping(Float.class, Integer.class, Float::intValue),
+		mapping(Float.class, Short.class, Float::shortValue),
+		mapping(Float.class, Byte.class, Float::byteValue),
+
+		mapping(Long.class, BigDecimal.class, BigDecimal::new),
+		mapping(Long.class, BigInteger.class, BigInteger::valueOf),
+		mapping(Long.class, Double.class, Long::doubleValue),
+		mapping(Long.class, Float.class, Long::floatValue),
+		mapping(Long.class, Integer.class, Long::intValue),
+		mapping(Long.class, Short.class, Long::shortValue),
+		mapping(Long.class, Byte.class, Long::byteValue),
+
+		mapping(Integer.class, BigDecimal.class, BigDecimal::new),
+		mapping(Integer.class, BigInteger.class, Integer::longValue, BigInteger::valueOf),
+		mapping(Integer.class, Double.class, Integer::doubleValue),
+		mapping(Integer.class, Float.class, Integer::floatValue),
+		mapping(Integer.class, Long.class, Integer::longValue),
+		mapping(Integer.class, Short.class, Integer::shortValue),
+		mapping(Integer.class, Byte.class, Integer::byteValue),
+
+		mapping(Short.class, BigDecimal.class, BigDecimal::new),
+		mapping(Short.class, BigInteger.class, Short::longValue, BigInteger::valueOf),
+		mapping(Short.class, Double.class, Short::doubleValue),
+		mapping(Short.class, Float.class, Short::floatValue),
+		mapping(Short.class, Long.class, Short::longValue),
+		mapping(Short.class, Integer.class, Short::intValue),
+		mapping(Short.class, Byte.class, Short::byteValue),
+
+		mapping(Byte.class, BigDecimal.class, BigDecimal::valueOf),
+		mapping(Byte.class, BigInteger.class, Byte::longValue, BigInteger::valueOf),
+		mapping(Byte.class, Double.class, Byte::doubleValue),
+		mapping(Byte.class, Float.class, Byte::floatValue),
+		mapping(Byte.class, Long.class, Byte::longValue),
+		mapping(Byte.class, Integer.class, Byte::intValue),
+		mapping(Byte.class, Short.class, Byte::shortValue),
+
+		mapping(Boolean.class, Long.class, v -> v ? (long)1 : (long)0),
+		mapping(Boolean.class, Integer.class, v -> v ? 1 : 0),
+		mapping(Boolean.class, Short.class, v -> v ? (short)1 : (short)0),
+		mapping(Boolean.class, Byte.class, v -> v ? (byte)1 : (byte)0),
+
+		mapping(Date.class, java.util.Date.class, Date::getTime, java.util.Date::new),
+		mapping(Date.class, Instant.class, Date::toInstant),
+		mapping(Date.class, Long.class, Date::getTime),
+		mapping(Date.class, LocalDate.class, Date::toLocalDate),
+		mapping(Date.class, LocalDateTime.class, v -> LocalDateTime.ofInstant(v.toInstant(), UTC)),
+		mapping(Date.class, ZonedDateTime.class, v -> ZonedDateTime.ofInstant(v.toInstant(), UTC)),
+
+		mapping(Time.class, Instant.class, Time::toInstant),
+		mapping(Time.class, Long.class, Time::getTime),
+		mapping(Time.class, LocalTime.class, Time::toLocalTime),
+		mapping(Time.class, ZonedDateTime.class, v -> ZonedDateTime.ofInstant(v.toInstant(), UTC)),
+
+		mapping(Timestamp.class, java.util.Date.class, Timestamp::getTime, java.util.Date::new),
+		mapping(Timestamp.class, Instant.class, Timestamp::toInstant),
+		mapping(Timestamp.class, Long.class, Timestamp::getTime),
+		mapping(Timestamp.class, LocalDate.class, v -> LocalDate.ofInstant(v.toInstant(), UTC)),
+		mapping(Timestamp.class, LocalDateTime.class, Timestamp::toLocalDateTime),
+		mapping(Timestamp.class, ZonedDateTime.class, v -> ZonedDateTime.ofInstant(v.toInstant(), UTC)),
+
+		mapping(String.class, UUID.class, UUID::fromString)
 	);
+
+	private static final Map<Class<?>, Map<Class<?>, Function<?, ?>>> MAPPINGS = MAPPINGS_LIST.stream()
+		.collect(groupingBy(Mapping::source, toMap(Mapping::target, Mapping::mapper)));
+
+	private static <A, B> Mapping<A, B> mapping(
+		final Class<A> source,
+		final Class<B> target,
+		final Function<A, B> mapper
+	) {
+		return new Mapping<>(source, target, mapper);
+	}
+
+	private static <A, B, C> Mapping<A, C> mapping(
+		final Class<A> source,
+		final Class<C> target,
+		final Function<A, B> converter,
+		final Function<B, C> mapper
+	) {
+		return new Mapping<>(source, target, mapper.compose(converter));
+	}
 
 	static Function<Object, Object>
 	mapper(final Class<?> source, final Class<?> target) {
