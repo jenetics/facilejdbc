@@ -37,7 +37,7 @@ import io.jenetics.facilejdbc.RowParser;
  */
 public final record Author(String name, LocalDate birthDay) {
 	public Author {
-		name = requireNonNull(name);
+		requireNonNull(name);
 	}
 
 	/* *************************************************************************
