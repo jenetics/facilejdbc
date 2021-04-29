@@ -40,11 +40,15 @@ import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 import java.sql.Statement;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import io.jenetics.facilejdbc.Lifecycle.Value;
 
 /**
  * A {@code Query} represents an executable piece of SQL text.
@@ -66,7 +70,7 @@ import java.util.stream.IntStream;
  * This class is immutable and thread-safe.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.2
+ * @version 1.3
  * @since 1.0
  */
 public final class Query implements Serializable {
@@ -201,33 +205,101 @@ public final class Query implements Serializable {
 	/**
 	 * Return a new query object with the given query parameter values.
 	 *
-	 * @see #on(Param...)
+	 * <pre>{@code
+	 * final var result = Query.of("SELECT * FROM table WHERE id = :id;")
+	 *     .on(List.of(Param.value("id", 43245))
+	 *     .as(PARSER.singleOpt(), conn);
+	 * }</pre>
+	 *
+	 * @see #on(BaseParam...)
 	 * @see #on(Map)
 	 * @see #on(Object, Dctor)
 	 *
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if the given {@code params} is {@code null}
+	 * @throws IllegalArgumentException if an other type then {@link Param} or
+	 *         {@link MultiParam} is given
 	 */
-	public Query on(final List<? extends Param> params) {
+	public Query on(final Iterable<? extends BaseParam> params) {
+		final List<Param> singleParams = new ArrayList<>();
+		final List<MultiParam> multiParams = new ArrayList<>();
+		for (var param : params) {
+			if (param instanceof Param) {
+				singleParams.add((Param)param);
+			} else if (param instanceof MultiParam) {
+				multiParams.add((MultiParam)param);
+			} else {
+				throw new IllegalArgumentException(format(
+					"Type '%s' not allowed.", param.getClass().getName()
+				));
+			}
+		}
+
+		return onSingleParam(singleParams).onMultiParam(multiParams);
+	}
+
+	private Query onSingleParam(final List<Param> params) {
 		return params.isEmpty()
 			? this
 			: new Query(sql, values.andThen(new Params(params)), fetchSize, timeout);
 	}
 
+	private Query onMultiParam(final List<MultiParam> params) {
+		if (params.isEmpty()) {
+			return this;
+		} else {
+			final var sql = params.stream()
+				.reduce(
+					this.sql,
+					(s, p) -> s.expand(p.name(), p.values().size()),
+					(s1, s2) -> { throw new AssertionError(); });
+
+			final var values = this.values.andThen(
+				new Params(
+					params.stream()
+						.flatMap(Query::toParams)
+						.collect(Collectors.toList())
+				)
+			);
+
+			return new Query(sql, values, fetchSize, timeout);
+		}
+	}
+
+	private static Stream<Param> toParams(final MultiParam param) {
+		final var values = param.values();
+		return IntStream.range(0, values.size())
+			.mapToObj(i -> Param.of(Sql.name(param.name(), i), values.get(i)));
+	}
+
 	/**
 	 * Return a new query object with the given query parameter values.
+	 *
+	 * <pre>{@code
+	 * final var result = Query.of("SELECT * FROM table WHERE id = :id;")
+	 *     .on(Param.value("id", 43245)
+	 *     .as(PARSER.singleOpt(), conn);
+	 * }</pre>
 	 *
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if the given {@code params} is {@code null}
+	 * @throws IllegalArgumentException if an other type then {@link Param} or
+	 *         {@link MultiParam} is given
 	 */
-	public Query on(final Param... params) {
+	public Query on(final BaseParam... params) {
 		return on(asList(params));
 	}
 
 	/**
 	 * Return a new query object with the given query parameter values.
+	 *
+	 * <pre>{@code
+	 * final var result = Query.of("SELECT * FROM table WHERE id = :id;")
+	 *     .on(Map.of("id", 43245))
+	 *     .as(PARSER.singleOpt(), conn);
+	 * }</pre>
 	 *
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
@@ -261,7 +333,6 @@ public final class Query implements Serializable {
 		return new Query(sql, this.values.andThen(values), fetchSize, timeout);
 	}
 
-
 	/* *************************************************************************
 	 * Executing query.
 	 * ************************************************************************/
@@ -289,8 +360,27 @@ public final class Query implements Serializable {
 	)
 		throws SQLException
 	{
-		try (var stmt = prepare(conn); var rs = stmt.executeQuery()) {
+		final Value<T, SQLException> result = Value.build(resources -> {
+			final var stmt = resources.add(prepare(conn), Statement::close);
+			final var rs = resources.add(stmt.executeQuery(), ResultSet::close);
 			return parser.parse(rs, conn);
+		});
+
+		return prepare(result);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> T prepare(final Value<T, SQLException> result)
+		throws SQLException
+	{
+		if (result.get() instanceof Stream<?>) {
+			return (T)((Stream<?>)result.get()).onClose(() ->
+				result.uncheckedClose(UncheckedSQLException::new)
+			);
+		} else {
+			try (result) {
+				return result.get();
+			}
 		}
 	}
 

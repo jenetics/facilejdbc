@@ -104,6 +104,68 @@ static final RowParser<Person> PARSER = (row, conn) -> Person.builder()
 
 Since the `RowParser` is a _functional_ interface it can be written as shown. The first function parameter represents the actual selected row and second parameter the JDBC `Connection` used for executing the query. In most cases the `conn` will not be used, but it is quite helpful for fetching dependent DTOs in a sub-query.
 
+### Lazy (stream) select
+
+The _FacileJdbc_ library allows you to lazily fetch results from the DB. This might be useful when the selected data can cause an `OutOfMemoryError`.
+
+```java
+final var select = Query.of("SELECT * FROM person;");
+
+// Make sure to close the returned stream.
+try (var persons = select.as(PARSER.stream(), conn)) {
+    // Do some processing with the person stream.
+    persons.forEach(person -> ...);
+}
+```
+
+It's important to _close_ the returned `Stream`, which will close the underlying `ResultSet` and `PreparedStatement`. Every `SQLException`, thrown while fetching the data from the DB, will be wrapped in an `UncheckedSQLException`.
+
+_By setting the fetch-size, with the `Query.withFetchSize(int)` method, it is possible to control the amount of data fetched at once by the JDBC driver._
+
+### Export selection result to CSV
+
+Sometime it is convenient to export the whole selection result as CSV line.
+
+```java
+final var select = Query.of("SELECT * FROM book;");
+final var csv = select.as(ResultSetParser.csvLine(), conn);
+System.out.println(csv);
+```
+
+The printed CSV string will look like the following example.
+
+```
+"ID","PUBLISHED_AT","TITLE","ISBN","PAGES"
+"0","1987-02-04","Auf der Suche nach der verlorenen Zeit","978-3518061756","5100"
+"1","1945-01-04","Database Design for Mere Mortals","978-0321884497","654"
+"2","1887-02-04","Der alte Mann und das Meer","B00JM4RD2S","142"
+```
+
+For a big result set it is possible to lazily stream the selected rows into a file.
+
+```java
+final var select = Query.of("SELECT * FROM book ORDER BY id;");
+try (Stream<String> lines = select.as(RowParser.csvLine().stream(), conn);
+    Writer out = Files.newBufferedWriter(Path.of("out.csv")))
+{
+    lines.forEach(line -> {
+        try {
+            out.write(line);
+            out.write("\r\n");
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    });
+}
+```
+
+The rows are written _without_ a header into the CSV file.
+
+```
+"0","1987-02-04","Auf der Suche nach der verlorenen Zeit","978-3518061756","5100"
+"1","1945-01-04","Database Design for Mere Mortals","978-0321884497","654"
+"2","1887-02-04","Der alte Mann und das Meer","B00JM4RD2S","142"
+```
 
 ### Inserting objects
 
@@ -187,6 +249,98 @@ Query.of("INSERT INTO person(id, name) VALUES(:id, :name)")
         conn
     );
 ``` 
+
+### Multi-value parameter
+
+A parameter can be multi-value, like a sequence of IDs. In such case, values will be prepared to be passed appropriately in JDBC.
+
+```java
+final List<Book> results = Query.of("SELECT * FROM book WHERE id IN(:ids);")
+    .on(Param.values("ids", 1, 2, 3, 4))
+    .as(PARSER.list(), conn);
+```
+
+The created JDBC query string will look like this
+
+```sql
+SELECT * FROM book WHERE id IN(?,?,?,?);
+```
+
+filled with the value `1`, `2`, `3` and `4`.
+
+### Custom parameter type
+
+Sometimes it is not possible to use the available object conversions, available in the library. E.g. if you want to insert some _raw_ byte content via an `InputStream`.
+
+```java
+final var query = Query.of("INSERT INTO book(name, pdf) VALUES(:name, :pdf)");
+try (var in = Files.newInputStream(Path.of("./book.pdf"))) {
+    final long id = query
+        .on(
+            Param.value("name", "For Whom the Bell Tolls"),
+            // Call a "special" statement set-method, when setting the parameter.
+            Param.of("pdf", (index, stmt) -> stmt.setBinaryStream(index, in)))
+        .executeInsert(conn)
+        .orElseThrow();
+
+    System.out.println("Inserted book with ID: " + id);
+}
+```
+
+### Custom parameter conversion
+
+It is possible to create automatic parameter value conversion via the SPI `SqlTypeMapper` class. Usually, it is not possible to insert an `URI` field directly into the DB. You have to convert it into a string object first.
+
+```java
+@Value
+public static final class Person {
+    private final String name;
+    private final URI link;
+}
+
+static final Dctor<Person> DCTOR = Dctor.of(
+    field("name", Person::name),
+    field("email", p -> p.link().toString())
+);
+```
+
+If a mapper for the `URI` class is defined, it is possible to write the deconstructor more concise.
+
+```java
+static final Dctor<Person> DCTOR = Dctor.of(
+    field("name", Person::name),
+    field("email", Person::link)
+);
+```
+
+The implementation of such a mapping is quite simple and will look like showed
+in the following code snippet.
+
+```java
+public class URIMapper extends SqlTypeMapper {
+    public Object convert(final Object value) {
+        if (value instanceof URI) {
+            return value.toString();
+        } else {
+            return value;
+        }
+    }
+}
+```
+
+Add the following line
+
+```java
+org.acme.URIMapper
+```
+
+to the service definition file
+
+```java
+META-INF/services/io.jenetics.facilejdbc.spi.SqlTypeMapper
+```
+
+and you are done.
 
 ### Selecting/inserting object _graphs_
 
@@ -332,6 +486,34 @@ The library is licensed under the [Apache License, Version 2.0](http://www.apach
 
 
 ## Release notes
+
+### [1.3.0](https://github.com/jenetics/facilejdbc/releases/tag/v1.3.0)
+
+* [#45](https://github.com/jenetics/facilejdbc/issues/45): Make `RowParser` composable.
+* [#40](https://github.com/jenetics/facilejdbc/issues/40): Allow streaming of selection results.
+```java
+final var select = Query.of("SELECT * FROM person;");
+
+// Make sure to close the returned stream.
+try (var persons = select.as(PARSER.stream(), conn)) {
+    // Do some processing with the person stream.
+    persons.forEach(person -> ...);
+}
+```
+* [#39](https://github.com/jenetics/facilejdbc/issues/39): Parser for exporting results as CSV file/string.
+```java
+final var select = Query.of("SELECT * FROM book;");
+final var csv = select.as(ResultSetParser.csvLine(), conn);
+System.out.println(csv);
+```
+* [#26](https://github.com/jenetics/facilejdbc/issues/26): Implement multi-value parameter
+```java
+final List<Book> results = Query.of("SELECT * FROM book WHERE id IN(:ids);")
+    .on(Param.values("ids", 1, 2, 3, 4))
+    .as(PARSER.list(), conn);
+```
+
+#### Improvements
 
 ### [1.2.0](https://github.com/jenetics/facilejdbc/releases/tag/v1.2.0)
 

@@ -102,7 +102,7 @@ public final class Book {
 	 * DB access
 	 * ************************************************************************/
 
-	private static final RowParser<Book> PARSER = (row, conn) -> new Book(
+	static final RowParser<Book> PARSER = (row, conn) -> new Book(
 		row.getString("title"),
 		row.getString("isbn"),
 		row.getInt("pages"),
@@ -110,7 +110,7 @@ public final class Book {
 		Author.selectByBookId(row.getLong("id"), conn)
 	);
 
-	private static final Dctor<Book> DCTOR = Dctor.of(
+	static final Dctor<Book> DCTOR = Dctor.of(
 		field("title", Book::title),
 		field("isbn", Book::isbn),
 		field("published_at", Book::publishedAt, Date::valueOf),

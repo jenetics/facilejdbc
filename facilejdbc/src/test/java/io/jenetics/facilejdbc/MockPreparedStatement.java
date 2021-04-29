@@ -43,10 +43,13 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ */
 @SuppressWarnings("deprecation")
 public final class MockPreparedStatement implements PreparedStatement {
 
-	final Map<Integer, Object> data = new HashMap<>();
+	public final Map<Integer, Object> data = new HashMap<>();
 
 	Object get(int index) {
 		return data.get(index);

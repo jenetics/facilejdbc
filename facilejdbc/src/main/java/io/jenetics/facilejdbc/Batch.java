@@ -51,6 +51,48 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 	 * ************************************************************************/
 
 	/**
+	 * Create a new batch from the given rows.
+	 *
+	 * @see #of(List[])
+	 *
+	 * @param rows the rows to be inserted by the created batch
+	 * @return a new batch from the given arguments
+	 * @throws NullPointerException if the given {@code rows} are {@code null}
+	 */
+	static Batch of(final Iterable<? extends List<? extends Param>> rows) {
+		requireNonNull(rows);
+
+		return () -> new Iterator<>() {
+			private final Iterator<? extends List<? extends Param>>
+				it = rows.iterator();
+
+			@Override
+			public boolean hasNext() {
+				return it.hasNext();
+			}
+			@Override
+			public Function<Connection, ParamValues> next() {
+				final List<? extends Param> row = it.next();
+				return conn -> new Params(row);
+			}
+		};
+	}
+
+	/**
+	 * Create a new batch from the given rows.
+	 *
+	 * @see #of(Iterable)
+	 *
+	 * @param rows the rows to be inserted by the created batch
+	 * @return a new batch from the given arguments
+	 * @throws NullPointerException if the given {@code rows} are {@code null}
+	 */
+	@SafeVarargs
+	static Batch of(final List<? extends Param>... rows) {
+		return Batch.of(asList(rows));
+	}
+
+	/**
 	 * Create a new batch from the given records (rows) and the deconstructor.
 	 *
 	 * @param records the rows to be inserted by the created batch
@@ -76,48 +118,6 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 				return conn -> dctor.unapply(record, conn);
 			}
 		};
-	}
-
-	/**
-	 * Create a new batch from the given rows.
-	 *
-	 * @see #of(List[])
-	 *
-	 * @param rows the rows to be inserted by the created batch
-	 * @return a new batch from the given arguments
-	 * @throws NullPointerException if the given {@code rows} are {@code null}
-	 */
-	static Batch of(final Iterable<? extends List<? extends Param>> rows) {
-		requireNonNull(rows);
-
-		return () -> new Iterator<>() {
-			private final Iterator<? extends List<? extends Param>>
-			it = rows.iterator();
-
-			@Override
-			public boolean hasNext() {
-				return it.hasNext();
-			}
-			@Override
-			public Function<Connection, ParamValues> next() {
-				final var row = it.next();
-				return conn -> new Params(row);
-			}
-		};
-	}
-
-	/**
-	 * Create a new batch from the given rows.
-	 *
-	 * @see #of(Iterable)
-	 *
-	 * @param rows the rows to be inserted by the created batch
-	 * @return a new batch from the given arguments
-	 * @throws NullPointerException if the given {@code rows} are {@code null}
-	 */
-	@SafeVarargs
-	static Batch of(final List<? extends Param>... rows) {
-		return Batch.of(asList(rows));
 	}
 
 }
