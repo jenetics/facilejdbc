@@ -27,13 +27,13 @@
 
 plugins {
 	base
-	id("me.champeau.gradle.jmh") version "0.5.0" apply false
+	id("me.champeau.jmh") version "0.6.3" apply false
 }
 
 rootProject.version = FacileJDBC.VERSION
 
 tasks.named<Wrapper>("wrapper") {
-	version = "6.5"
+	gradleVersion = "7.0"
 	distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -50,7 +50,6 @@ allprojects {
 		}
 		mavenLocal()
 		mavenCentral()
-		jcenter()
 	}
 
 	configurations.all {
@@ -73,7 +72,7 @@ gradle.projectsEvaluated {
 		plugins.withType<JavaPlugin> {
 			configure<JavaPluginConvention> {
 				sourceCompatibility = JavaVersion.VERSION_11
-				targetCompatibility = JavaVersion.VERSION_11
+				targetCompatibility = JavaVersion.current()
 			}
 
 			setupJava(project)
