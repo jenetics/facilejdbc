@@ -68,7 +68,7 @@ public interface ResultSetParser<T> {
 
 	/**
 	 * Return a {@link ResultSet} parser, which converts the query result to a
-	 * CSV string.
+	 * CSV line.
 	 *
 	 * <pre>{@code
 	 * final var select = Query.of("SELECT * FROM book;");

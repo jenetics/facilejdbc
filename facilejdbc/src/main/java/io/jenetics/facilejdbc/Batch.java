@@ -72,7 +72,7 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 			}
 			@Override
 			public Function<Connection, ParamValues> next() {
-				final var row = it.next();
+				final List<? extends Param> row = it.next();
 				return conn -> new Params(row);
 			}
 		};

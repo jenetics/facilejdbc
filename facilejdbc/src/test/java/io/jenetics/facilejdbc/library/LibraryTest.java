@@ -159,6 +159,19 @@ public class LibraryTest {
 			books,
 			Set.copyOf(BOOKS)
 		);
+
+		db.transaction().accept(conn -> {
+			final var result = Query.of("SELECT * FROM book;")
+				.as(PARSER.stream(), conn);
+
+			try (result) {
+				final Set<Book> set = result.collect(Collectors.toSet());
+				Assert.assertEquals(
+					books,
+					Set.copyOf(BOOKS)
+				);
+			}
+		});
 	}
 
 	@Test(dependsOnMethods = "selectAll")
