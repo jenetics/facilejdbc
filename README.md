@@ -471,7 +471,7 @@ final Transactional db = ds::getConnection;
 
 The library is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
-    Copyright 2019-2020 Franz Wilhelmstötter
+    Copyright 2019-2021 Franz Wilhelmstötter
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
