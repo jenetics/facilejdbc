@@ -637,7 +637,7 @@ public interface RowParser<T> {
 	 *
 	 * <pre>{@code
 	 * final var select = Query.of("SELECT * FROM book ORDER BY id;");
-	 * try (var lines = select.as(RowParser.csv().stream(), conn);
+	 * try (var lines = select.as(RowParser.csvLine().stream(), conn);
 	 *     var out = Files.newBufferedWriter(Path.of("out.csv")))
 	 * {
 	 *     lines.forEach(line -> {
@@ -660,12 +660,12 @@ public interface RowParser<T> {
 	 *
 	 * @since 1.3
 	 *
-	 * @see ResultSetParser#csv()
+	 * @see ResultSetParser#csvLine()
 	 * @see #ofColumns(Function)
 	 *
 	 * @return a row parser which converts a DB row into a CSV row
 	 */
-	static RowParser<String> csv() {
+	static RowParser<String> csvLine() {
 		return ofColumns(CSV::join);
 	}
 
