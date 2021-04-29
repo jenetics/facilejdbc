@@ -37,7 +37,7 @@ import java.util.function.Supplier;
  * @since 1.3
  * @version 1.3
  */
-public class Lifecycle {
+final class Lifecycle {
 
 	/* *************************************************************************
 	 *  General interfaces.
