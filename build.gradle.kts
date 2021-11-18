@@ -246,8 +246,7 @@ fun xlint(): String {
 		"serial",
 		"static",
 		"try",
-		"unchecked",
-		"varargs"
+		"unchecked"
 	).joinToString(separator = ",")
 }
 
