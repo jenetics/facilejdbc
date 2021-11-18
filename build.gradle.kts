@@ -27,13 +27,13 @@
 
 plugins {
 	base
-	id("me.champeau.gradle.jmh") version "0.5.0" apply false
+	id("me.champeau.jmh") version "0.6.6" apply false
 }
 
 rootProject.version = FacileJDBC.VERSION
 
 tasks.named<Wrapper>("wrapper") {
-	version = "6.7.1"
+	version = "7.3"
 	distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -50,7 +50,6 @@ allprojects {
 		}
 		mavenLocal()
 		mavenCentral()
-		jcenter()
 	}
 
 	configurations.all {
@@ -68,13 +67,12 @@ gradle.projectsEvaluated {
 
 		tasks.withType<JavaCompile> {
 			options.compilerArgs.add("-Xlint:" + xlint())
-			options.compilerArgs.add("--enable-preview")
 		}
 
 		plugins.withType<JavaPlugin> {
-			configure<JavaPluginConvention> {
-				sourceCompatibility = JavaVersion.VERSION_15
-				targetCompatibility = JavaVersion.VERSION_15
+			configure<JavaPluginExtension> {
+				sourceCompatibility = JavaVersion.VERSION_17
+				targetCompatibility = JavaVersion.VERSION_17
 			}
 
 			setupJava(project)
@@ -130,7 +128,7 @@ fun setupTestReporting(project: Project) {
 	project.apply(plugin = "jacoco")
 
 	project.configure<JacocoPluginExtension> {
-		toolVersion = "0.8.6"
+		toolVersion = "0.8.7"
 	}
 
 	project.tasks {
@@ -138,15 +136,14 @@ fun setupTestReporting(project: Project) {
 			dependsOn("test")
 
 			reports {
-				html.isEnabled = true
-				xml.isEnabled = true
-				csv.isEnabled = true
+				html.required.set(true)
+				xml.required.set(true)
+				csv.required.set(true)
 			}
 		}
 
 		named<Test>("test") {
 			useTestNG()
-			jvmArgs("--enable-preview")
 			finalizedBy("jacocoTestReport")
 		}
 	}
@@ -158,8 +155,6 @@ fun setupTestReporting(project: Project) {
 fun setupJavadoc(project: Project) {
 	project.tasks.withType<Javadoc> {
 		val doclet = options as StandardJavadocDocletOptions
-		doclet.addBooleanOption("-enable-preview", true)
-		doclet.addStringOption("-release", "15")
 		doclet.addBooleanOption("Xdoclint:accessibility,html,reference,syntax", true)
 
 		exclude("**/internal/**")
@@ -170,7 +165,7 @@ fun setupJavadoc(project: Project) {
 		doclet.charSet = "UTF-8"
 		doclet.linkSource(true)
 		doclet.linksOffline(
-			"https://docs.oracle.com/en/java/javase/15/docs/api",
+			"https://docs.oracle.com/en/java/javase/17/docs/api/",
 			"${project.rootDir}/buildSrc/resources/javadoc/java.se"
 		)
 		doclet.windowTitle = "FacileJDBC ${project.version}"
@@ -204,7 +199,7 @@ fun setupJavadoc(project: Project) {
 		project.tasks.register("java2html") {
 			doLast {
 				project.javaexec {
-					main = "de.java2html.Java2Html"
+					mainClass.set("de.java2html.Java2Html")
 					args = listOf(
 						"-srcdir", "src/main/java",
 						"-targetdir", "${javadoc.destinationDir}/src-html"
@@ -235,19 +230,25 @@ fun setupJavadoc(project: Project) {
 fun xlint(): String {
 	// See https://docs.oracle.com/javase/9/tools/javac.htm#JSWOR627
 	return listOf(
+		"auxiliaryclass",
 		"cast",
 		"classfile",
-		"deprecation",
 		"dep-ann",
+		"deprecation",
 		"divzero",
 		"empty",
+		"exports",
 		"finally",
+		"module",
+		"opens",
 		"overrides",
 		"rawtypes",
+		"removal",
 		"serial",
 		"static",
 		"try",
-		"unchecked"
+		"unchecked",
+		"varargs"
 	).joinToString(separator = ",")
 }
 
