@@ -68,11 +68,11 @@ public interface ResultSetParser<T> {
 
 	/**
 	 * Return a {@link ResultSet} parser, which converts the query result to a
-	 * CSV string.
+	 * CSV line.
 	 *
 	 * <pre>{@code
 	 * final var select = Query.of("SELECT * FROM book;");
-	 * final var csv = select.as(ResultSetParser.csv(), conn);
+	 * final var csv = select.as(ResultSetParser.csvLine(), conn);
 	 * System.out.println(csv);
 	 * }</pre>
 	 * The CSV output will look like this:
@@ -85,11 +85,11 @@ public interface ResultSetParser<T> {
 	 *
 	 * @since 1.3
 	 *
-	 * @see RowParser#csv()
+	 * @see RowParser#csvLine()
 	 *
 	 * @return a CSV {@link ResultSet} parser
 	 */
-	static ResultSetParser<String> csv() {
+	static ResultSetParser<String> csvLine() {
 		return CSV::string;
 	}
 
