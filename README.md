@@ -124,11 +124,11 @@ _By setting the fetch-size, with the `Query.withFetchSize(int)` method, it is po
 
 ### Export selection result to CSV
 
-Sometime it is convenient to export the whole selection result as CSV string.
+Sometime it is convenient to export the whole selection result as CSV line.
 
 ```java
 final var select = Query.of("SELECT * FROM book;");
-final var csv = select.as(ResultSetParser.csv(), conn);
+final var csv = select.as(ResultSetParser.csvLine(), conn);
 System.out.println(csv);
 ```
 
@@ -145,7 +145,7 @@ For a big result set it is possible to lazily stream the selected rows into a fi
 
 ```java
 final var select = Query.of("SELECT * FROM book ORDER BY id;");
-try (Stream<String> lines = select.as(RowParser.csv().stream(), conn);
+try (Stream<String> lines = select.as(RowParser.csvLine().stream(), conn);
     Writer out = Files.newBufferedWriter(Path.of("out.csv")))
 {
     lines.forEach(line -> {
@@ -471,7 +471,7 @@ final Transactional db = ds::getConnection;
 
 The library is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
-    Copyright 2019-2020 Franz Wilhelmstötter
+    Copyright 2019-2021 Franz Wilhelmstötter
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -486,6 +486,34 @@ The library is licensed under the [Apache License, Version 2.0](http://www.apach
 
 
 ## Release notes
+
+### [1.3.0](https://github.com/jenetics/facilejdbc/releases/tag/v1.3.0)
+
+* [#45](https://github.com/jenetics/facilejdbc/issues/45): Make `RowParser` composable.
+* [#40](https://github.com/jenetics/facilejdbc/issues/40): Allow streaming of selection results.
+```java
+final var select = Query.of("SELECT * FROM person;");
+
+// Make sure to close the returned stream.
+try (var persons = select.as(PARSER.stream(), conn)) {
+    // Do some processing with the person stream.
+    persons.forEach(person -> ...);
+}
+```
+* [#39](https://github.com/jenetics/facilejdbc/issues/39): Parser for exporting results as CSV file/string.
+```java
+final var select = Query.of("SELECT * FROM book;");
+final var csv = select.as(ResultSetParser.csvLine(), conn);
+System.out.println(csv);
+```
+* [#26](https://github.com/jenetics/facilejdbc/issues/26): Implement multi-value parameter
+```java
+final List<Book> results = Query.of("SELECT * FROM book WHERE id IN(:ids);")
+    .on(Param.values("ids", 1, 2, 3, 4))
+    .as(PARSER.list(), conn);
+```
+
+#### Improvements
 
 ### [1.2.0](https://github.com/jenetics/facilejdbc/releases/tag/v1.2.0)
 

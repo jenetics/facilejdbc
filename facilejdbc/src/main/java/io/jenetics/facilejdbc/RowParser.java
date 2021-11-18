@@ -29,7 +29,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -344,24 +343,24 @@ public interface RowParser<T> {
 
 	/**
 	 * Creates a new {@link RowParser} from the given {@code fields}, given as
-	 * {@code RowParser}s, and the composition function, {@code ctor}.
+	 * {@code RowParser}s, and the composition function, {@code composer}.
 	 *
-	 * @see #of(BiFunction, RowParser, RowParser)
+	 * @see #compose(BiFunction, RowParser, RowParser)
 	 *
 	 * @since 1.3
 	 *
-	 * @param ctor the composition function, which creates an object of type
+	 * @param composer the composition function, which creates an object of type
 	 *        {@code T}, from the given {@code fields}
 	 * @param fields the fields from where to create the object of type {@code T}
 	 * @param <T> the created object type
 	 * @return a new {@code RowParser}
 	 * @throws NullPointerException if one of the given arguments is {@code null}
 	 */
-	static <T> RowParser<T> of(
-		final Function<? super Object[], ? extends T> ctor,
+	static <T> RowParser<T> compose(
+		final Function<? super Object[], ? extends T> composer,
 		final RowParser<?>... fields
 	) {
-		requireNonNull(ctor);
+		requireNonNull(composer);
 		requireNonNull(fields);
 
 		return (row, conn) -> {
@@ -369,19 +368,19 @@ public interface RowParser<T> {
 			for (int i = 0; i < fields.length; ++i) {
 				params[i] = fields[i].parse(row, conn);
 			}
-			return ctor.apply(params);
+			return composer.apply(params);
 		};
 	}
 
 	/**
 	 * Creates a new {@link RowParser} from the given {@code fields}, given as
-	 * {@code RowParser}s, and the composition function, {@code ctor}.
+	 * {@code RowParser}s, and the composition function, {@code composer}.
 	 *
-	 * @see #of(Function, RowParser[])
+	 * @see #compose(Function, RowParser[])
 	 *
 	 * @since 1.3
 	 *
-	 * @param ctor the composition function, which creates an object of type
+	 * @param composer the composition function, which creates an object of type
 	 *        {@code T}, from the given fields
 	 * @param field1 the first field
 	 * @param field2 the second field
@@ -391,16 +390,16 @@ public interface RowParser<T> {
 	 * @return a new {@code RowParser}
 	 * @throws NullPointerException if one of the given arguments is {@code null}
 	 */
-	static <A, B, T> RowParser<T> of(
-		final BiFunction<? super A, ? super B, ? extends T> ctor,
+	static <A, B, T> RowParser<T> compose(
+		final BiFunction<? super A, ? super B, ? extends T> composer,
 		final RowParser<? extends A> field1,
 		final RowParser<? extends B> field2
 	) {
-		requireNonNull(ctor);
+		requireNonNull(composer);
 		requireNonNull(field1);
 		requireNonNull(field2);
 
-		return (row, conn) -> ctor.apply(
+		return (row, conn) -> composer.apply(
 			field1.parse(row, conn),
 			field2.parse(row, conn)
 		);
@@ -638,7 +637,7 @@ public interface RowParser<T> {
 	 *
 	 * <pre>{@code
 	 * final var select = Query.of("SELECT * FROM book ORDER BY id;");
-	 * try (var lines = select.as(RowParser.csv().stream(), conn);
+	 * try (var lines = select.as(RowParser.csvLine().stream(), conn);
 	 *     var out = Files.newBufferedWriter(Path.of("out.csv")))
 	 * {
 	 *     lines.forEach(line -> {
@@ -661,17 +660,19 @@ public interface RowParser<T> {
 	 *
 	 * @since 1.3
 	 *
-	 * @see ResultSetParser#csv()
-	 * @see #row(Function)
+	 * @see ResultSetParser#csvLine()
+	 * @see #ofColumns(Function)
 	 *
 	 * @return a row parser which converts a DB row into a CSV row
 	 */
-	static RowParser<String> csv() {
-		return row(CSV::join);
+	static RowParser<String> csvLine() {
+		return ofColumns(CSV::join);
 	}
 
 	/**
 	 * Return a row parser which converts the columns of one row into an object.
+	 * The columns are given as {@code Object[]} array and are arranged in the
+	 * order as defined in the <em>SELECT</em> query.
 	 *
 	 * @since 1.3
 	 *
@@ -681,12 +682,12 @@ public interface RowParser<T> {
 	 * @return a row parser which combines the row values into one object
 	 */
 	static <T> RowParser<T>
-	row(final Function<? super Object[], ? extends T> ctor) {
+	ofColumns(final Function<? super Object[], ? extends T> ctor) {
 		return (row, conn) -> {
 			final var md = row.getMetaData();
 			final var cols = new Object[md.getColumnCount()];
-			for (int i = 1; i <= md.getColumnCount(); ++i) {
-				cols[i - 1] = row.getObject(i);
+			for (int i = 0; i < cols.length; ++i) {
+				cols[i] = row.getObject(i + 1);
 			}
 			return ctor.apply(cols);
 		};
