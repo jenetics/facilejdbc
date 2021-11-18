@@ -35,6 +35,6 @@ description = "FacileJDBC Library"
 extra["moduleName"] = "io.jenetics.facilejdbc"
 
 dependencies {
-	testImplementation(Libs.TestNG)
-	testImplementation(Libs.HsqlDB)
+	testImplementation(libs.testng)
+	testImplementation(libs.hsqldb)
 }
