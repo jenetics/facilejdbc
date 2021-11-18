@@ -47,7 +47,7 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * final Dctor<Book> dctor = Dctor.of(
  *     Dctor.field("title", Book::title),
  *     Dctor.field("isbn", Book::isbn),
- *     Dctor.field("published_at", Book::publishedAt, Date::valueOf),
+ *     Dctor.field("published_at", Book::publishedAt),
  *     Dctor.field("pages", Book::pages)
  * );
  * }</pre>
@@ -227,8 +227,8 @@ public interface Dctor<T> {
 
 		return Dctor.of(
 			Stream.of(record.getRecordComponents())
-				.map(c -> (Field<? super T>)toFiled(c, toColumnName, fieldMap))
-				.collect(Collectors.toList())
+				.map(c -> Dctor.<T>toFiled(c, toColumnName, fieldMap))
+				.toList()
 		);
 	}
 
@@ -237,27 +237,50 @@ public interface Dctor<T> {
 		final UnaryOperator<String> toColumnName,
 		final Map<String, Field<? super T>> fields
 	) {
-		final var name = toColumnName.apply(component.getName());
+		final String name = toColumnName.apply(component.getName());
 		return fields.getOrDefault(
 			name,
-			field(
-				name,
-				record -> {
-					try {
-						return component.getAccessor().invoke(record);
-					} catch (IllegalAccessException e) {
-						throw new SQLNonTransientException(e);
-					} catch (InvocationTargetException e) {
-						if (e.getCause() instanceof RuntimeException re) {
-							throw re;
-						} else if (e.getCause() instanceof Error er) {
-							throw er;
-						} else {
-							throw new SQLNonTransientException(e.getCause());
-						}
-					}
-				}
-			)
+			field(name, record -> value(component, record))
+		);
+	}
+
+	private static Object value(
+		final RecordComponent component,
+		final Object record
+	)
+		throws SQLNonTransientException
+	{
+		try {
+			return component.getAccessor().invoke(record);
+		} catch (IllegalAccessException e) {
+			throw new SQLNonTransientException(e);
+		} catch (InvocationTargetException e) {
+			if (e.getCause() instanceof RuntimeException re) {
+				throw re;
+			} else if (e.getCause() instanceof Error er) {
+				throw er;
+			} else {
+				throw new SQLNonTransientException(e.getCause());
+			}
+		}
+	}
+
+	@SafeVarargs
+	static <T extends Record> Dctor<T> of(
+		final Class<T> record,
+		final Map<String, String> toColumnName,
+		final Field<? super T>... fields
+	) {
+		requireNonNull(record);
+		requireNonNull(toColumnName);
+		requireNonNull(fields);
+
+		return of(
+			record,
+			name -> toColumnName.containsKey(name)
+				? toColumnName.get(name)
+				: toSnakeCase(name),
+			fields
 		);
 	}
 

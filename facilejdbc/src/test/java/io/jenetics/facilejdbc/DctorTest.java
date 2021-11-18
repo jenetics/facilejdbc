@@ -23,6 +23,7 @@ import static io.jenetics.facilejdbc.Dctor.fieldValue;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
@@ -36,6 +37,8 @@ public class DctorTest {
 	@Test
 	public void deconstruct() throws SQLException {
 		final Dctor<Paper> dctor = Dctor.of(Paper.class);
+
+		//Records.dctor(Paper.class, null);
 
 		final ParamValues values = dctor.unapply(
 			new Paper("titleValue", "isbnValue", 123),
@@ -63,6 +66,23 @@ public class DctorTest {
 		values.set(List.of("col_a", "col_b", "col_c"), stmt);
 		Assert.assertEquals(stmt.get(1), "1");
 		Assert.assertEquals(stmt.get(2), "replaced_b");
+		Assert.assertEquals(stmt.get(3), "3");
+	}
+
+	@Test
+	public void fromRecordWithMap() throws SQLException {
+		final record Foo(String colA, String colB, String colC) {}
+
+		final Dctor<Foo> dctor = Dctor.of(
+			Foo.class,
+			Map.of("colA", "column_a")
+		);
+
+		final var values = dctor.unapply(new Foo("1", "2", "3"), null);
+		final var stmt = new MockPreparedStatement();
+		values.set(List.of("column_a", "col_b", "col_c"), stmt);
+		Assert.assertEquals(stmt.get(1), "1");
+		Assert.assertEquals(stmt.get(2), "2");
 		Assert.assertEquals(stmt.get(3), "3");
 	}
 
