@@ -24,17 +24,12 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 import static io.jenetics.facilejdbc.spi.SqlTypeMapper.map;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.RecordComponent;
 import java.sql.Connection;
-import java.sql.SQLNonTransientException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;
@@ -193,112 +188,21 @@ public interface Dctor<T> {
 	 */
 	@SafeVarargs
 	static <T> Dctor<T> of(final Field<? super T>... fields) {
-		final List<? extends Field<? super T>> list = asList(fields);
-		return Dctor.of(list);
-	}
-
-	/**
-	 * Create a new deconstructor for the given record type.
-	 *
-	 * @since 2.0
-	 *
-	 * @param record the record type to deconstruct
-	 * @param toColumnName function for mapping the component names to the
-	 *        column names of the DB
-	 * @param fields the fields which overrides/extends the automatically
-	 *        extracted fields from the record
-	 * @param <T> the record type
-	 * @return a new deconstructor for the given record type
-	 * @throws NullPointerException if one of the arguments is {@code null}
-	 * @throws IllegalArgumentException if there are duplicate fields
-	 */
-	@SafeVarargs
-	static <T extends Record> Dctor<T> of(
-		final Class<T> record,
-		final UnaryOperator<String> toColumnName,
-		final Field<? super T>... fields
-	) {
-		requireNonNull(record);
-		requireNonNull(toColumnName);
-		requireNonNull(fields);
-
 		final List<Field<? super T>> list = asList(fields);
-		final Map<String, Field<? super T>> fieldMap = toMap(list);
-
-		return Dctor.of(
-			Stream.of(record.getRecordComponents())
-				.map(c -> Dctor.<T>toFiled(c, toColumnName, fieldMap))
-				.toList()
-		);
-	}
-
-	private static <T extends Record> Field<? super T> toFiled(
-		final RecordComponent component,
-		final UnaryOperator<String> toColumnName,
-		final Map<String, Field<? super T>> fields
-	) {
-		final String name = toColumnName.apply(component.getName());
-		return fields.getOrDefault(
-			name,
-			field(name, record -> value(component, record))
-		);
-	}
-
-	private static Object value(
-		final RecordComponent component,
-		final Object record
-	)
-		throws SQLNonTransientException
-	{
-		try {
-			return component.getAccessor().invoke(record);
-		} catch (IllegalAccessException e) {
-			throw new SQLNonTransientException(e);
-		} catch (InvocationTargetException e) {
-			if (e.getCause() instanceof RuntimeException re) {
-				throw re;
-			} else if (e.getCause() instanceof Error er) {
-				throw er;
-			} else {
-				throw new SQLNonTransientException(e.getCause());
-			}
-		}
-	}
-
-	@SafeVarargs
-	static <T extends Record> Dctor<T> of(
-		final Class<T> record,
-		final Map<String, String> toColumnName,
-		final Field<? super T>... fields
-	) {
-		requireNonNull(record);
-		requireNonNull(toColumnName);
-		requireNonNull(fields);
-
-		return of(
-			record,
-			name -> toColumnName.containsKey(name)
-				? toColumnName.get(name)
-				: toSnakeCase(name),
-			fields
-		);
+		return Dctor.of(list);
 	}
 
 	/**
 	 * Create a new deconstructor for the given record type. The component names
 	 * of the record type are converted to <em>snake_case</em> for the column
-	 * names of the DB. Some example mappings
-	 * <pre>{@code
-	 * forName -> for_name
-	 * sureName -> sure_name
-	 * userLoginCount -> user_login_count
-	 * userCreatedAt -> user_created_at
-	 * }</pre>
+	 * names of the DB. E.g. {@code createdAt -> created_at}.
 	 *
 	 * @since 2.0
 	 *
+	 * @see Records#dctor(Class, Function, Field[])
+	 *
 	 * @param record the record type to deconstruct
-	 * @param fields the fields which overrides/extends the automatically
+	 * @param overrideFields the fields which overrides/extends the automatically
 	 *        extracted fields from the record
 	 * @param <T> the record type
 	 * @return a new deconstructor for the given record type
@@ -308,25 +212,9 @@ public interface Dctor<T> {
 	@SafeVarargs
 	static <T extends Record> Dctor<T> of(
 		final Class<T> record,
-		final Field<? super T>... fields
+		final Dctor.Field<? super T>... overrideFields
 	) {
-		return of(record, Dctor::toSnakeCase, fields);
-	}
-
-	private static String toSnakeCase(final String name) {
-		final var result = new StringBuilder();
-
-		for (int i = 0; i < name.length(); i++) {
-			final char ch = name.charAt(i);
-			if (Character.isUpperCase(ch)) {
-				result.append('_');
-				result.append(Character.toLowerCase(ch));
-			} else {
-				result.append(ch);
-			}
-		}
-
-		return result.toString();
+		return Records.dctor(record, Records::toSnakeCase, overrideFields);
 	}
 
 	/**

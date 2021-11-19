@@ -342,7 +342,6 @@ public final class Query implements Serializable {
 	 * @since 2.0
 	 *
 	 * @see Dctor#of(Class, Dctor.Field[])
-	 * @see Dctor#of(Class, UnaryOperator, Dctor.Field[])
 	 *
 	 * @param record the query parameters
 	 * @param <T> the parameter record type

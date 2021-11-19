@@ -36,5 +36,6 @@ extra["moduleName"] = "io.jenetics.facilejdbc"
 
 dependencies {
 	testImplementation(libs.testng)
+	testImplementation(libs.assertj)
 	testImplementation(libs.hsqldb)
 }

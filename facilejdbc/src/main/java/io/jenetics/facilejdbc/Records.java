@@ -19,17 +19,14 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 import static io.jenetics.facilejdbc.Dctor.field;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.RecordComponent;
 import java.sql.SQLNonTransientException;
-import java.util.List;
 import java.util.Map;
-import java.util.function.UnaryOperator;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,58 +44,58 @@ public final class Records {
 	/**
 	 * Create a new deconstructor for the given record type.
 	 *
-	 * @since 2.0
-	 *
 	 * @param record the record type to deconstruct
-	 * @param toColumnName function for mapping the component names to the
+	 * @param toColumnName function for mapping the record component to the
 	 *        column names of the DB
-	 * @param fields the fields which overrides/extends the automatically
+	 * @param overrideFields the fields which overrides/extends the automatically
 	 *        extracted fields from the record
 	 * @param <T> the record type
 	 * @return a new deconstructor for the given record type
 	 * @throws NullPointerException if one of the arguments is {@code null}
-	 * @throws IllegalArgumentException if there are duplicate fields
+	 * @throws IllegalArgumentException if there are duplicate fields defined
 	 */
 	@SafeVarargs
 	public static <T extends Record> Dctor<T> dctor(
 		final Class<T> record,
-		final UnaryOperator<String> toColumnName,
-		final Dctor.Field<? super T>... fields
+		final Function<? super RecordComponent, String> toColumnName,
+		final Dctor.Field<? super T>... overrideFields
 	) {
 		requireNonNull(record);
 		requireNonNull(toColumnName);
-		requireNonNull(fields);
+		requireNonNull(overrideFields);
 
-		final List<Dctor.Field<? super T>> list = asList(fields);
-		final Map<String, Dctor.Field<? super T>> fieldMap = toMap(list);
+		final Map<String, Dctor.Field<? super T>> fieldMap = Stream.of(overrideFields)
+			.collect(
+				Collectors.toMap(
+					Dctor.Field::name,
+					f -> f,
+					(a, b) -> {
+						throw new IllegalArgumentException(
+							"Duplicate field detected: '%s'.".formatted(a.name())
+						);
+					}
+				)
+			);
 
-		return Dctor.of(
-			Stream.of(record.getRecordComponents())
-				.map(c -> Records.<T>toFiled(c, toColumnName, fieldMap))
-				.toList()
-		);
-	}
+		final var recordFields = Stream.of(record.getRecordComponents())
+			.map(c -> Records.<T>toFiled(c, toColumnName, fieldMap))
+			.toList();
 
-	private static <T> Map<String, Dctor.Field<? super T>>
-	toMap(final List<? extends Dctor.Field<? super T>> fields) {
-		return fields.stream()
-			.collect(Collectors.toMap(
-				Dctor.Field::name,
-				f -> f,
-				(a, b) -> { throw new IllegalArgumentException(format(
-					"Duplicate field detected: %s", a.name()));}));
+		return Dctor.of(recordFields);
 	}
 
 	private static <T extends Record> Dctor.Field<? super T> toFiled(
 		final RecordComponent component,
-		final UnaryOperator<String> toColumnName,
-		final Map<String, Dctor.Field<? super T>> fields
+		final Function<? super RecordComponent, String> toColumnName,
+		final Map<String, Dctor.Field<? super T>> overrideFields
 	) {
-		final String name = toColumnName.apply(component.getName());
-		return fields.getOrDefault(
-			name,
-			field(name, record -> value(component, record))
-		);
+		final String name = toColumnName.apply(component);
+
+		if (overrideFields.containsKey(name)) {
+			return overrideFields.get(name);
+		} else {
+			return field(name, record -> value(component, record));
+		}
 	}
 
 	private static Object value(
@@ -114,12 +111,56 @@ public final class Records {
 		} catch (InvocationTargetException e) {
 			if (e.getCause() instanceof RuntimeException re) {
 				throw re;
-			} else if (e.getCause() instanceof Error er) {
-				throw er;
+			} else if (e.getCause() instanceof Error error) {
+				throw error;
 			} else {
 				throw new SQLNonTransientException(e.getCause());
 			}
 		}
+	}
+
+	/**
+	 * Converts to given record component to a column name in
+	 * <a href="https://en.wikipedia.org/wiki/Snake_case">snake_case</a>. The
+	 * following list shows some examples.
+	 * <ul>
+	 *     <li>{@code name} &rarr; {@code name}</li>
+	 *     <li>{@code simpleName} &rarr; {@code simple_name}</li>
+	 *     <li>{@code SimpleName} &rarr; {@code simple_name}</li>
+	 *     <li>{@code Simple_Name} &rarr; {@code simple_name}</li>
+	 *     <li>{@code Simple___Name} &rarr; {@code simple___name}</li>
+	 * </ul>
+	 *
+	 * @param component the record component
+	 * @return the name of the record component in <em>snake_case</em>
+	 * @throws NullPointerException if the given record {@code component} is
+	 *         {@code null}
+	 */
+	public static String toSnakeCase(final RecordComponent component) {
+		return toSnakeCase(component.getName());
+	}
+
+	static String toSnakeCase(final String name) {
+		final var result = new StringBuilder();
+
+		for (int i = 0; i < name.length(); i++) {
+			final char ch = name.charAt(i);
+
+			if (i == 0) {
+				result.append(Character.toLowerCase(ch));
+			} else {
+				if (Character.isUpperCase(ch)) {
+					if (name.charAt(i - 1) != '_') {
+						result.append('_');
+					}
+					result.append(Character.toLowerCase(ch));
+				} else {
+					result.append(ch);
+				}
+			}
+		}
+
+		return result.toString();
 	}
 
 }
