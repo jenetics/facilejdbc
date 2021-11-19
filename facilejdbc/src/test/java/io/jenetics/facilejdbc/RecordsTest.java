@@ -20,10 +20,8 @@
 package io.jenetics.facilejdbc;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import static io.jenetics.facilejdbc.Dctor.field;
 
-import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
@@ -31,8 +29,6 @@ import java.util.Map;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
-import io.jenetics.facilejdbc.library.Book;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
@@ -76,11 +72,38 @@ public class RecordsTest {
 			LocalDate publishedAt
 		) {}
 
+		/*
 		final Dctor<Book> dctor = Records.dctor(
 			Book.class,
 			Records::toSnakeCase,
 			Map.of("publishedAt", "published_at2"),
-			field("published_at2", Book::publishedAt)
+			List.of(field("published_at2", Book::publishedAt))
+		);
+		 */
+
+		final Dctor<Book> dctor = Records.dctor(
+			Book.class,
+			component -> switch (component.getName()) {
+				case "publishedAt" -> "published_at2";
+				default -> Records.toSnakeCase(component);
+			},
+			List.of(
+				field("published_at2", Book::publishedAt),
+				field("id", book -> book.isbn() + ":" + book.author())
+			)
+		);
+
+		Records.dctor(
+			Book.class,
+			component -> switch (component.getName()) {
+				case "title" -> "title";
+				case "author" -> "author";
+				case "isbn" -> "isbn";
+				case "pages" -> "pages";
+				case "publishedAt" -> "published_at2";
+				default -> throw new IllegalStateException();
+			},
+			List.of(field("published_at2", Book::publishedAt))
 		);
 
 		final var book = new Book(
@@ -94,13 +117,14 @@ public class RecordsTest {
 		final ParamValues values = dctor.unapply(book, null);
 
 		final var stmt = new MockPreparedStatement();
-		values.set(List.of("title", "author", "isbn", "pages", "published_at2"), stmt);
+		values.set(List.of("title", "author", "isbn", "pages", "published_at2", "id"), stmt);
 
 		assertThat(stmt.get(1)).isEqualTo(book.title());
 		assertThat(stmt.get(2)).isEqualTo(book.author());
 		assertThat(stmt.get(3)).isEqualTo(book.isbn());
 		assertThat(stmt.get(4)).isEqualTo(book.pages());
 		assertThat(stmt.get(5)).isEqualTo(book.publishedAt());
+		System.out.println(stmt.get(6));
 	}
 
 }

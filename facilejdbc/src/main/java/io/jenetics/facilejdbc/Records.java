@@ -25,6 +25,8 @@ import static io.jenetics.facilejdbc.Dctor.field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.RecordComponent;
 import java.sql.SQLNonTransientException;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -47,27 +49,23 @@ public final class Records {
 	 * @param type the record type to deconstruct
 	 * @param toColumnName function for mapping the record component to the
 	 *        column names of the DB
-	 * @param overrideToColumnName override the column name mapping function
-	 * @param overrideFields the fields which overrides/extends the automatically
-	 *        extracted fields from the record
+	 * @param fields the fields which overrides/extends the
+	 *        automatically extracted fields from the record
 	 * @param <T> the record type
 	 * @return a new deconstructor for the given record type
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 * @throws IllegalArgumentException if there are duplicate fields defined
 	 */
-	@SafeVarargs
 	public static <T extends Record> Dctor<T> dctor(
 		final Class<T> type,
 		final Function<? super RecordComponent, String> toColumnName,
-		final Map<String, String> overrideToColumnName,
-		final Dctor.Field<? super T>... overrideFields
+		final List<? extends Dctor.Field<? super T>> fields
 	) {
 		requireNonNull(type);
 		requireNonNull(toColumnName);
-		requireNonNull(overrideToColumnName);
-		requireNonNull(overrideFields);
+		requireNonNull(fields);
 
-		final Map<String, Dctor.Field<? super T>> fieldMap = Stream.of(overrideFields)
+		final Map<String, Dctor.Field<? super T>> fieldsMap = fields.stream()
 			.collect(
 				Collectors.toMap(
 					Dctor.Field::name,
@@ -76,13 +74,16 @@ public final class Records {
 						throw new IllegalArgumentException(
 							"Duplicate field detected: '%s'.".formatted(a.name())
 						);
-					}
+					},
+					LinkedHashMap::new
 				)
 			);
 
-		final var recordFields = Stream.of(type.getRecordComponents())
-			.map(c -> Records.<T>toFiled(c, toColumnName, overrideToColumnName, fieldMap))
-			.toList();
+		final List<Dctor.Field<? super T>> recordFields = Stream.of(type.getRecordComponents())
+			.map(c -> Records.<T>toFiled(c, toColumnName, fieldsMap))
+			.collect(Collectors.toList());
+
+		recordFields.addAll(fieldsMap.values());
 
 		return Dctor.of(recordFields);
 	}
@@ -90,15 +91,12 @@ public final class Records {
 	private static <T extends Record> Dctor.Field<? super T> toFiled(
 		final RecordComponent component,
 		final Function<? super RecordComponent, String> toColumnName,
-		final Map<String, String> overrideToColumnName,
-		final Map<String, Dctor.Field<? super T>> overrideFields
+		final Map<String, Dctor.Field<? super T>> fields
 	) {
-		final String columnName = overrideToColumnName.containsKey(component.getName())
-			? overrideToColumnName.get(component.getName())
-			: toColumnName.apply(component);
+		final String columnName = toColumnName.apply(component);
 
-		return overrideFields.containsKey(columnName)
-			? overrideFields.get(columnName)
+		return fields.containsKey(columnName)
+			? fields.remove(columnName)
 			: field(columnName, record -> value(component, record));
 	}
 
@@ -121,28 +119,6 @@ public final class Records {
 				throw new SQLNonTransientException(e.getCause());
 			}
 		}
-	}
-
-	/**
-	 * Create a new deconstructor for the given record type.
-	 *
-	 * @param type the record type to deconstruct
-	 * @param toColumnName function for mapping the record component to the
-	 *        column names of the DB
-	 * @param overrideFields the fields which overrides/extends the automatically
-	 *        extracted fields from the record
-	 * @param <T> the record type
-	 * @return a new deconstructor for the given record type
-	 * @throws NullPointerException if one of the arguments is {@code null}
-	 * @throws IllegalArgumentException if there are duplicate fields defined
-	 */
-	@SafeVarargs
-	public static <T extends Record> Dctor<T> dctor(
-		final Class<T> type,
-		final Function<? super RecordComponent, String> toColumnName,
-		final Dctor.Field<? super T>... overrideFields
-	) {
-		return dctor(type, toColumnName, Map.of(), overrideFields);
 	}
 
 	/**
