@@ -69,10 +69,10 @@ final class Sql {
 
 	private record Param(int index, String name){}
 
-	private static final Pattern PARAM_PATTERN = Pattern.compile(
-		"(?<!:):\\w+\\b(?=(?:[^\"'\\\\]*" +
-		"(?:\\\\.|([\"'])(?:(?:(?!\\\\|\\1).)*\\\\.)*" +
-		"(?:(?!\\\\|\\1).)*\\1))*[^\"']*$)"
+	private static final Pattern PARAM_PATTERN = Pattern.compile("""
+		(?<!:):\\w+\\b(?=(?:[^"'\\\\]*\
+		(?:\\\\.|(["'])(?:(?:(?!\\\\|\\1).)*\\\\.)*\
+		(?:(?!\\\\|\\1).)*\\1))*[^"']*$)"""
 	);
 
 	private final String string;
@@ -134,7 +134,7 @@ final class Sql {
 		if (names == null) {
 			paramNames = names = params.stream()
 				.map(p -> p.name)
-				.collect(Collectors.toUnmodifiableList());
+				.toList();
 		}
 
 		return names;
@@ -227,7 +227,8 @@ final class Sql {
 		final var invalid = params.stream()
 			.map(p -> p.name)
 			.filter(not(Sql::isIdentifier))
-			.collect(Collectors.toList());
+			.toList();
+
 		if (!invalid.isEmpty()) {
 			throw new IllegalArgumentException(format(
 				"Found invalid parameter names: %s", invalid

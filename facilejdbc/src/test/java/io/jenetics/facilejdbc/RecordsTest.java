@@ -21,12 +21,18 @@ package io.jenetics.facilejdbc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import static io.jenetics.facilejdbc.Dctor.field;
+
+import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+
+import io.jenetics.facilejdbc.library.Book;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
@@ -70,7 +76,12 @@ public class RecordsTest {
 			LocalDate publishedAt
 		) {}
 
-		final Dctor<Book> dctor = Records.dctor(Book.class, Records::toSnakeCase);
+		final Dctor<Book> dctor = Records.dctor(
+			Book.class,
+			Records::toSnakeCase,
+			Map.of("publishedAt", "published_at2"),
+			field("published_at2", Book::publishedAt)
+		);
 
 		final var book = new Book(
 			"Auf der Suche nach der verlorenen Zeit",
@@ -83,7 +94,7 @@ public class RecordsTest {
 		final ParamValues values = dctor.unapply(book, null);
 
 		final var stmt = new MockPreparedStatement();
-		values.set(List.of("title", "author", "isbn", "pages", "published_at"), stmt);
+		values.set(List.of("title", "author", "isbn", "pages", "published_at2"), stmt);
 
 		assertThat(stmt.get(1)).isEqualTo(book.title());
 		assertThat(stmt.get(2)).isEqualTo(book.author());

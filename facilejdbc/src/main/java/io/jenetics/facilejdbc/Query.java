@@ -32,6 +32,7 @@ import java.io.InvalidObjectException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
+import java.io.Serial;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -44,7 +45,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -77,6 +77,8 @@ import io.jenetics.facilejdbc.Lifecycle.Value;
  * @since 1.0
  */
 public final class Query implements Serializable {
+
+	@java.io.Serial
 	private static final long serialVersionUID = 1;
 
 	private final Sql sql;
@@ -663,6 +665,7 @@ public final class Query implements Serializable {
 	}
 
 	private static final class Serial implements Externalizable {
+		@java.io.Serial
 		private static final long serialVersionUID = 1;
 
 		/**
@@ -695,6 +698,7 @@ public final class Query implements Serializable {
 			object = Query.read(in);
 		}
 
+		@java.io.Serial
 		private Object readResolve() {
 			return object;
 		}
