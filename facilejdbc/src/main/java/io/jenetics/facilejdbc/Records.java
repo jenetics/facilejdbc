@@ -33,7 +33,51 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Helper methods for handling {@link Record} types with <em>FacileJDBC</em>.
+ * Helper methods for creating de-constructors from {@link Record} types.
+ * In the simplest case the component names of the records (converted to
+ * <em>snake_case</em>) correspond to column names of the table.
+ * <p>
+ * Creating a {@link Dctor} from a given record type:
+ * <pre>{@code
+ * // The book record.
+ * record Book(
+ *     String title,
+ *     String author,
+ *     String isbn,
+ *     int pages,
+ *     LocalDate publishedAt
+ * ){}
+ *
+ * // Matching column names, with book columns:
+ * // [title, author, isbn, pages, published_at]
+ * final Dctor<Book> dctor = Records.dctor(Book.class);
+ *
+ * // Handling different column names, with book columns:
+ * // [title, primary_author, isbn13, pages, published_at]
+ * final Dctor<Book> dctor = Records.dctor(
+ *     Book.class,
+ *     component -> switch (component.getName()) {
+ *         case "author" -> "primary_author";
+ *         case "isbn" -> "isbn13";
+ *         default -> Records.toSnakeCase(component);
+ *     }
+ * );
+ *
+ * // Handling additional column, with book columns:
+ * // [title, author, isbn, pages, published_at, title_hash]
+ * final Dctor<Book> dctor = Records.dctor(
+ *     Book.class,
+ *     field("title_hash", book -> book.title().hashCode())
+ * );
+ *
+ * // Handling column "transformation", with book columns:
+ * // [title, author, isbn, pages, published_at, title_hash]
+ * final Dctor<Book> dctor = Records.dctor(
+ *     Book.class,
+ *     field("pages", book -> book.pages()*3),
+ *     field("title_hash", book -> book.title().hashCode())
+ * );
+ * }</pre>
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version 2.0

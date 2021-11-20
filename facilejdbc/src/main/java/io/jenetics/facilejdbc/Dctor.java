@@ -54,6 +54,7 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * record of a DB result row.
  *
  * @see RowParser
+ * @see Records
  *
  * @param <T> the record type to be deconstructed
  *
