@@ -46,6 +46,8 @@ public final class Records {
 	/**
 	 * Create a new deconstructor for the given record type.
 	 *
+	 * @see #dctor(Class, Function, Dctor.Field[])
+	 *
 	 * @param type the record type to deconstruct
 	 * @param toColumnName function for mapping the record component to the
 	 *        column names of the DB
@@ -119,6 +121,51 @@ public final class Records {
 				throw new SQLNonTransientException(e.getCause());
 			}
 		}
+	}
+
+	/**
+	 * Create a new deconstructor for the given record type.
+	 *
+	 * @see #dctor(Class, Function, List)
+	 *
+	 * @param type the record type to deconstruct
+	 * @param toColumnName function for mapping the record component to the
+	 *        column names of the DB
+	 * @param fields the fields which overrides/extends the
+	 *        automatically extracted fields from the record
+	 * @param <T> the record type
+	 * @return a new deconstructor for the given record type
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 * @throws IllegalArgumentException if there are duplicate fields defined
+	 */
+	@SafeVarargs
+	public static <T extends Record> Dctor<T> dctor(
+		final Class<T> type,
+		final Function<? super RecordComponent, String> toColumnName,
+		final Dctor.Field<? super T>... fields
+	) {
+		return dctor(type, toColumnName, List.of(fields));
+	}
+
+	/**
+	 * Create a new deconstructor for the given record type.
+	 *
+	 * @see #dctor(Class, Function, List)
+	 *
+	 * @param type the record type to deconstruct
+	 * @param fields the fields which overrides/extends the
+	 *        automatically extracted fields from the record
+	 * @param <T> the record type
+	 * @return a new deconstructor for the given record type
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 * @throws IllegalArgumentException if there are duplicate fields defined
+	 */
+	@SafeVarargs
+	public static <T extends Record> Dctor<T> dctor(
+		final Class<T> type,
+		final Dctor.Field<? super T>... fields
+	) {
+		return dctor(type, Records::toSnakeCase, List.of(fields));
 	}
 
 	/**

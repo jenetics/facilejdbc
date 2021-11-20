@@ -62,6 +62,9 @@ public class RecordsTest {
 		};
 	}
 
+
+	record Author(){}
+
 	@Test
 	public void dctor() throws SQLException {
 		record Book(

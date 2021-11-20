@@ -201,7 +201,7 @@ public interface Dctor<T> {
 	 *
 	 * @see Records#dctor(Class, Function, List)
 	 *
-	 * @param record the record type to deconstruct
+	 * @param type the record type to deconstruct
 	 * @param fieldOverrides the fields which overrides/extends the automatically
 	 *        extracted fields from the record
 	 * @param <T> the record type
@@ -211,10 +211,10 @@ public interface Dctor<T> {
 	 */
 	@SafeVarargs
 	static <T extends Record> Dctor<T> of(
-		final Class<T> record,
+		final Class<T> type,
 		final Dctor.Field<? super T>... fieldOverrides
 	) {
-		return Records.dctor(record, Records::toSnakeCase, List.of(fieldOverrides));
+		return Records.dctor(type, fieldOverrides);
 	}
 
 	/**
