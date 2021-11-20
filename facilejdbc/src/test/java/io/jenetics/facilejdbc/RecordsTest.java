@@ -25,7 +25,6 @@ import static io.jenetics.facilejdbc.Dctor.field;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -62,72 +61,128 @@ public class RecordsTest {
 		};
 	}
 
+	record Book(
+		String title,
+		String author,
+		String isbn,
+		int pages,
+		LocalDate publishedAt
+	){}
 
-	record Author(){}
+	private static final Book BOOK = new Book(
+		"Auf der Suche nach der verlorenen Zeit",
+		"Marcel Proust",
+		"978-3150300701",
+		4325,
+		LocalDate.parse("2020-11-13")
+	);
+
+	record Person(
+		String name,
+		String lastName,
+		LocalDate birthDate
+	) {}
 
 	@Test
 	public void dctor() throws SQLException {
-		record Book(
-			String title,
-			String author,
-			String isbn,
-			int pages,
-			LocalDate publishedAt
-		) {}
-
-		/*
-		final Dctor<Book> dctor = Records.dctor(
-			Book.class,
-			Records::toSnakeCase,
-			Map.of("publishedAt", "published_at2"),
-			List.of(field("published_at2", Book::publishedAt))
+		final List<String> bookColumnNames = List.of(
+			"title",
+			"author",
+			"isbn",
+			"pages",
+			"published_at"
 		);
-		 */
-
-		final Dctor<Book> dctor = Records.dctor(
-			Book.class,
-			component -> switch (component.getName()) {
-				case "publishedAt" -> "published_at2";
-				default -> Records.toSnakeCase(component);
-			},
-			List.of(
-				field("published_at2", Book::publishedAt),
-				field("id", book -> book.isbn() + ":" + book.author())
-			)
-		);
-
-		Records.dctor(
-			Book.class,
-			component -> switch (component.getName()) {
-				case "title" -> "title";
-				case "author" -> "author";
-				case "isbn" -> "isbn";
-				case "pages" -> "pages";
-				case "publishedAt" -> "published_at2";
-				default -> throw new IllegalStateException();
-			},
-			List.of(field("published_at2", Book::publishedAt))
-		);
-
-		final var book = new Book(
-			"Auf der Suche nach der verlorenen Zeit",
-			"Marcel Proust",
-			"978-3150300701",
-			4325,
-			LocalDate.parse("2020-11-13")
-		);
-
-		final ParamValues values = dctor.unapply(book, null);
+		final Dctor<Book> dctor = Records.dctor(Book.class);
 
 		final var stmt = new MockPreparedStatement();
-		values.set(List.of("title", "author", "isbn", "pages", "published_at2", "id"), stmt);
+		dctor.unapply(BOOK, null).set(bookColumnNames, stmt);
 
-		assertThat(stmt.get(1)).isEqualTo(book.title());
-		assertThat(stmt.get(2)).isEqualTo(book.author());
-		assertThat(stmt.get(3)).isEqualTo(book.isbn());
-		assertThat(stmt.get(4)).isEqualTo(book.pages());
-		assertThat(stmt.get(5)).isEqualTo(book.publishedAt());
-		System.out.println(stmt.get(6));
+		assertThat(stmt.get(1)).isEqualTo(BOOK.title());
+		assertThat(stmt.get(2)).isEqualTo(BOOK.author());
+		assertThat(stmt.get(3)).isEqualTo(BOOK.isbn());
+		assertThat(stmt.get(4)).isEqualTo(BOOK.pages());
+		assertThat(stmt.get(5)).isEqualTo(BOOK.publishedAt());
+	}
+
+	@Test
+	public void dctor2() throws SQLException {
+		final List<String> bookColumnNames = List.of(
+			"title",
+			"primary_author",
+			"isbn13",
+			"pages",
+			"published_at"
+		);
+		final Dctor<Book> dctor = Records.dctor(
+			Book.class,
+			component -> switch (component.getName()) {
+				case "author" -> "primary_author";
+				case "isbn" -> "isbn13";
+				default -> Records.toSnakeCase(component);
+			}
+		);
+
+		final var stmt = new MockPreparedStatement();
+		dctor.unapply(BOOK, null).set(bookColumnNames, stmt);
+
+		assertThat(stmt.get(1)).isEqualTo(BOOK.title());
+		assertThat(stmt.get(2)).isEqualTo(BOOK.author());
+		assertThat(stmt.get(3)).isEqualTo(BOOK.isbn());
+		assertThat(stmt.get(4)).isEqualTo(BOOK.pages());
+		assertThat(stmt.get(5)).isEqualTo(BOOK.publishedAt());
+	}
+
+	@Test
+	public void dctor3() throws SQLException {
+		final List<String> bookColumnNames = List.of(
+			"title",
+			"author",
+			"isbn",
+			"pages",
+			"published_at",
+			"title_hash"
+		);
+		final Dctor<Book> dctor = Records.dctor(
+			Book.class,
+			field("title_hash", book -> book.title().hashCode())
+		);
+
+		final var stmt = new MockPreparedStatement();
+		dctor.unapply(BOOK, null).set(bookColumnNames, stmt);
+
+		assertThat(stmt.get(1)).isEqualTo(BOOK.title());
+		assertThat(stmt.get(2)).isEqualTo(BOOK.author());
+		assertThat(stmt.get(3)).isEqualTo(BOOK.isbn());
+		assertThat(stmt.get(4)).isEqualTo(BOOK.pages());
+		assertThat(stmt.get(5)).isEqualTo(BOOK.publishedAt());
+		assertThat(stmt.get(6)).isEqualTo(BOOK.title().hashCode());
+	}
+
+	@Test
+	public void dctor4() throws SQLException {
+		final List<String> bookColumnNames = List.of(
+			"title",
+			"author",
+			"isbn",
+			"pages",
+			"published_at",
+			"title_hash"
+		);
+		final Dctor<Book> dctor = Records.dctor(
+			Book.class,
+			field("pages", book -> book.pages()*3),
+			field("title_hash", book -> book.title().hashCode())
+		);
+
+		final var stmt = new MockPreparedStatement();
+		dctor.unapply(BOOK, null).set(bookColumnNames, stmt);
+
+		assertThat(stmt.get(1)).isEqualTo(BOOK.title());
+		assertThat(stmt.get(2)).isEqualTo(BOOK.author());
+		assertThat(stmt.get(3)).isEqualTo(BOOK.isbn());
+		assertThat(stmt.get(4)).isEqualTo(BOOK.pages()*3);
+		assertThat(stmt.get(5)).isEqualTo(BOOK.publishedAt());
+		assertThat(stmt.get(6)).isEqualTo(BOOK.title().hashCode());
 	}
 
 }
