@@ -77,12 +77,6 @@ public class RecordsTest {
 		LocalDate.parse("2020-11-13")
 	);
 
-	record Person(
-		String name,
-		String lastName,
-		LocalDate birthDate
-	) {}
-
 	@Test
 	public void dctor() throws SQLException {
 		final List<String> bookColumnNames = List.of(
