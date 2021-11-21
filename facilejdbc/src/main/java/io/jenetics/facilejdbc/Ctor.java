@@ -24,6 +24,8 @@ import static java.util.Objects.requireNonNull;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.RecordComponent;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.function.UnaryOperator;
@@ -42,6 +44,29 @@ import java.util.stream.IntStream;
 @FunctionalInterface
 public interface Ctor<T> {
 
+
+	interface Field<T> extends RowParser<T> {
+		String name();
+
+		static <T> Field<T> of(final String name, final RowParser<? extends T> parser) {
+			requireNonNull(name);
+			requireNonNull(parser);
+
+			return new Field<T>() {
+				@Override
+				public String name() {
+					return name;
+				}
+				@Override
+				public T parse(final Row row, final Connection conn)
+					throws SQLException
+				{
+					return parser.parse(row, conn);
+				}
+			};
+		}
+	}
+
 	/**
 	 * Contains the record field name and its value. These fields are read from
 	 * the DB.
@@ -49,7 +74,7 @@ public interface Ctor<T> {
 	 * @param name the name of the DB column
 	 * @param value the SQL value, read from the DB
 	 */
-	final record Field(String name, Object value){}
+	final record Field_1(String name, Object value) {}
 
 	/**
 	 * Constructs a <em>data</em> object from the given DB fields.
@@ -57,7 +82,7 @@ public interface Ctor<T> {
 	 * @param fields the DB fields from where the object can be created from
 	 * @return a newly created <em>data</em> object
 	 */
-	T apply(final Field[] fields);
+	T apply(final Field_1[] fields);
 
 
 	/* *************************************************************************

@@ -46,6 +46,10 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  *     Dctor.field("pages", Book::pages)
  * );
  * }</pre>
+ * If the {@code Book} class is a record, you can just write
+ * <pre>{@code
+ * final Dctor<Book> dctor = Dctor.of(Book.class);
+ * }</pre>
  *
  * @apiNote
  * A {@code Dctor} (deconstructor) is responsible for splitting a given record

@@ -24,7 +24,6 @@ import static java.util.Spliterators.spliteratorUnknownSize;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -32,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -699,9 +697,9 @@ public interface RowParser<T> {
 	static <T> RowParser<T> of(final Ctor<? extends T> ctor) {
 		return (row, conn) -> {
 			final var md = row.getMetaData();
-			final var fields = new Ctor.Field[md.getColumnCount()];
+			final var fields = new Ctor.Field_1[md.getColumnCount()];
 			for (int i = 1; i <= fields.length; ++i) {
-				fields[i - 1] = new Ctor.Field(
+				fields[i - 1] = new Ctor.Field_1(
 					md.getColumnLabel(i),
 					row.getObject(i)
 				);
@@ -715,23 +713,4 @@ public interface RowParser<T> {
 		return of(Ctor.of(type));
 	}
 
-}
-
-class Main {
-
-	final record Foo(String name, int count, long max){}
-
-	static void foo() throws Exception {
-
-		final RowParser<Foo> parser = RowParser.compose(
-			params -> new Foo(
-				(String)params[0],
-				(int)params[1],
-				(long)params[2]
-			),
-			RowParser.string("name"),
-			RowParser.int32("count"),
-			RowParser.int64("max")
-		);
-	}
 }
