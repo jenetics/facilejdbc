@@ -116,6 +116,23 @@ public class RecordsTest {
 			}
 		);
 
+//		final RowParser<Book> ctor = Ctor.of(
+//			Book.class,
+//			component -> switch (component.getName()) {
+//				case "author" -> "primary_author";
+//				case "isbn" -> "isbn13";
+//				default -> Records.toSnakeCase(component);
+//			},
+//			component -> switch (component.getName()) {
+//				case "author" -> String.class;
+//				default -> component.getType();
+//			},
+//			component -> switch (component.getName()) {
+//				case "author" -> RowParser.string("primary_author");
+//				default -> null;
+//			}
+//		);
+
 		final var stmt = new MockPreparedStatement();
 		dctor.unapply(BOOK, null).set(bookColumnNames, stmt);
 

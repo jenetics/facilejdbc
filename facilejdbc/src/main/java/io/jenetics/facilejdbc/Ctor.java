@@ -27,10 +27,13 @@ import java.lang.reflect.RecordComponent;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * This interface is responsible for creating a record from given DB columns.
@@ -42,7 +45,7 @@ import java.util.stream.IntStream;
  * @since !__version__!
  */
 @FunctionalInterface
-public interface Ctor<T> {
+public interface Ctor<T> extends RowParser<T> {
 
 
 	interface Field<T> extends RowParser<T> {
@@ -67,27 +70,46 @@ public interface Ctor<T> {
 		}
 	}
 
-	/**
-	 * Contains the record field name and its value. These fields are read from
-	 * the DB.
-	 *
-	 * @param name the name of the DB column
-	 * @param value the SQL value, read from the DB
-	 */
-	final record Field_1(String name, Object value) {}
-
-	/**
-	 * Constructs a <em>data</em> object from the given DB fields.
-	 *
-	 * @param fields the DB fields from where the object can be created from
-	 * @return a newly created <em>data</em> object
-	 */
-	T apply(final Field_1[] fields);
-
 
 	/* *************************************************************************
 	 * Static factory methods.
 	 * ************************************************************************/
+
+	static <T extends Record> Ctor<T> of(
+		final Class<T> type,
+		final Function<? super RecordComponent, String> toColumnName,
+		final Function<? super RecordComponent, Class<?>> toColumnType,
+		final Function<? super RecordComponent, RowParser<?>> parsers
+	) {
+		final RecordComponent[] components = type.getRecordComponents();
+
+		final String[] columnNames = Stream.of(components)
+			.map(toColumnName)
+			.toArray(String[]::new);
+
+		final Class<?>[] columnTypes = Stream.of(type.getRecordComponents())
+			.map(toColumnType)
+			.toArray(Class<?>[]::new);
+
+		final Constructor<T> constructor;
+		try {
+			constructor = type.getConstructor(columnTypes);
+		} catch (NoSuchMethodException e) {
+			throw new ClassFormatError(
+				"Canonical record constructor must be available: " +
+					e.getMessage()
+			);
+		}
+
+		return (row, conn) -> {
+			final Object[] f = new Object[components.length];
+			for (int i = 0; i < components.length; ++i) {
+				f[i] = row.getObject(columnNames[i], columnTypes[i]);
+			}
+
+			return create(constructor, f);
+		};
+	}
 
 	/**
 	 * Creates a {@code Ctor} object from the given {@link Record} type.
@@ -117,21 +139,23 @@ public interface Ctor<T> {
 
 		final Constructor<T> ctor = ctor(type);
 
-		return fields -> {
-			final var objects = new Object[comps.length];
-			for (var field : fields) {
-				final var name = toFieldName.apply(field.name());
-				final var index = indexes.get(name);
-				if (index != null) {
-					objects[index] = fieldMapping.map(
-						field.value(),
-						comps[index].getType()
-					);
-				}
-			}
+		return null;
 
-			return create(ctor, objects);
-		};
+//		return fields -> {
+//			final var objects = new Object[comps.length];
+//			for (var field : fields) {
+//				final var name = toFieldName.apply(field.name());
+//				final var index = indexes.get(name);
+//				if (index != null) {
+//					objects[index] = fieldMapping.map(
+//						field.value(),
+//						comps[index].getType()
+//					);
+//				}
+//			}
+//
+//			return create(ctor, objects);
+//		};
 	}
 
 	private static <T> T create(final Constructor<T> ctor, final Object[] args) {
@@ -165,18 +189,18 @@ public interface Ctor<T> {
 		}
 	}
 
-	/**
-	 * Creates a {@code Ctor} object from the given {@link Record} type.
-	 *
-	 * @param type the record type
-	 * @param <T> the record type
-	 * @return a new constructor function for the given record {@code type}
-	 * @throws NullPointerException if the given record {@code type} is
-	 *         {@code null}
-	 */
-	static <T extends Record> Ctor<T> of(final Class<T> type) {
-		return of(type, Ctor::toCamelCase, Mappings::mapper);
-	}
+//	/**
+//	 * Creates a {@code Ctor} object from the given {@link Record} type.
+//	 *
+//	 * @param type the record type
+//	 * @param <T> the record type
+//	 * @return a new constructor function for the given record {@code type}
+//	 * @throws NullPointerException if the given record {@code type} is
+//	 *         {@code null}
+//	 */
+//	static <T extends Record> Ctor<T> of(final Class<T> type) {
+//		return of(type, Ctor::toCamelCase, Mappings::mapper);
+//	}
 
 	private static String toCamelCase(final String name) {
 		final var result = new StringBuilder();

@@ -694,23 +694,4 @@ public interface RowParser<T> {
 		};
 	}
 
-	static <T> RowParser<T> of(final Ctor<? extends T> ctor) {
-		return (row, conn) -> {
-			final var md = row.getMetaData();
-			final var fields = new Ctor.Field_1[md.getColumnCount()];
-			for (int i = 1; i <= fields.length; ++i) {
-				fields[i - 1] = new Ctor.Field_1(
-					md.getColumnLabel(i),
-					row.getObject(i)
-				);
-			}
-
-			return ctor.apply(fields);
-		};
-	}
-
-	static <T extends Record> RowParser<T> of(final Class<T> type) {
-		return of(Ctor.of(type));
-	}
-
 }
