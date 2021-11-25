@@ -61,7 +61,7 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  *
  * @apiNote
  * The {@code RowParser} is the counterpart of the {@link Dctor} interface. In
- * contrast of splitting a record into a set of <em>fields</em>, it creates a
+ * contrast, of splitting a record into a set of <em>fields</em>, it creates a
  * record from a selected DB row.
  *
  * @param <T> the row type
@@ -244,13 +244,13 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Return a new parser witch parses a the whole selection result.
+	 * Return a new parser witch parses the whole selection result.
 	 *
 	 * @since 1.1
 	 *
 	 * @see #list()
 	 *
-	 * @return a new parser witch parses a the whole selection result, as an
+	 * @return a new parser witch parses the whole selection result, as an
 	 *         unmodifiable list
 	 */
 	default ResultSetParser<List<T>> unmodifiableList() {
@@ -265,26 +265,26 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Return a new parser witch parses a the whole selection result.
+	 * Return a new parser witch parses the whole selection result.
 	 *
 	 * @since 1.1
 	 *
 	 * @see #unmodifiableSet()
 	 *
-	 * @return a new parser witch parses a the whole selection result
+	 * @return a new parser witch parses the whole selection result
 	 */
 	default ResultSetParser<Set<T>> set() {
 		return collection(HashSet::new);
 	}
 
 	/**
-	 * Return a new parser witch parses a the whole selection result.
+	 * Return a new parser witch parses the whole selection result.
 	 *
 	 * @since 1.1
 	 *
 	 * @see #set()
 	 *
-	 * @return a new parser witch parses a the whole selection result, as an
+	 * @return a new parser witch parses the whole selection result, as an
 	 *         unmodifiable list
 	 */
 	default ResultSetParser<Set<T>> unmodifiableSet() {
