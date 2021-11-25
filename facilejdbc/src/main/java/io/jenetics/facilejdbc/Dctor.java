@@ -77,7 +77,7 @@ public interface Dctor<T> {
 	interface Field<T> {
 
 		/**
-		 * Return the name of the record field.
+		 * Return the <em>column</em> name of the record field.
 		 *
 		 * @return the field name
 		 */
