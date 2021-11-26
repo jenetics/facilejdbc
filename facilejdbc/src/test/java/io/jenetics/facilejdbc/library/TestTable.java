@@ -1,11 +1,5 @@
 package io.jenetics.facilejdbc.library;
 
-import java.util.Random;
-
-import io.jenetics.facilejdbc.Ctor;
-import io.jenetics.facilejdbc.Dctor;
-import io.jenetics.facilejdbc.Query;
-
 public record TestTable(String stringValue, Integer intValue, Float floatValue) {
 
 //	public static final Ctor<TestTable> CTOR = Ctor.of(TestTable.class);

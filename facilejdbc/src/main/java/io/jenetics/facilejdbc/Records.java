@@ -247,12 +247,10 @@ public final class Records {
 	public static <T extends Record> RowParser<T> parser(
 		final Class<T> type,
 		final Function<? super RecordComponent, String> toColumnName,
-		final Function<? super RecordComponent, Class<?>> toColumnType,
 		final Function<? super RecordComponent, ? extends RowParser<?>> fields
 	) {
 		requireNonNull(type);
 		requireNonNull(toColumnName);
-		requireNonNull(toColumnType);
 		requireNonNull(fields);
 
 		final RecordComponent[] components = type.getRecordComponents();
@@ -260,10 +258,6 @@ public final class Records {
 		final String[] columnNames = Stream.of(components)
 			.map(toColumnName)
 			.toArray(String[]::new);
-
-		final Class<?>[] columnTypes = Stream.of(type.getRecordComponents())
-			.map(toColumnType)
-			.toArray(Class<?>[]::new);
 
 		final Constructor<T> ctor = ctor(type);
 
@@ -274,12 +268,26 @@ public final class Records {
 				if (field != null) {
 					values[i] = field.parse(row, conn);
 				} else {
-					values[i] = row.getObject(columnNames[i], columnTypes[i]);
+					values[i] = row.getObject(
+						columnNames[i],
+						components[i].getType()
+					);
 				}
 			}
 
 			return create(ctor, values);
 		};
+	}
+
+	public static <T extends Record> RowParser<T> parser(
+		final Class<T> type,
+		final Function<? super RecordComponent, String> toColumnName
+	) {
+		return parser(type, toColumnName, component -> null);
+	}
+
+	public static <T extends Record> RowParser<T> parser(final Class<T> type) {
+		return parser(type, Records::toSnakeCase, component -> null);
 	}
 
 }

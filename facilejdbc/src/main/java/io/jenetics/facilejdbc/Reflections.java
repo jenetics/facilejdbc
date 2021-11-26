@@ -6,6 +6,9 @@ import java.lang.reflect.RecordComponent;
 import java.sql.SQLNonTransientException;
 import java.util.stream.Stream;
 
+/**
+ * Some reflection helper methods.
+ */
 final class Reflections {
 	private Reflections() {
 	}
@@ -16,11 +19,10 @@ final class Reflections {
 			.toArray(Class<?>[]::new);
 
 		try {
-			return type.getConstructor(columnTypes);
+			return type.getDeclaredConstructor(columnTypes);
 		} catch (NoSuchMethodException e) {
-			throw new ClassFormatError(
-				"Canonical record constructor must be available: " +
-					e.getMessage()
+			throw new IllegalArgumentException(
+				"Canonical record constructor must be available.", e
 			);
 		}
 	}

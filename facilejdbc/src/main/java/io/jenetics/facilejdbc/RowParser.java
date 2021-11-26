@@ -694,4 +694,8 @@ public interface RowParser<T> {
 		};
 	}
 
+	static <T extends Record> RowParser<T> of(final Class<T> type) {
+		return Records.parser(type);
+	}
+
 }

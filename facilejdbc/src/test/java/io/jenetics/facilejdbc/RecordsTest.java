@@ -63,7 +63,7 @@ public class RecordsTest {
 		};
 	}
 
-	record Book(
+	private record Book(
 		String title,
 		String author,
 		String isbn,
@@ -117,23 +117,6 @@ public class RecordsTest {
 				default -> Records.toSnakeCase(component);
 			}
 		);
-
-//		final RowParser<Book> ctor = Ctor.of(
-//			Book.class,
-//			component -> switch (component.getName()) {
-//				case "author" -> "primary_author";
-//				case "isbn" -> "isbn13";
-//				default -> Records.toSnakeCase(component);
-//			},
-//			component -> switch (component.getName()) {
-//				case "author" -> String.class;
-//				default -> component.getType();
-//			},
-//			component -> switch (component.getName()) {
-//				case "author" -> RowParser.string("primary_author");
-//				default -> null;
-//			}
-//		);
 
 		final var stmt = new MockPreparedStatement();
 		dctor.unapply(BOOK, null).set(bookColumnNames, stmt);
@@ -200,20 +183,22 @@ public class RecordsTest {
 
 	@Test
 	public void ctor() throws Exception {
-		final Ctor<Book> ctor = Ctor.of(
+
+		final RowParser<Book> ctor = Records.parser(
 			Book.class,
-			Records::toSnakeCase,
-			RecordComponent::getType,
 			component -> switch (component.getName()) {
-				case "author" -> RowParser.string("primary_author");
+				case "author" -> "primary_author";
+				default -> Records.toSnakeCase(component);
+			},
+			component -> switch (component.getName()) {
+				case "isbn" -> RowParser.string("isbn13").map(s -> s.toUpperCase());
 				default -> null;
 			}
 		);
 
-		final Ctor<Book> ctor2 = Ctor.of(
+		final RowParser<Book> ctor2 = Records.parser(
 			Book.class,
 			Records::toSnakeCase,
-			RecordComponent::getType,
 			Map.of(
 				"author", RowParser.string("primary_author")
 			)::get
