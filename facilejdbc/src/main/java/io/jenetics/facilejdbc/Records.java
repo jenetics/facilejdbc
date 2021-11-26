@@ -22,10 +22,9 @@ package io.jenetics.facilejdbc;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
 import static io.jenetics.facilejdbc.Dctor.field;
+import static io.jenetics.facilejdbc.Reflections.value;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.RecordComponent;
-import java.sql.SQLNonTransientException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -143,27 +142,6 @@ public final class Records {
 		return fields.containsKey(columnName)
 			? fields.remove(columnName)
 			: field(columnName, record -> value(component, record));
-	}
-
-	private static Object value(
-		final RecordComponent component,
-		final Object record
-	)
-		throws SQLNonTransientException
-	{
-		try {
-			return component.getAccessor().invoke(record);
-		} catch (IllegalAccessException e) {
-			throw new SQLNonTransientException(e);
-		} catch (InvocationTargetException e) {
-			if (e.getCause() instanceof RuntimeException re) {
-				throw re;
-			} else if (e.getCause() instanceof Error error) {
-				throw error;
-			} else {
-				throw new SQLNonTransientException(e.getCause());
-			}
-		}
 	}
 
 	/**

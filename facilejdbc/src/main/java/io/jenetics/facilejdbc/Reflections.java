@@ -3,6 +3,7 @@ package io.jenetics.facilejdbc;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.RecordComponent;
+import java.sql.SQLNonTransientException;
 import java.util.stream.Stream;
 
 final class Reflections {
@@ -37,6 +38,24 @@ final class Reflections {
 			}
 		} catch (InstantiationException|IllegalAccessException e) {
 			throw new IllegalArgumentException(e);
+		}
+	}
+
+	static Object value(final RecordComponent component, final Object record)
+		throws SQLNonTransientException
+	{
+		try {
+			return component.getAccessor().invoke(record);
+		} catch (IllegalAccessException e) {
+			throw new SQLNonTransientException(e);
+		} catch (InvocationTargetException e) {
+			if (e.getCause() instanceof RuntimeException re) {
+				throw re;
+			} else if (e.getCause() instanceof Error error) {
+				throw error;
+			} else {
+				throw new SQLNonTransientException(e.getCause());
+			}
 		}
 	}
 
