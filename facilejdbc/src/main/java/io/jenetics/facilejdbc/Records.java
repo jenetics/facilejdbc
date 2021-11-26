@@ -54,32 +54,6 @@ import java.util.stream.Stream;
  * // Matching column names, with book columns:
  * // [title, author, isbn, pages, published_at]
  * final Dctor<Book> dctor = Records.dctor(Book.class);
- *
- * // Handling different column names, with book columns:
- * // [title, primary_author, isbn13, pages, published_at]
- * final Dctor<Book> dctor = Records.dctor(
- *     Book.class,
- *     component -> switch (component.getName()) {
- *         case "author" -> "primary_author";
- *         case "isbn" -> "isbn13";
- *         default -> Records.toSnakeCase(component);
- *     }
- * );
- *
- * // Handling additional column, with book columns:
- * // [title, author, isbn, pages, published_at, title_hash]
- * final Dctor<Book> dctor = Records.dctor(
- *     Book.class,
- *     field("title_hash", book -> book.title().hashCode())
- * );
- *
- * // Handling column "transformation", with book columns:
- * // [title, author, isbn, pages, published_at, title_hash]
- * final Dctor<Book> dctor = Records.dctor(
- *     Book.class,
- *     field("pages", book -> book.pages()*3),
- *     field("title_hash", book -> book.title().hashCode())
- * );
  * }</pre>
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
@@ -95,15 +69,39 @@ public final class Records {
 	 * ************************************************************************/
 
 	/**
-	 * Create a new deconstructor for the given record type.
+	 * Create a new deconstructor for the given record type. This method gives
+	 * you the greatest flexibility
+	 *
+	 * <pre>{@code
+	 * // Handling additional columns and different column names, with book columns:
+	 * // [title, primary_author, isbn13, pages, published_at, title_hash]
+	 * final Dctor<Book> dctor = Records.dctor(
+	 *     Book.class,
+	 *     // Mapping the record component names to the table column names.
+	 *     component -> switch (component.getName()) {
+	 *         case "author" -> "primary_author";
+	 *         case "isbn" -> "isbn13";
+	 *         // The rest of the components are converted to snake_case.
+	 *         default -> Records.toSnakeCase(component);
+	 *     },
+	 *     List.of(
+	 *         // Transform the record value, before writing it to the DB.
+	 *         field("pages", book -> book.pages()*3),
+	 *         // Define an additional column and it's value.
+	 *         field("title_hash", book -> book.title().hashCode())
+	 *     )
+	 * );
+	 * }</pre>
 	 *
 	 * @see #dctor(Class, Function, Dctor.Field[])
 	 *
 	 * @param type the record type to deconstruct
 	 * @param toColumnName function for mapping the record component to the
 	 *        column names of the DB
-	 * @param fields the fields which overrides/extends the
-	 *        automatically extracted fields from the record
+	 * @param fields The fields which overrides/extends the
+	 *        automatically extracted fields from the record. It also allows
+	 *        defining additional column values, derived from the given record
+	 *        values.
 	 * @param <T> the record type
 	 * @return a new deconstructor for the given record type
 	 * @throws NullPointerException if one of the arguments is {@code null}
@@ -152,15 +150,37 @@ public final class Records {
 	}
 
 	/**
-	 * Create a new deconstructor for the given record type.
+	 * Create a new deconstructor for the given record type. This method gives
+	 * you the greatest flexibility
+	 *
+	 * <pre>{@code
+	 * // Handling additional columns and different column names, with book columns:
+	 * // [title, primary_author, isbn13, pages, published_at, title_hash]
+	 * final Dctor<Book> dctor = Records.dctor(
+	 *     Book.class,
+	 *     // Mapping the record component names to the table column names.
+	 *     component -> switch (component.getName()) {
+	 *         case "author" -> "primary_author";
+	 *         case "isbn" -> "isbn13";
+	 *         // The rest of the components are converted to snake_case.
+	 *         default -> Records.toSnakeCase(component);
+	 *     },
+	 *     // Transform the record value, before writing it to the DB.
+	 *     field("pages", book -> book.pages()*3),
+	 *     // Define an additional column and it's value.
+	 *     field("title_hash", book -> book.title().hashCode())
+	 * );
+	 * }</pre>
 	 *
 	 * @see #dctor(Class, Function, List)
 	 *
 	 * @param type the record type to deconstruct
 	 * @param toColumnName function for mapping the record component to the
 	 *        column names of the DB
-	 * @param fields the fields which overrides/extends the
-	 *        automatically extracted fields from the record
+	 * @param fields The fields which overrides/extends the
+	 *        automatically extracted fields from the record. It also allows
+	 *        defining additional column values, derived from the given record
+	 *        values.
 	 * @param <T> the record type
 	 * @return a new deconstructor for the given record type
 	 * @throws NullPointerException if one of the arguments is {@code null}
@@ -178,11 +198,36 @@ public final class Records {
 	/**
 	 * Create a new deconstructor for the given record type.
 	 *
+	 * <pre>{@code
+	 * // Matching column names, with book columns:
+	 * // [title, author, isbn, pages, published_at]
+	 * final Dctor<Book> dctor = Records.dctor(Book.class);
+	 *
+	 * // Handling additional column, with book columns:
+	 * // [title, author, isbn, pages, published_at, title_hash]
+	 * final Dctor<Book> dctor = Records.dctor(
+	 *     Book.class,
+	 *     field("title_hash", book -> book.title().hashCode())
+	 * );
+	 *
+	 * // Handling column "transformation", with book columns:
+	 * // [title, author, isbn, pages, published_at, title_hash]
+	 * final Dctor<Book> dctor = Records.dctor(
+	 *     Book.class,
+	 *     field("pages", book -> book.pages()*3),
+	 *     field("title_hash", book -> book.title().hashCode())
+	 * );
+	 * }</pre>
+	 *
 	 * @see #dctor(Class, Function, List)
+	 * @see #dctor(Class, Function, Dctor.Field[])
+	 * @see Dctor#of(Class, Dctor.Field[])
 	 *
 	 * @param type the record type to deconstruct
-	 * @param fields the fields which overrides/extends the
-	 *        automatically extracted fields from the record
+	 * @param fields The fields which overrides/extends the
+	 *        automatically extracted fields from the record. It also allows
+	 *        defining additional column values, derived from the given record
+	 *        values.
 	 * @param <T> the record type
 	 * @return a new deconstructor for the given record type
 	 * @throws NullPointerException if one of the arguments is {@code null}
