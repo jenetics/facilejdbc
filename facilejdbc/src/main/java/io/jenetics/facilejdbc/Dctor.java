@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlFunction2;

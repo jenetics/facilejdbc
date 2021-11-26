@@ -20,16 +20,11 @@
 package io.jenetics.facilejdbc;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toMap;
 import static io.jenetics.facilejdbc.Reflections.create;
 import static io.jenetics.facilejdbc.Reflections.ctor;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.RecordComponent;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -45,28 +40,6 @@ import java.util.stream.Stream;
 @FunctionalInterface
 public interface Ctor<T> extends RowParser<T> {
 
-	interface Field<T> extends RowParser<T> {
-		String name();
-
-		static <T> Field<T> of(final String name, final RowParser<? extends T> parser) {
-			requireNonNull(name);
-			requireNonNull(parser);
-
-			return new Field<T>() {
-				@Override
-				public String name() {
-					return name;
-				}
-				@Override
-				public T parse(final Row row, final Connection conn)
-					throws SQLException
-				{
-					return parser.parse(row, conn);
-				}
-			};
-		}
-	}
-
 
 	/* *************************************************************************
 	 * Static factory methods.
@@ -76,23 +49,12 @@ public interface Ctor<T> extends RowParser<T> {
 		final Class<T> type,
 		final Function<? super RecordComponent, String> toColumnName,
 		final Function<? super RecordComponent, Class<?>> toColumnType,
-		final List<? extends Ctor.Field<? extends T>> fields
+		final Function<? super RecordComponent, ? extends RowParser<?>> fields
 	) {
 		requireNonNull(type);
 		requireNonNull(toColumnName);
 		requireNonNull(toColumnType);
 		requireNonNull(fields);
-
-		final Map<String, Ctor.Field<? extends T>> fieldsMap = fields.stream()
-			.collect(toMap(
-				Ctor.Field::name,
-				f -> f,
-				(a, b) -> {
-					throw new IllegalArgumentException(
-						"Duplicate field detected: %s".formatted(a.name())
-					);
-				}
-			));
 
 		final RecordComponent[] components = type.getRecordComponents();
 
@@ -109,7 +71,7 @@ public interface Ctor<T> extends RowParser<T> {
 		return (row, conn) -> {
 			final Object[] values = new Object[components.length];
 			for (int i = 0; i < components.length; ++i) {
-				final var field = fieldsMap.get(components[i].getName());
+				final var field = fields.apply(components[i]);
 				if (field != null) {
 					values[i] = field.parse(row, conn);
 				} else {

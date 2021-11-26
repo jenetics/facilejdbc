@@ -22,8 +22,11 @@ package io.jenetics.facilejdbc;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
 import static io.jenetics.facilejdbc.Dctor.field;
+import static io.jenetics.facilejdbc.Reflections.create;
+import static io.jenetics.facilejdbc.Reflections.ctor;
 import static io.jenetics.facilejdbc.Reflections.value;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.RecordComponent;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -86,6 +89,10 @@ import java.util.stream.Stream;
 public final class Records {
 	private Records() {
 	}
+
+	/* *************************************************************************
+	 * Factory methods for creating de-constructors.
+	 * ************************************************************************/
 
 	/**
 	 * Create a new deconstructor for the given record type.
@@ -231,6 +238,48 @@ public final class Records {
 		}
 
 		return result.toString();
+	}
+
+	/* *************************************************************************
+	 * Factory methods for creating row-parsers.
+	 * ************************************************************************/
+
+	public static <T extends Record> RowParser<T> parser(
+		final Class<T> type,
+		final Function<? super RecordComponent, String> toColumnName,
+		final Function<? super RecordComponent, Class<?>> toColumnType,
+		final Function<? super RecordComponent, ? extends RowParser<?>> fields
+	) {
+		requireNonNull(type);
+		requireNonNull(toColumnName);
+		requireNonNull(toColumnType);
+		requireNonNull(fields);
+
+		final RecordComponent[] components = type.getRecordComponents();
+
+		final String[] columnNames = Stream.of(components)
+			.map(toColumnName)
+			.toArray(String[]::new);
+
+		final Class<?>[] columnTypes = Stream.of(type.getRecordComponents())
+			.map(toColumnType)
+			.toArray(Class<?>[]::new);
+
+		final Constructor<T> ctor = ctor(type);
+
+		return (row, conn) -> {
+			final Object[] values = new Object[components.length];
+			for (int i = 0; i < components.length; ++i) {
+				final var field = fields.apply(components[i]);
+				if (field != null) {
+					values[i] = field.parse(row, conn);
+				} else {
+					values[i] = row.getObject(columnNames[i], columnTypes[i]);
+				}
+			}
+
+			return create(ctor, values);
+		};
 	}
 
 }
