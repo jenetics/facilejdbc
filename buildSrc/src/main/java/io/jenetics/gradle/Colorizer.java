@@ -319,6 +319,7 @@ public final class Colorizer extends SimpleFileVisitor<Path> {
 			"private",
 			"protected",
 			"public",
+			"record",
 			"return",
 			"short",
 			"static",
