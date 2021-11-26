@@ -184,7 +184,7 @@ public class RecordsTest {
 	@Test
 	public void ctor() throws Exception {
 
-		final RowParser<Book> ctor = Records.parser(
+		final RowParser<Book> parser = Records.parser(
 			Book.class,
 			component -> switch (component.getName()) {
 				case "author" -> "primary_author";

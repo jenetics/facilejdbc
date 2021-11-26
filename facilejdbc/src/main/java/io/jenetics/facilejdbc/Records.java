@@ -289,6 +289,37 @@ public final class Records {
 	 * Factory methods for creating row-parsers.
 	 * ************************************************************************/
 
+	/**
+	 * Creates a {@link RowParser} for the given record {@code type}. This
+	 * method gives you the greatest flexibility on creating row-parser
+	 * instances.
+	 * <pre>{@code
+	 * // Handling different column names and column types:
+	 * // [title, primary_author, isbn, pages, published_at]
+	 * final RowParser<Book> parser = Records.parser(
+	 *     Book.class,
+	 *     component -> switch (component.getName()) {
+	 *         case "author" -> "primary_author";
+	 *         // The rest of the components are converted to snake_case.
+	 *         default -> Records.toSnakeCase(component);
+	 *     },
+	 *     component -> switch (component.getName()) {
+	 *         // Converting the ISBN string into an 'Isbn' object.
+	 *         case "isbn" -> RowParser.string("isbn").map(Isbn::new);
+	 *         // Returning 'null' for using the default component type.
+	 *         default -> null;
+	 *     }
+	 * );
+	 * }</pre>
+	 *
+	 * @param type the record type
+	 * @param toColumnName function for mapping the record component to the
+	 *        column names of the DB
+	 * @param fields the additional record component conversions
+	 * @param <T> the record type
+	 * @return a new row-parser for the given record {@code type}
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 */
 	public static <T extends Record> RowParser<T> parser(
 		final Class<T> type,
 		final Function<? super RecordComponent, String> toColumnName,
@@ -324,6 +355,28 @@ public final class Records {
 		};
 	}
 
+	/**
+	 * Creates a {@link RowParser} for the given record {@code type}.
+	 * <pre>{@code
+	 * // Handling different column names and column types:
+	 * // [title, primary_author, isbn, pages, published_at]
+	 * final RowParser<Book> parser = Records.parser(
+	 *     Book.class,
+	 *     component -> switch (component.getName()) {
+	 *         case "author" -> "primary_author";
+	 *         // The rest of the components are converted to snake_case.
+	 *         default -> Records.toSnakeCase(component);
+	 *     }
+	 * );
+	 * }</pre>
+	 *
+	 * @param type the record type
+	 * @param toColumnName function for mapping the record component to the
+	 *        column names of the DB
+	 * @param <T> the record type
+	 * @return a new row-parser for the given record {@code type}
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 */
 	public static <T extends Record> RowParser<T> parser(
 		final Class<T> type,
 		final Function<? super RecordComponent, String> toColumnName
@@ -331,6 +384,21 @@ public final class Records {
 		return parser(type, toColumnName, component -> null);
 	}
 
+	/**
+	 * Creates a {@link RowParser} for the given record {@code type}.
+	 * <pre>{@code
+	 * // Handling different column names and column types:
+	 * // [title, author, isbn, pages, published_at]
+	 * final RowParser<Book> parser = Records.parser(Book.class);
+	 * }</pre>
+	 *
+	 * @see RowParser#of(Class)
+	 *
+	 * @param type the record type
+	 * @param <T> the record type
+	 * @return a new row-parser for the given record {@code type}
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 */
 	public static <T extends Record> RowParser<T> parser(final Class<T> type) {
 		return parser(type, Records::toSnakeCase, component -> null);
 	}

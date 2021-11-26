@@ -46,6 +46,7 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  *     Dctor.field("pages", Book::pages)
  * );
  * }</pre>
+ *
  * If the {@code Book} class is a record, you can just write
  * <pre>{@code
  * final Dctor<Book> dctor = Dctor.of(Book.class);
@@ -197,28 +198,47 @@ public interface Dctor<T> {
 	}
 
 	/**
-	 * Create a new deconstructor for the given record type. The component names
-	 * of the record type are converted to <em>snake_case</em> for the column
-	 * names of the DB. E.g. {@code createdAt -> created_at}.
+	 * Create a new deconstructor for the given record type.
 	 *
-	 * @since 2.0
+	 * <pre>{@code
+	 * // Matching column names, with book columns:
+	 * // [title, author, isbn, pages, published_at]
+	 * final Dctor<Book> dctor = Dctor.of(Book.class);
 	 *
-	 * @see Records#dctor(Class, Function, List)
+	 * // Handling additional column, with book columns:
+	 * // [title, author, isbn, pages, published_at, title_hash]
+	 * final Dctor<Book> dctor = Dctor.of(
+	 *     Book.class,
+	 *     field("title_hash", book -> book.title().hashCode())
+	 * );
+	 *
+	 * // Handling column "transformation", with book columns:
+	 * // [title, author, isbn, pages, published_at, title_hash]
+	 * final Dctor<Book> dctor = Dctor.of(
+	 *     Book.class,
+	 *     field("pages", book -> book.pages()*3),
+	 *     field("title_hash", book -> book.title().hashCode())
+	 * );
+	 * }</pre>
+	 *
+	 * @see Records#dctor(Class, Field[])
 	 *
 	 * @param type the record type to deconstruct
-	 * @param fieldOverrides the fields which overrides/extends the automatically
-	 *        extracted fields from the record
+	 * @param fields The fields which overrides/extends the
+	 *        automatically extracted fields from the record. It also allows
+	 *        defining additional column values, derived from the given record
+	 *        values.
 	 * @param <T> the record type
 	 * @return a new deconstructor for the given record type
 	 * @throws NullPointerException if one of the arguments is {@code null}
-	 * @throws IllegalArgumentException if there are duplicate fields
+	 * @throws IllegalArgumentException if there are duplicate fields defined
 	 */
 	@SafeVarargs
 	static <T extends Record> Dctor<T> of(
 		final Class<T> type,
-		final Dctor.Field<? super T>... fieldOverrides
+		final Dctor.Field<? super T>... fields
 	) {
-		return Records.dctor(type, fieldOverrides);
+		return Records.dctor(type, fields);
 	}
 
 	/**

@@ -55,9 +55,18 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  *     row.getString("link")
  * );
  * }</pre>
+ * <p>
+ * If you are using <em>records</em> as entity objects, the creation of
+ * row-parser instances is even simpler.
+ * <pre>{@code
+ * // Handling different column names and column types:
+ * // [title, author, isbn, pages, published_at]
+ * final RowParser<Book> parser = RowParser.of(Book.class);
+ * }</pre>
  *
  * @see ResultSetParser
  * @see Dctor
+ * @see Records
  *
  * @apiNote
  * The {@code RowParser} is the counterpart of the {@link Dctor} interface. In
@@ -694,6 +703,21 @@ public interface RowParser<T> {
 		};
 	}
 
+	/**
+	 * Creates a {@link RowParser} for the given record {@code type}.
+	 * <pre>{@code
+	 * // Handling different column names and column types:
+	 * // [title, author, isbn, pages, published_at]
+	 * final RowParser<Book> parser = RowParser.of(Book.class);
+	 * }</pre>
+	 *
+	 * @see Records#parser(Class)
+	 *
+	 * @param type the record type
+	 * @param <T> the record type
+	 * @return a new row-parser for the given record {@code type}
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 */
 	static <T extends Record> RowParser<T> of(final Class<T> type) {
 		return Records.parser(type);
 	}
