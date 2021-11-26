@@ -19,12 +19,12 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
+import static io.jenetics.facilejdbc.Reflections.create;
+import static io.jenetics.facilejdbc.Reflections.ctor;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.RecordComponent;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -87,8 +87,11 @@ public interface Ctor<T> extends RowParser<T> {
 			.collect(toMap(
 				Ctor.Field::name,
 				f -> f,
-				(a, b) -> { throw new IllegalArgumentException(format(
-					"Duplicate field detected: %s", a.name()));}
+				(a, b) -> {
+					throw new IllegalArgumentException(
+						"Duplicate field detected: %s".formatted(a.name())
+					);
+				}
 			));
 
 		final RecordComponent[] components = type.getRecordComponents();
@@ -101,44 +104,21 @@ public interface Ctor<T> extends RowParser<T> {
 			.map(toColumnType)
 			.toArray(Class<?>[]::new);
 
-		final Constructor<T> constructor;
-		try {
-			constructor = type.getConstructor(columnTypes);
-		} catch (NoSuchMethodException e) {
-			throw new ClassFormatError(
-				"Canonical record constructor must be available: " +
-					e.getMessage()
-			);
-		}
+		final Constructor<T> ctor = ctor(type);
 
 		return (row, conn) -> {
-			final Object[] f = new Object[components.length];
+			final Object[] values = new Object[components.length];
 			for (int i = 0; i < components.length; ++i) {
-				if (fieldsMap.containsKey(columnNames[i])) {
-					f[i] = fieldsMap.get(columnNames[i]).parse(row, conn);
+				final var field = fieldsMap.get(components[i].getName());
+				if (field != null) {
+					values[i] = field.parse(row, conn);
 				} else {
-					f[i] = row.getObject(columnNames[i], columnTypes[i]);
+					values[i] = row.getObject(columnNames[i], columnTypes[i]);
 				}
 			}
 
-			return create(constructor, f);
+			return create(ctor, values);
 		};
-	}
-
-	private static <T> T create(final Constructor<T> ctor, final Object[] args) {
-		try {
-			return ctor.newInstance(args);
-		} catch (InvocationTargetException e) {
-			if (e.getCause() instanceof RuntimeException rte) {
-				throw rte;
-			} else if (e.getCause() instanceof Error error) {
-				throw error;
-			} else {
-				throw new RuntimeException(e.getCause());
-			}
-		} catch (InstantiationException|IllegalAccessException e) {
-			throw new IllegalArgumentException(e);
-		}
 	}
 
 }

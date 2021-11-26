@@ -22,6 +22,7 @@ package io.jenetics.facilejdbc;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toMap;
 import static io.jenetics.facilejdbc.spi.SqlTypeMapper.map;
 
 import java.sql.Connection;
@@ -154,7 +155,16 @@ public interface Dctor<T> {
 	 * @throws IllegalArgumentException if there are duplicate fields
 	 */
 	static <T> Dctor<T> of(final List<? extends Field<? super T>> fields) {
-		final Map<String, Field<? super T>> fieldMap = toMap(fields);
+		final Map<String, Field<? super T>> fieldMap = fields.stream()
+			.collect(toMap(
+				Field::name,
+				f -> f,
+				(a, b) -> {
+					throw new IllegalArgumentException(
+						"Duplicate field detected: %s".formatted(a.name())
+					);
+				}
+			));
 
 		return (record, conn) -> (params, stmt) -> {
 			if (!fieldMap.isEmpty()) {
@@ -168,16 +178,6 @@ public interface Dctor<T> {
 				}
 			}
 		};
-	}
-
-	private static <T> Map<String, Field<? super T>>
-	toMap(final List<? extends Field<? super T>> fields) {
-		return fields.stream()
-			.collect(Collectors.toMap(
-				Field::name,
-				f -> f,
-				(a, b) -> { throw new IllegalArgumentException(format(
-					"Duplicate field detected: %s", a.name()));}));
 	}
 
 	/**

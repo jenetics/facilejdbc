@@ -19,8 +19,8 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toMap;
 import static io.jenetics.facilejdbc.Dctor.field;
 
 import java.lang.reflect.InvocationTargetException;
@@ -113,15 +113,16 @@ public final class Records {
 		requireNonNull(fields);
 
 		final Map<String, Dctor.Field<? super T>> fieldsMap = fields.stream()
-			.collect(
-				Collectors.toMap(
-					Dctor.Field::name,
-					f -> f,
-					(a, b) -> { throw new IllegalArgumentException(format(
-						"Duplicate field detected: %s", a.name()));},
-					LinkedHashMap::new
-				)
-			);
+			.collect(toMap(
+				Dctor.Field::name,
+				f -> f,
+				(a, b) -> {
+					throw new IllegalArgumentException(
+						"Duplicate field detected: %s".formatted(a.name())
+					);
+				},
+				LinkedHashMap::new
+			));
 
 		final List<Dctor.Field<? super T>> recordFields = Stream.of(type.getRecordComponents())
 			.map(c -> Records.<T>toFiled(c, toColumnName, fieldsMap))
