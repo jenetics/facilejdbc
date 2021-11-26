@@ -164,7 +164,7 @@ public class RecordsTest {
 			"published_at",
 			"title_hash"
 		);
-		final Dctor<Book> dctor = Records.dctor(
+		final Dctor<Book> dctor = Dctor.of(
 			Book.class,
 			field("pages", book -> book.pages()*3),
 			field("title_hash", book -> book.title().hashCode())
