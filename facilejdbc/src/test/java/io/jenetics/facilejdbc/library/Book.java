@@ -25,15 +25,16 @@ import static io.jenetics.facilejdbc.Dctor.fieldValue;
 import static io.jenetics.facilejdbc.Param.value;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import io.jenetics.facilejdbc.Batch;
 import io.jenetics.facilejdbc.Dctor;
 import io.jenetics.facilejdbc.Query;
+import io.jenetics.facilejdbc.Records;
 import io.jenetics.facilejdbc.RowParser;
 
 /**
@@ -56,18 +57,12 @@ public final record Book(
 	 * DB access
 	 * ************************************************************************/
 
-	static final RowParser<Book> PARSER = (row, conn) -> new Book(
-		row.getString("title"),
-		row.getString("isbn"),
-		row.getInt("pages"),
-		row.getDate("published_at").toLocalDate(),
-		Author.selectByBookId(row.getLong("id"), conn)
+	static final RowParser<Book> PARSER = Records.parserWithFields(
+		Book.class,
+		Map.of("authors", RowParser.int64("id").map(Author::selectByBookId))
 	);
 
-	private static final Dctor<Book> DCTOR = Dctor.of(
-		Book.class,
-		field("published_at", Book::publishedAt, Date::valueOf)
-	);
+	private static final Dctor<Book> DCTOR = Dctor.of(Book.class);
 
 	private static final Query INSERT= Query.of("""
 		INSERT INTO book(title, isbn, published_at, pages)

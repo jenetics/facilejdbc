@@ -15,8 +15,8 @@ CREATE TABLE author(
 );
 
 CREATE TABLE book_author(
-    book_id BIGINT REFERENCES book(id),
-    author_id BIGINT REFERENCES author(id),
+    book_id BIGINT NOT NULL REFERENCES book(id),
+    author_id BIGINT NOT NULL REFERENCES author(id),
 
     CONSTRAINT c_book_author_id UNIQUE (book_id, author_id)
 );

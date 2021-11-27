@@ -356,11 +356,50 @@ public final class Records {
 	}
 
 	/**
-	 * Creates a {@link RowParser} for the given record {@code type}.
+	 * Creates a {@link RowParser} for the given record {@code type}. This
+	 * method gives you the greatest flexibility on creating row-parser
+	 * instances.
 	 * <pre>{@code
 	 * // Handling different column names and column types:
 	 * // [title, primary_author, isbn, pages, published_at]
 	 * final RowParser<Book> parser = Records.parser(
+	 *     Book.class,
+	 *     Map.of("author", "primary_author"),
+	 *     Map.of("isbn", RowParser.string("isbn").map(Isbn::new))
+	 * );
+	 * }</pre>
+	 *
+	 * @see #parser(Class, Function, Function)
+	 *
+	 * @param type the record type
+	 * @param toColumnName function for mapping the record component anme to the
+	 *        column names of the DB
+	 * @param fields the additional record component name conversions
+	 * @param <T> the record type
+	 * @return a new row-parser for the given record {@code type}
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 */
+	public static <T extends Record> RowParser<T> parser(
+		final Class<T> type,
+		final Map<? super String, String> toColumnName,
+		final Map<? super String, ? extends RowParser<?>> fields
+	) {
+		return parser(
+			type,
+			component -> {
+				final var name = toColumnName.get(component.getName());
+				return name != null ? name : toSnakeCase(component.getName());
+			},
+			component -> fields.get(component.getName())
+		);
+	}
+
+	/**
+	 * Creates a {@link RowParser} for the given record {@code type}.
+	 * <pre>{@code
+	 * // Handling different column names and column types:
+	 * // [title, primary_author, isbn, pages, published_at]
+	 * final RowParser<Book> parser = Records.parserWithColumnNames(
 	 *     Book.class,
 	 *     component -> switch (component.getName()) {
 	 *         case "author" -> "primary_author";
@@ -370,6 +409,8 @@ public final class Records {
 	 * );
 	 * }</pre>
 	 *
+	 * @see #parserWithColumnNames(Class, Map)
+	 *
 	 * @param type the record type
 	 * @param toColumnName function for mapping the record component to the
 	 *        column names of the DB
@@ -377,11 +418,99 @@ public final class Records {
 	 * @return a new row-parser for the given record {@code type}
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
-	public static <T extends Record> RowParser<T> parser(
+	public static <T extends Record> RowParser<T> parserWithColumnNames(
 		final Class<T> type,
 		final Function<? super RecordComponent, String> toColumnName
 	) {
 		return parser(type, toColumnName, component -> null);
+	}
+
+	/**
+	 * Creates a {@link RowParser} for the given record {@code type}.
+	 * <pre>{@code
+	 * // Handling different column names and column types:
+	 * // [title, primary_author, isbn, pages, published_at]
+	 * final RowParser<Book> parser = Records.parserWithColumnNames(
+	 *     Book.class,
+	 *     Map.of("author", "primary_author")
+	 * );
+	 * }</pre>
+	 *
+	 * @see #parserWithColumnNames(Class, Function)
+	 *
+	 * @param type the record type
+	 * @param toColumnName function for mapping the record component to the
+	 *        column names of the DB
+	 * @param <T> the record type
+	 * @return a new row-parser for the given record {@code type}
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 */
+	public static <T extends Record> RowParser<T> parserWithColumnNames(
+		final Class<T> type,
+		final Map<? super String, String> toColumnName
+	) {
+		return parser(type, toColumnName, Map.of());
+	}
+
+	/**
+	 * Creates a {@link RowParser} for the given record {@code type}. This
+	 * method gives you the greatest flexibility on creating row-parser
+	 * instances.
+	 * <pre>{@code
+	 * // Handling different column names and column types:
+	 * // [title, author, isbn, pages, published_at]
+	 * final RowParser<Book> parser = Records.parserWithFields(
+	 *     Book.class,
+	 *     component -> switch (component.getName()) {
+	 *         // Converting the ISBN string into an 'Isbn' object.
+	 *         case "isbn" -> RowParser.string("isbn").map(Isbn::new);
+	 *         // Returning 'null' for using the default component type.
+	 *         default -> null;
+	 *     }
+	 * );
+	 * }</pre>
+	 *
+	 * @see #parserWithFields(Class, Map)
+	 *
+	 * @param type the record type
+	 * @param fields the additional record component conversions
+	 * @param <T> the record type
+	 * @return a new row-parser for the given record {@code type}
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 */
+	public static <T extends Record> RowParser<T> parserWithFields(
+		final Class<T> type,
+		final Function<? super RecordComponent, ? extends RowParser<?>> fields
+	) {
+		return parser(type, Records::toSnakeCase, fields);
+	}
+
+	/**
+	 * Creates a {@link RowParser} for the given record {@code type}. This
+	 * method gives you the greatest flexibility on creating row-parser
+	 * instances.
+	 * <pre>{@code
+	 * // Handling different column names and column types:
+	 * // [title, author, isbn, pages, published_at]
+	 * final RowParser<Book> parser = Records.parserWithFields(
+	 *     Book.class,
+	 *     Map.of("isbn", RowParser.string("isbn").map(Isbn::new))
+	 * );
+	 * }</pre>
+	 *
+	 * @see #parserWithFields(Class, Function)
+	 *
+	 * @param type the record type
+	 * @param fields the additional record component conversions
+	 * @param <T> the record type
+	 * @return a new row-parser for the given record {@code type}
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 */
+	public static <T extends Record> RowParser<T> parserWithFields(
+		final Class<T> type,
+		final Map<? super String, ? extends RowParser<?>> fields
+	) {
+		return parser(type, Records::toSnakeCase, cmp -> fields.get(cmp.getName()));
 	}
 
 	/**
