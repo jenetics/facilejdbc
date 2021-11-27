@@ -23,6 +23,8 @@ import static java.util.Objects.requireNonNull;
 import static io.jenetics.facilejdbc.Dctor.field;
 import static io.jenetics.facilejdbc.Dctor.fieldValue;
 import static io.jenetics.facilejdbc.Param.value;
+import static io.jenetics.facilejdbc.RowParser.int64;
+import static io.jenetics.facilejdbc.RowParser.string;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -42,14 +44,15 @@ import io.jenetics.facilejdbc.RowParser;
  */
 public final record Book(
 	String title,
-	String isbn,
+	Isbn isbn,
 	Integer pages,
 	LocalDate publishedAt,
+	String language,
 	List<Author> authors
 ) {
 
 	public Book {
-		title = requireNonNull(title);
+		requireNonNull(title);
 		authors = List.copyOf(authors);
 	}
 
@@ -59,14 +62,20 @@ public final record Book(
 
 	static final RowParser<Book> PARSER = Records.parserWithFields(
 		Book.class,
-		Map.of("authors", RowParser.int64("id").map(Author::selectByBookId))
+		Map.of(
+			"isbn", string("isbn").map(Isbn::new),
+			"authors", int64("id").map(Author::selectByBookId)
+		)
 	);
 
-	private static final Dctor<Book> DCTOR = Dctor.of(Book.class);
+	private static final Dctor<Book> DCTOR = Dctor.of(
+		Book.class,
+		field("isbn", book -> book.isbn().value())
+	);
 
 	private static final Query INSERT= Query.of("""
-		INSERT INTO book(title, isbn, published_at, pages)
-		VALUES(:title, :isbn, :published_at, :pages);
+		INSERT INTO book(title, isbn, language, published_at, pages)
+		VALUES(:title, :isbn, :language, :published_at, :pages);
 		"""
 	);
 
@@ -77,7 +86,7 @@ public final record Book(
 	);
 
 	private static final Query SELECT_BY_TITLE = Query.of("""
-		SELECT id, title, isbn, published_at, pages
+		SELECT id, title, isbn, language, published_at, pages
 		FROM book WHERE LCASE(title) like :title
 		"""
 	);

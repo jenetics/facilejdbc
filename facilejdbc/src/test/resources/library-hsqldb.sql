@@ -2,6 +2,7 @@ CREATE TABLE book(
     id BIGINT IDENTITY PRIMARY KEY,
 	published_at DATE,
 	title VARCHAR(255) NOT NULL,
+	language VARCHAR(255),
 	isbn VARCHAR(255),
 	pages INT
 );
