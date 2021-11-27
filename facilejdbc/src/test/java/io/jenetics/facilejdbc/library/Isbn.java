@@ -17,11 +17,15 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc;
+package io.jenetics.facilejdbc.library;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-public class DctorTest {
-
+public record Isbn(String value) {
+	public Isbn {
+		requireNonNull(value);
+	}
 }

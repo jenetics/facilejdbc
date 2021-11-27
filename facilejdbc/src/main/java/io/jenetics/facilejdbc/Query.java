@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -77,6 +76,8 @@ import io.jenetics.facilejdbc.Lifecycle.Value;
  * @since 1.0
  */
 public final class Query implements Serializable {
+
+	@java.io.Serial
 	private static final long serialVersionUID = 1;
 
 	private final Sql sql;
@@ -342,7 +343,6 @@ public final class Query implements Serializable {
 	 * @since 2.0
 	 *
 	 * @see Dctor#of(Class, Dctor.Field[])
-	 * @see Dctor#of(Class, UnaryOperator, Dctor.Field[])
 	 *
 	 * @param record the query parameters
 	 * @param <T> the parameter record type
@@ -645,10 +645,12 @@ public final class Query implements Serializable {
 	 *  Java object serialization
 	 * ************************************************************************/
 
+	@java.io.Serial
 	private Object writeReplace() {
 		return new Serial(this);
 	}
 
+	@java.io.Serial
 	private void readObject(final ObjectInputStream stream)
 		throws InvalidObjectException
 	{
@@ -664,6 +666,7 @@ public final class Query implements Serializable {
 	}
 
 	private static final class Serial implements Externalizable {
+		@java.io.Serial
 		private static final long serialVersionUID = 1;
 
 		/**
@@ -696,6 +699,7 @@ public final class Query implements Serializable {
 			object = Query.read(in);
 		}
 
+		@java.io.Serial
 		private Object readResolve() {
 			return object;
 		}

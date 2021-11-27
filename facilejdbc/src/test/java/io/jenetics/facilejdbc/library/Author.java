@@ -37,26 +37,21 @@ import io.jenetics.facilejdbc.RowParser;
  */
 public final record Author(String name, LocalDate birthDay) {
 	public Author {
-		name = requireNonNull(name);
+		requireNonNull(name);
 	}
 
 	/* *************************************************************************
 	 * DB access
 	 * ************************************************************************/
 
-	private static final RowParser<Author> PARSER = (row, conn) -> new Author(
-		row.getString("name"),
-		row.getDate("birth_day") != null
-			? row.getDate("birth_day").toLocalDate()
-			: null
-	);
+	private static final RowParser<Author> PARSER = RowParser.of(Author.class);
 
 	private static final Dctor<Author> DCTOR = Dctor.of(Author.class);
 
 	private static final Query INSERT = Query.of("""
-	   INSERT INTO author(name, birth_day)
-	   VALUES(:name, :birth_day);
-	   """
+		INSERT INTO author(name, birth_day)
+		VALUES(:name, :birth_day);
+		"""
 	);
 
 	private static final Query SELECT_ID_BY_NAME = Query.of(
@@ -122,7 +117,7 @@ public final record Author(String name, LocalDate birthDay) {
 	 *
 	 * @param id the book id
 	 * @param conn the DB connection
-	 * @return the list of auhtors for the given book ID
+	 * @return the list of authors for the given book ID
 	 * @throws SQLException if a DB error occurs
 	 */
 	public static List<Author> selectByBookId(final long id, final Connection conn)

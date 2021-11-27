@@ -72,7 +72,7 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 			}
 			@Override
 			public Function<Connection, ParamValues> next() {
-				final var row = it.next();
+				final List<? extends SingleParam> row = it.next();
 				return conn -> new Params(row);
 			}
 		};
@@ -101,8 +101,10 @@ public interface Batch extends Iterable<Function<Connection, ParamValues>> {
 	 * @return a new batch from the given arguments
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
-	static <T> Batch
-	of(final Iterable<? extends T> records, final Dctor<? super T> dctor) {
+	static <T> Batch of(
+		final Iterable<? extends T> records,
+		final Dctor<? super T> dctor
+	) {
 		requireNonNull(records);
 		requireNonNull(dctor);
 

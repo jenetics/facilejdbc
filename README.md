@@ -62,23 +62,21 @@ The `execute` method returns a `boolean` value as specified in the [`PreparedSta
 Usually, your selected rows will be stored in [DTO](https://en.wikipedia.org/wiki/Data_transfer_object) objects. For the _simple_ examples the following `Person` DTO will be used.
 
 ```java
-@Value
-@Builder(builderClassName = "Builder", toBuilder = true)
-@Accessors(fluent = true)
-public final class Person { 
-    private final String name;
-    private final String email;
-    private final String link;
-}
+public record Person( 
+    String name,
+    String email,
+    String link
+){}
 ```
 
 The following query will select all persons which matches a given name _pattern_.
 
 ```java
-static final Query SELECT = Query.of(
-    "SELECT name, email, link " +
-    "FROM person " +
-    "WHERE name like :name"
+static final Query SELECT = Query.of("""
+    SELECT name, email, link
+    FROM person
+    WHERE name like :name
+    """
 );
 ```
 
@@ -95,14 +93,19 @@ The `Query.on` method is used for filling the query parameters. The variables us
 The following code snippet shows the `RowParser` implementation for our `Person` DTO.
 
 ```java
-static final RowParser<Person> PARSER = (row, conn) -> Person.builder()
-    .name(row.getString("name"))
-    .email(row.getString("email"))
-    .link(row.getString("link"))
-    .build();
+static final RowParser<Person> PARSER = (row, conn) -> new Person(
+    row.getString("name"),
+    row.getString("email"),
+    row.getString("link")
+);
 ```
 
 Since the `RowParser` is a _functional_ interface it can be written as shown. The first function parameter represents the actual selected row and second parameter the JDBC `Connection` used for executing the query. In most cases the `conn` will not be used, but it is quite helpful for fetching dependent DTOs in a sub-query.
+
+Whe you are useing Java `record`s as entity objects, you can create the `RowParser` with a simple factory method.
+```java
+static final RowParser<Person> PARSER = RowParser.of(Person.class);
+```
 
 ### Lazy (stream) select
 
@@ -172,9 +175,10 @@ The rows are written _without_ a header into the CSV file.
 For inserting one new `Person` into the DB an _insert_ query have to be defined. 
 
 ```java
-static final Query INSERT = Query.of(
-    "INSERT INTO person(name, email, link) " +
-    "VALUES(:name, :email, :link);"
+static final Query INSERT = Query.of("""
+    INSERT INTO person(name, email, link)
+    VALUES(:name, :email, :link);
+    """
 );
 ```
 
@@ -197,6 +201,12 @@ private static final Dctor<Person> DCTOR = Dctor.of(
     field("email", Person::email),
     field("link", Person::link)
 );
+```
+
+The `Dctor` interface also comes with a simple factory method for records.
+
+```java
+private static final Dctor<Person> DCTOR = Dctor.of(Person.class);
 ```
 
 Once a deconstructor is defined for your DTO, you can easily insert single `Person` objects.
@@ -292,25 +302,21 @@ try (var in = Files.newInputStream(Path.of("./book.pdf"))) {
 It is possible to create automatic parameter value conversion via the SPI `SqlTypeMapper` class. Usually, it is not possible to insert an `URI` field directly into the DB. You have to convert it into a string object first.
 
 ```java
-@Value
-public static final class Person {
-    private final String name;
-    private final URI link;
-}
+public record Person(
+    String name,
+    URI link
+){}
 
 static final Dctor<Person> DCTOR = Dctor.of(
-    field("name", Person::name),
-    field("email", p -> p.link().toString())
+    Person.class, 
+    Dctor.field("email", p -> p.link().toString())
 );
 ```
 
 If a mapper for the `URI` class is defined, it is possible to write the deconstructor more concise.
 
 ```java
-static final Dctor<Person> DCTOR = Dctor.of(
-    field("name", Person::name),
-    field("email", Person::link)
-);
+static final Dctor<Person> DCTOR = Dctor.of(Person.class);
 ```
 
 The implementation of such a mapping is quite simple and will look like showed
@@ -349,24 +355,18 @@ The previous examples shows the basic usage of the library. It is possible to us
 Lets extend our initial example an convert the _link_ of the `Person` into an object
 
 ```java
-@Value
-@Builder(builderClassName = "Builder", toBuilder = true)
-@Accessors(fluent = true)
-public final class Person { 
-    private final String name;
-    private final String email;
-    private final Link link;
-}
+public record Person( 
+    String name,
+    String email,
+    Link link
+){}
 ```
 and with a `Link` class, which will look like the following.
 ```java
-@Value
-@Builder(builderClassName = "Builder", toBuilder = true)
-@Accessors(fluent = true)
-public final class Link { 
-    private final String name;
-    private final URI link;
-}
+public record Link( 
+    String name,
+    URI link
+){}
 ```
 
 It is now possible to create one `RowParser<Person>` and one `Dctor<Person>` which automatically takes care about the linked `Link` object. The new parser will look like the following code snippet.
@@ -381,8 +381,7 @@ static final RowParser<Person> PERSON_PARSER = (row, conn) -> new Person(
 With the shown deconstructor.
 ```java
 static final Dctor<Person> PERSON_DCTOR = Dctor.of(
-    field("name", Person::name),
-    field("email", Person::email),
+    Person.class,
     field("link_id", (p, c) -> insertLink(p.link(), c))
 );
 ```
