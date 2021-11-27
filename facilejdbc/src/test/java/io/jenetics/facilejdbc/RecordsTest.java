@@ -22,11 +22,9 @@ package io.jenetics.facilejdbc;
 import static org.assertj.core.api.Assertions.assertThat;
 import static io.jenetics.facilejdbc.Dctor.field;
 
-import java.lang.reflect.RecordComponent;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -179,30 +177,6 @@ public class RecordsTest {
 		assertThat(stmt.get(4)).isEqualTo(BOOK.pages()*3);
 		assertThat(stmt.get(5)).isEqualTo(BOOK.publishedAt());
 		assertThat(stmt.get(6)).isEqualTo(BOOK.title().hashCode());
-	}
-
-	@Test
-	public void ctor() throws Exception {
-
-		final RowParser<Book> parser = Records.parser(
-			Book.class,
-			component -> switch (component.getName()) {
-				case "author" -> "primary_author";
-				default -> Records.toSnakeCase(component);
-			},
-			component -> switch (component.getName()) {
-				case "isbn" -> RowParser.string("isbn13").map(s -> s.toUpperCase());
-				default -> null;
-			}
-		);
-
-		final RowParser<Book> ctor2 = Records.parser(
-			Book.class,
-			Records::toSnakeCase,
-			Map.of(
-				"author", RowParser.string("primary_author")
-			)::get
-		);
 	}
 
 }

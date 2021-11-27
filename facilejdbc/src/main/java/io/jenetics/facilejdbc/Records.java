@@ -395,7 +395,8 @@ public final class Records {
 	}
 
 	/**
-	 * Creates a {@link RowParser} for the given record {@code type}.
+	 * Creates a {@link RowParser} for the given record {@code type} and an
+	 * additional record-component to column name mapping.
 	 * <pre>{@code
 	 * // Handling different column names and column types:
 	 * // [title, primary_author, isbn, pages, published_at]
@@ -426,7 +427,8 @@ public final class Records {
 	}
 
 	/**
-	 * Creates a {@link RowParser} for the given record {@code type}.
+	 * Creates a {@link RowParser} for the given record {@code type} and an
+	 * additional record-component name to column name mapping.
 	 * <pre>{@code
 	 * // Handling different column names and column types:
 	 * // [title, primary_author, isbn, pages, published_at]
@@ -453,9 +455,8 @@ public final class Records {
 	}
 
 	/**
-	 * Creates a {@link RowParser} for the given record {@code type}. This
-	 * method gives you the greatest flexibility on creating row-parser
-	 * instances.
+	 * Creates a {@link RowParser} for the given record {@code type} and an
+	 * additional record-component to column mapping.
 	 * <pre>{@code
 	 * // Handling different column names and column types:
 	 * // [title, author, isbn, pages, published_at]
@@ -486,9 +487,8 @@ public final class Records {
 	}
 
 	/**
-	 * Creates a {@link RowParser} for the given record {@code type}. This
-	 * method gives you the greatest flexibility on creating row-parser
-	 * instances.
+	 * Creates a {@link RowParser} for the given record {@code type} and an
+	 * additional record-component name to column mapping.
 	 * <pre>{@code
 	 * // Handling different column names and column types:
 	 * // [title, author, isbn, pages, published_at]
