@@ -22,6 +22,7 @@ package io.jenetics.facilejdbc;
 import static java.util.Objects.requireNonNull;
 import static java.util.Spliterators.spliteratorUnknownSize;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -484,6 +485,30 @@ public interface RowParser<T> {
 	}
 
 	/**
+	 * Return a row parser for short values for the given column name.
+	 *
+	 * @since 2.0
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Short> int16(final String name) {
+		return (row, conn) -> row.getShort(name);
+	}
+
+	/**
+	 * Return a row parser for short values for the given column index.
+	 *
+	 * @since 2.0
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Short> int16(final int index) {
+		return (row, conn) -> row.getShort(index);
+	}
+
+	/**
 	 * Return a row parser for int values for the given column name.
 	 *
 	 * @param name the column name
@@ -569,6 +594,54 @@ public interface RowParser<T> {
 	 */
 	static RowParser<Double> float64(final int index) {
 		return (row, conn) -> row.getDouble(index);
+	}
+
+	/**
+	 * Return a row parser for big-decimal values for the given column name.
+	 *
+	 * @since 2.0
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<BigDecimal> decimal(final String name) {
+		return (row, conn) -> row.getBigDecimal(name);
+	}
+
+	/**
+	 * Return a row parser for big-decimal values for the given column index.
+	 *
+	 * @since 2.0
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<BigDecimal> decimal(final int index) {
+		return (row, conn) -> row.getBigDecimal(index);
+	}
+
+	/**
+	 * Return a row parser for boolean values for the given column name.
+	 *
+	 * @since 2.0
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Boolean> bool(final String name) {
+		return (row, conn) -> row.getBoolean(name);
+	}
+
+	/**
+	 * Return a row parser for boolean values for the given column index.
+	 *
+	 * @since 2.0
+	 *
+	 * @param index the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Boolean> bool(final int index) {
+		return (row, conn) -> row.getBoolean(index);
 	}
 
 	/**
