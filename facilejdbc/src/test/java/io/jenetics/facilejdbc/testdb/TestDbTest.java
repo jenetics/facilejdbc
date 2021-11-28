@@ -48,7 +48,7 @@ import io.jenetics.facilejdbc.util.Queries;
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-public class LibraryTest {
+public class TestDbTest {
 
 	private final Transactional db = () -> DriverManager.getConnection(
 		"jdbc:hsqldb:mem:testdb",
