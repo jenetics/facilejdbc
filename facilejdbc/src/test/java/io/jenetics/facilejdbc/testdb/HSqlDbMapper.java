@@ -17,7 +17,7 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc.library;
+package io.jenetics.facilejdbc.testdb;
 
 import java.sql.Timestamp;
 import java.time.Instant;
