@@ -19,14 +19,10 @@
  */
 package io.jenetics.facilejdbc.library;
 
-import static io.jenetics.facilejdbc.RowParser.instant;
-
 import com.github.javafaker.Faker;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 import java.util.function.Supplier;
 
@@ -65,7 +61,7 @@ public record Location(
 
 	static final RowParser<Location> PARSER = Records.parserWithFields(
 		Location.class,
-		Map.of("createdAt", instant("created_at"))
+		Map.of("createdAt", RowParser.instant("created_at"))
 	);
 
 	static final Dctor<Location> DCTOR = Dctor.of(Location.class);
@@ -84,7 +80,7 @@ public record Location(
 		"""
 	);
 
-	static final Query SELECT = Query.of("SELECT * FROM location ORDER BY id");
+	static final Query SELECT_ALL = Query.of("SELECT * FROM location ORDER BY id");
 
 	static Location next(final Random random) {
 		final var faker = new Faker(random);

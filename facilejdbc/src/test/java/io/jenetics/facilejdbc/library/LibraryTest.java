@@ -131,12 +131,11 @@ public class LibraryTest {
 	@Test(dependsOnMethods = "insert")
 	public void selectLocations() throws SQLException {
 		db.transaction().accept(conn -> {
-			final Stream<Location> stream = Location.SELECT
+			final Stream<Location> stream = Location.SELECT_ALL
 				.as(Location.PARSER.stream(), conn);
 
 			try (stream) {
-				final List<Location> result = stream.toList();
-				assertThat(result).isEqualTo(locations);
+				assertThat(stream.toList()).isEqualTo(locations);
 			}
 		});
 	}
