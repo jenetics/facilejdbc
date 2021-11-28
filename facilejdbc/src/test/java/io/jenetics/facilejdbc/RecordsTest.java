@@ -44,8 +44,12 @@ public class RecordsTest {
 	@DataProvider
 	public Object[][] snakeCaseStrings() {
 		return new Object[][] {
+			{null, null},
 			{"", ""},
 			{"a", "a"},
+			{"A", "a"},
+			{"AA", "aa"},
+			{"AAA", "aaa"},
 			{"simple", "simple"},
 			{"simpleName", "simple_name"},
 			{"SimpleName", "simple_name"},
@@ -55,9 +59,13 @@ public class RecordsTest {
 			{"simple___Name", "simple___name"},
 			{"_Simple_Name", "_simple_name"},
 			{"___Simple_Name", "___simple_name"},
-			{"IOError", "i_o_error"},
+			{"IOError", "io_error"},
 			{"IoError", "io_error"},
-			{"ioError", "io_error"}
+			{"ioError", "io_error"},
+			{"ERROR", "error"},
+			{"ERROR_CODE", "error_code"},
+			{"ERROR_code", "error_code"},
+			{"ERRORCode", "error_code"}
 		};
 	}
 

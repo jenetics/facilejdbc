@@ -243,15 +243,9 @@ public final class Records {
 
 	/**
 	 * Converts to given record component to a column name in
-	 * <a href="https://en.wikipedia.org/wiki/Snake_case">snake_case</a>. The
-	 * following list shows some examples.
-	 * <ul>
-	 *     <li>{@code name} &rarr; {@code name}</li>
-	 *     <li>{@code simpleName} &rarr; {@code simple_name}</li>
-	 *     <li>{@code SimpleName} &rarr; {@code simple_name}</li>
-	 *     <li>{@code Simple_Name} &rarr; {@code simple_name}</li>
-	 *     <li>{@code Simple___Name} &rarr; {@code simple___name}</li>
-	 * </ul>
+	 * <a href="https://en.wikipedia.org/wiki/Snake_case">snake_case</a>.
+	 *
+	 * @see #toSnakeCase(String)
 	 *
 	 * @param component the record component
 	 * @return the name of the record component in <em>snake_case</em>
@@ -262,7 +256,29 @@ public final class Records {
 		return toSnakeCase(component.getName());
 	}
 
-	static String toSnakeCase(final String name) {
+	/**
+	 * Converts to given record component name to a column name in
+	 * <a href="https://en.wikipedia.org/wiki/Snake_case">snake_case</a>. The
+	 * following list shows some examples.
+	 * <ul>
+	 *     <li>{@code name} &rarr; {@code name}</li>
+	 *     <li>{@code simpleName} &rarr; {@code simple_name}</li>
+	 *     <li>{@code SimpleName} &rarr; {@code simple_name}</li>
+	 *     <li>{@code Simple_Name} &rarr; {@code simple_name}</li>
+	 *     <li>{@code Simple___Name} &rarr; {@code simple___name}</li>
+	 *     <li>{@code IOError} &rarr; {@code io_error}</li>
+	 * </ul>
+	 *
+	 * @see #toSnakeCase(RecordComponent)
+	 *
+	 * @param name the record component name
+	 * @return the name of the record component in <em>snake_case</em>
+	 */
+	public static String toSnakeCase(final String name) {
+		if (name == null) {
+			return null;
+		}
+
 		final var result = new StringBuilder();
 
 		for (int i = 0; i < name.length(); i++) {
@@ -272,7 +288,13 @@ public final class Records {
 				result.append(Character.toLowerCase(ch));
 			} else {
 				if (Character.isUpperCase(ch)) {
-					if (name.charAt(i - 1) != '_') {
+					final var lastChar = name.charAt(i - 1);
+					final var nextChar = i < name.length() - 1
+						? name.charAt(i + 1) : '\0';
+
+					if ((lastChar != '_' && !Character.isUpperCase(lastChar)) ||
+						(Character.isLowerCase(nextChar) && lastChar != '_'))
+					{
 						result.append('_');
 					}
 					result.append(Character.toLowerCase(ch));
