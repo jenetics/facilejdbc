@@ -76,7 +76,7 @@ public non-sealed interface MultiParam extends Param {
 		}
 
 		final List<ParamValue> list = new ArrayList<>();
-		values.forEach(list::add);
+		it.forEachRemaining(list::add);
 		final var vals = List.copyOf(list);
 
 		return new MultiParam() {

@@ -268,6 +268,7 @@ public final class Records {
 	 *     <li>{@code Simple___Name} &rarr; {@code simple___name}</li>
 	 *     <li>{@code IOError} &rarr; {@code io_error}</li>
 	 *     <li>{@code IoError} &rarr; {@code io_error}</li>
+	 *     <li>{@code UncheckedSQLException} &rarr; {@code unchecked_sql_exception}</li>
 	 * </ul>
 	 *
 	 * @see #toSnakeCase(RecordComponent)

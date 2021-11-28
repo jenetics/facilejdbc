@@ -80,7 +80,7 @@ final class Sql {
 
 	private List<String> paramNames = null;
 
-	Sql(final String string, final List<Param> params) {
+	private Sql(final String string, final List<Param> params) {
 		this.string = requireNonNull(string);
 		this.params = List.copyOf(params);
 	}

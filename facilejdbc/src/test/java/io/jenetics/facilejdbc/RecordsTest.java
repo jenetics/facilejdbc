@@ -65,7 +65,8 @@ public class RecordsTest {
 			{"ERROR", "error"},
 			{"ERROR_CODE", "error_code"},
 			{"ERROR_code", "error_code"},
-			{"ERRORCode", "error_code"}
+			{"ERRORCode", "error_code"},
+			{"UncheckedSQLException", "unchecked_sql_exception"}
 		};
 	}
 
