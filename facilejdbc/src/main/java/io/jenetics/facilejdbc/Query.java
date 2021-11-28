@@ -176,9 +176,9 @@ public final class Query implements Serializable {
 	 */
 	public Query withFetchSize(final int fetchSize) {
 		if (fetchSize < 0) {
-			throw new IllegalArgumentException(format(
-				"Fetch size must be positive: %s.", fetchSize
-			));
+			throw new IllegalArgumentException(
+				"Fetch size must be positive: %s.".formatted(fetchSize)
+			);
 		}
 
 		return new Query(sql, values, fetchSize, timeout);
@@ -186,10 +186,11 @@ public final class Query implements Serializable {
 
 	/**
 	 * Sets the timeout the driver will wait for a {@link Statement} object to
-	 * execute. By default there is no limit on the amount of time allowed for a
+	 * execute. By default, there is no limit on the amount of time allowed for a
 	 * running statement to complete. If the limit is exceeded, an
 	 * {@link SQLTimeoutException} is thrown. A JDBC driver must apply this
-	 * limit to the execute, executeQuery and executeUpdate methods.
+	 * limit to execute, {@link Statement#executeQuery(String)} and
+	 * {@link Statement#executeUpdate(String)} methods.
 	 *
 	 * @since 1.2
 	 *
@@ -252,13 +253,13 @@ public final class Query implements Serializable {
 		if (params.isEmpty()) {
 			return this;
 		} else {
-			final var sql = params.stream()
+			final Sql sql = params.stream()
 				.reduce(
 					this.sql,
 					(s, p) -> s.expand(p.name(), p.values().size()),
 					(s1, s2) -> { throw new AssertionError(); });
 
-			final var values = this.values.andThen(
+			final ParamValues values = this.values.andThen(
 				new Params(
 					params.stream()
 						.flatMap(Query::toParams)
@@ -271,7 +272,7 @@ public final class Query implements Serializable {
 	}
 
 	private static Stream<SingleParam> toParams(final MultiParam param) {
-		final var values = param.values();
+		final List<ParamValue> values = param.values();
 		return IntStream.range(0, values.size())
 			.mapToObj(i -> SingleParam.of(Sql.name(param.name(), i), values.get(i)));
 	}
@@ -312,7 +313,7 @@ public final class Query implements Serializable {
 		return on(
 			params.entrySet().stream()
 				.map(e -> Param.value(e.getKey(), e.getValue()))
-				.collect(Collectors.toList())
+				.toList()
 		);
 	}
 
@@ -396,8 +397,8 @@ public final class Query implements Serializable {
 	private static <T> T prepare(final Value<T, SQLException> result)
 		throws SQLException
 	{
-		if (result.get() instanceof Stream<?>) {
-			return (T)((Stream<?>)result.get()).onClose(() ->
+		if (result.get() instanceof Stream<?> stream) {
+			return (T)stream.onClose(() ->
 				result.uncheckedClose(UncheckedSQLException::new)
 			);
 		} else {

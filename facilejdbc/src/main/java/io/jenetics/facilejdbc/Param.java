@@ -42,7 +42,7 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  *     Param.value("email", "some.email@gmail.com"))
  * }</pre>
  *
- * Creating multi valued parameters:
+ * Creating multivalued parameters:
  * <pre>{@code
  * Query.of("SELECT * FROM table WHERE id = IN(:ids);")
  *     .on(Param.values("ids", 1, 2, 3, 4))
@@ -88,7 +88,7 @@ public sealed interface Param permits SingleParam, MultiParam {
 		requireNonNull(value);
 		return SingleParam.of(
 			name,
-			(index, stmt) -> stmt.setObject(index, map(value))
+			(idx, stmt) -> stmt.setObject(idx, map(value))
 		);
 	}
 
@@ -117,8 +117,8 @@ public sealed interface Param permits SingleParam, MultiParam {
 		return MultiParam.of(
 			name,
 			stream(values)
-				.map(v -> (ParamValue)(index, stmt) -> stmt.setObject(index, map(v)))
-				.collect(Collectors.toUnmodifiableList())
+				.map(v -> (ParamValue)(idx, stmt) -> stmt.setObject(idx, map(v)))
+				.toList()
 		);
 	}
 
@@ -173,7 +173,7 @@ public sealed interface Param permits SingleParam, MultiParam {
 		requireNonNull(value);
 		return SingleParam.of(
 			name,
-			(index, stmt) -> stmt.setObject(index, map(value.get()))
+			(idx, stmt) -> stmt.setObject(idx, map(value.get()))
 		);
 	}
 
@@ -203,8 +203,8 @@ public sealed interface Param permits SingleParam, MultiParam {
 		return MultiParam.of(
 			name,
 			stream(values)
-				.map(v -> (ParamValue)(i, stmt) -> stmt.setObject(i, map(v.get())))
-				.collect(Collectors.toUnmodifiableList())
+				.map(v -> (ParamValue)(idx, stmt) -> stmt.setObject(idx, map(v.get())))
+				.toList()
 		);
 	}
 
