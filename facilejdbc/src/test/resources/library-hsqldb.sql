@@ -22,9 +22,30 @@ CREATE TABLE book_author(
     CONSTRAINT c_book_author_id UNIQUE (book_id, author_id)
 );
 
-CREATE TABLE test_table(
-    id BIGINT IDENTITY PRIMARY KEY,
-    string_value VARCHAR(255),
-    int_value INT,
-    float_value DOUBLE
+CREATE TABLE location(
+	id BIGINT IDENTITY PRIMARY KEY,
+
+	lat DOUBLE NOT NULL,
+	lon DOUBLE NOT NULL,
+
+	ele DOUBLE,
+	created_at TIMESTAMP(3),
+	speed DOUBLE,
+	magvar DOUBLE,
+	geoidheight DOUBLE,
+	name VARCHAR(255),
+	cmt VARCHAR(255),
+	dscr VARCHAR(2024),
+	src VARCHAR(255),
+	sym VARCHAR(255),
+	type VARCHAR(255),
+	fix VARCHAR(10),
+	sat INT,
+	hdop DOUBLE,
+	vdop DOUBLE,
+	pdop DOUBLE,
+	ageofdgpsdata INT,
+	dgpsid INT,
+	course DOUBLE,
+	extensions VARCHAR(2024)
 );

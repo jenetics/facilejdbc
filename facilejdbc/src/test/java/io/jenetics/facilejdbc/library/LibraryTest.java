@@ -56,6 +56,11 @@ public class LibraryTest {
 		""
 	);
 
+	private final Random random = new Random();
+	private final List<Location> locations = Stream.generate(() -> Location.next(random))
+		.limit(1000)
+		.toList();
+
 	private static final List<Book> BOOKS = List.of(
 		new Book(
 			"Auf der Suche nach der verlorenen Zeit",
@@ -117,22 +122,22 @@ public class LibraryTest {
 		final long id = db.transaction().apply(conn ->
 			Book.insert(BOOKS.get(0), conn)
 		);
-
 		Assert.assertTrue(id >= 0);
 
-		final var random = new Random();
-		final var objects = Stream.generate(() -> TestTable.next(random))
-			.limit(25)
-			.collect(Collectors.toList());
-		final var batch = Batch.of(objects, TestTable.DCTOR);
-		db.transaction().accept(conn -> TestTable.INSERT.execute(batch, conn));
+		final var batch = Batch.of(locations, Location.DCTOR);
+		db.transaction().accept(conn -> Location.INSERT.execute(batch, conn));
 	}
 
 	@Test(dependsOnMethods = "insert")
-	public void selectTestTable() throws SQLException {
+	public void selectLocations() throws SQLException {
 		db.transaction().accept(conn -> {
-			final var result = TestTable.SELECT
-				.as(RowParser.of(TestTable.class).list(), conn);
+			final Stream<Location> stream = Location.SELECT
+				.as(Location.PARSER.stream(), conn);
+
+			try (stream) {
+				final List<Location> result = stream.toList();
+				assertThat(result).isEqualTo(locations);
+			}
 		});
 	}
 

@@ -17,26 +17,22 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
+package io.jenetics.facilejdbc.library;
 
-/**
- * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @since 1.2
- * @version 1.2
- */
+import java.sql.Timestamp;
+import java.time.Instant;
 
-plugins {
-	`java-library`
-	idea
-	`maven-publish`
-}
+import io.jenetics.facilejdbc.spi.SqlTypeMapper;
 
-description = "FacileJDBC Library"
+public class HSqlDbMapper extends SqlTypeMapper {
 
-extra["moduleName"] = "io.jenetics.facilejdbc"
+	@Override
+	public Object convert(final Object value) {
+		if (value instanceof Instant instant) {
+			return Timestamp.from(instant);
+		} else {
+			return value;
+		}
+	}
 
-dependencies {
-	testImplementation(libs.testng)
-	testImplementation(libs.assertj)
-	testImplementation(libs.hsqldb)
-	testImplementation(libs.javafaker)
 }

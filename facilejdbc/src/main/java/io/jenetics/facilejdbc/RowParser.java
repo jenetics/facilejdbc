@@ -697,7 +697,7 @@ public interface RowParser<T> {
 	 * @return the row-parser for the given column
 	 */
 	static RowParser<Instant> instant(final String name) {
-		return timestamp(name).map(Timestamp::toInstant);
+		return timestamp(name).map(ts -> ts != null ? ts.toInstant() : null);
 	}
 
 	/**
@@ -709,7 +709,7 @@ public interface RowParser<T> {
 	 * @return the row-parser for the given column
 	 */
 	static RowParser<Instant> instant(final int index) {
-		return timestamp(index).map(Timestamp::toInstant);
+		return timestamp(index).map(ts -> ts != null ? ts.toInstant() : null);
 	}
 
 	/**
