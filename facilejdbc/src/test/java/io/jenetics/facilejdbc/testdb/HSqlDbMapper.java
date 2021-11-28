@@ -24,6 +24,9 @@ import java.time.Instant;
 
 import io.jenetics.facilejdbc.spi.SqlTypeMapper;
 
+/**
+ * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ */
 public class HSqlDbMapper extends SqlTypeMapper {
 
 	@Override

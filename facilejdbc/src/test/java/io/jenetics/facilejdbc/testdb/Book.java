@@ -70,7 +70,7 @@ public final record Book(
 
 	private static final Dctor<Book> DCTOR = Dctor.of(
 		Book.class,
-		field("isbn", book -> book.isbn().value())
+		field("isbn", b -> b.isbn() != null ? b.isbn().value() : null)
 	);
 
 	private static final Query INSERT= Query.of("""
@@ -137,8 +137,7 @@ public final record Book(
 	 * @throws SQLException if a DB error occurs
 	 */
 	public static Set<Book> selectAll(final Connection conn) throws SQLException {
-		return Query
-			.of("SELECT * FROM book;")
+		return Query.of("SELECT * FROM book;")
 			.as(PARSER.unmodifiableSet(), conn);
 	}
 
