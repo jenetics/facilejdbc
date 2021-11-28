@@ -207,7 +207,7 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Return a new parser witch parses a the whole selection result.
+	 * Return a new parser witch parses the whole selection result.
 	 *
 	 * @since 1.1
 	 *
@@ -224,7 +224,7 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Return a new parser witch parses a the whole selection result.
+	 * Return a new parser witch parses the whole selection result.
 	 *
 	 * @see #unmodifiableList()
 	 *
