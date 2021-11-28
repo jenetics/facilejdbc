@@ -133,8 +133,6 @@ public class LibraryTest {
 		db.transaction().accept(conn -> {
 			final var result = TestTable.SELECT
 				.as(RowParser.of(TestTable.class).list(), conn);
-
-			//result.forEach(System.out::println);
 		});
 	}
 
