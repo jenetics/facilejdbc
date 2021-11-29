@@ -128,9 +128,10 @@ public final class Records {
 				LinkedHashMap::new
 			));
 
-		final List<Dctor.Field<? super T>> recordFields = Stream.of(type.getRecordComponents())
-			.map(c -> Records.<T>toFiled(c, toColumnName, fieldsMap))
-			.collect(Collectors.toList());
+		final List<Dctor.Field<? super T>> recordFields =
+			Stream.of(type.getRecordComponents())
+				.map(c -> Records.<T>toFiled(c, toColumnName, fieldsMap))
+				.collect(Collectors.toList());
 
 		recordFields.addAll(fieldsMap.values());
 

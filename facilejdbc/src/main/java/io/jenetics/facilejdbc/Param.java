@@ -24,7 +24,6 @@ import static java.util.Objects.requireNonNull;
 import static io.jenetics.facilejdbc.spi.SqlTypeMapper.map;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -203,7 +202,7 @@ public sealed interface Param permits SingleParam, MultiParam {
 		return MultiParam.of(
 			name,
 			stream(values)
-				.map(v -> (ParamValue)(idx, stmt) -> stmt.setObject(idx, map(v.get())))
+				.map(v -> (ParamValue)(i, stmt) -> stmt.setObject(i, map(v.get())))
 				.toList()
 		);
 	}
