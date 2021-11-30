@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/jenetics/facilejdbc.svg?branch=master)](https://travis-ci.org/jenetics/facilejdbc)
+![Build Status](https://github.com/jenetics/facilejdbc/actions/workflows/gradle.yml/badge.svg)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.jenetics/facilejdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.jenetics/facilejdbc)
 [![Javadoc](https://www.javadoc.io/badge/io.jenetics/facilejdbc.svg)](http://www.javadoc.io/doc/io.jenetics/facilejdbc)
 
@@ -486,61 +486,44 @@ The library is licensed under the [Apache License, Version 2.0](http://www.apach
 
 ## Release notes
 
-### [1.3.0](https://github.com/jenetics/facilejdbc/releases/tag/v1.3.0)
-
-* [#45](https://github.com/jenetics/facilejdbc/issues/45): Make `RowParser` composable.
-* [#40](https://github.com/jenetics/facilejdbc/issues/40): Allow streaming of selection results.
-```java
-final var select = Query.of("SELECT * FROM person;");
-
-// Make sure to close the returned stream.
-try (var persons = select.as(PARSER.stream(), conn)) {
-    // Do some processing with the person stream.
-    persons.forEach(person -> ...);
-}
-```
-* [#39](https://github.com/jenetics/facilejdbc/issues/39): Parser for exporting results as CSV file/string.
-```java
-final var select = Query.of("SELECT * FROM book;");
-final var csv = select.as(ResultSetParser.csvLine(), conn);
-System.out.println(csv);
-```
-* [#26](https://github.com/jenetics/facilejdbc/issues/26): Implement multi-value parameter
-```java
-final List<Book> results = Query.of("SELECT * FROM book WHERE id IN(:ids);")
-    .on(Param.values("ids", 1, 2, 3, 4))
-    .as(PARSER.list(), conn);
-```
+### [2.0.0](https://github.com/jenetics/facilejdbc/releases/tag/v2.0.0)
 
 #### Improvements
 
-### [1.2.0](https://github.com/jenetics/facilejdbc/releases/tag/v1.2.0)
-
-#### Improvements
-
-* [#24](https://github.com/jenetics/facilejdbc/issues/24): Support for SQL type transformation methods.
-* [#27](https://github.com/jenetics/facilejdbc/issues/27): Allow to define the query timeout and fetch size.
-
-### [1.1.0](https://github.com/jenetics/facilejdbc/releases/tag/v1.1.0)
-
-#### Improvements
-
-* [#15](https://github.com/jenetics/facilejdbc/issues/15): Make the `Query` class serializable.
-* [#17](https://github.com/jenetics/facilejdbc/issues/17): Add lightwieght transaction functionality.
+* [#21](https://github.com/jenetics/facilejdbc/issues/21): Create `Ctor` instances from Record classes. It is now possible to create `Ctor` directly from `record` classes.
 ```java
-final Transactional db = () -> DriverManager.getConnection(
-    "jdbc:hsqldb:mem:testdb",
-    "SA",
-    ""
-);
-db.transaction().accept(conn -> {
-    for (var query : queries) {
-        query.execute(conn);
+// Simple `Dctor` creation.
+final Dctor<Book> dctor = Dctor.of(Book.class);
+
+// Adapt the name conversion.
+final Dctor<Book> dctor = Records.dctor(
+    Book.class,
+    component -> switch (component.getName()) {
+        case "author" -> "primary_author";
+        case "isbn" -> "isbn13";
+        default -> Records.toSnakeCase(component);
     }
-});
-final long id = db.transaction().apply(conn ->
-    Book.insert(BOOKS.get(0), conn)
+);
+
+// Add additional columns.
+final Dctor<Book> dctor = Records.dctor(
+    Book.class,
+    field("title_hash", book -> book.title().hashCode())
 );
 ```
-* [#19](https://github.com/jenetics/facilejdbc/issues/19): The original SQL string is reconstructible from the query object; `Query.rawSql()`.
+* [#43](https://github.com/jenetics/facilejdbc/issues/43): Create `RowParser` instances from `record` classes.
+```java
+// Simple `RowParser` creation.
+final RowParser<Book> parser = RowParser.of(Book.class);
 
+// Adapting the record component parsing.
+final RowParser<Book> parser = Records.parserWithFields(
+    Book.class,
+    Map.of(
+        "isbn", string("isbn").map(Isbn::new),
+        "authors", int64("id").map(Author::selectByBookId)
+    )
+);
+```
+
+_[All Release Notes](RELEASE_NOTES.md)_

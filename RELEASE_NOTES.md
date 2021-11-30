@@ -1,5 +1,46 @@
 ## Release notes
 
+### [2.0.0](https://github.com/jenetics/facilejdbc/releases/tag/v2.0.0)
+
+#### Improvements
+
+* [#21](https://github.com/jenetics/facilejdbc/issues/21): Create `Ctor` instances from Record classes. It is now possible to create `Ctor` directly from `record` classes.
+```java
+// Simple `Dctor` creation.
+final Dctor<Book> dctor = Dctor.of(Book.class);
+
+// Adapt the name conversion.
+final Dctor<Book> dctor = Records.dctor(
+    Book.class,
+    component -> switch (component.getName()) {
+        case "author" -> "primary_author";
+        case "isbn" -> "isbn13";
+        default -> Records.toSnakeCase(component);
+    }
+);
+
+// Add additional columns.
+final Dctor<Book> dctor = Records.dctor(
+    Book.class,
+    field("title_hash", book -> book.title().hashCode())
+);
+```
+* [#43](https://github.com/jenetics/facilejdbc/issues/43): Create `RowParser` instances from `record` classes.
+```java
+// Simple `RowParser` creation.
+final RowParser<Book> parser = RowParser.of(Book.class);
+
+// Adapting the record component parsing.
+final RowParser<Book> parser = Records.parserWithFields(
+    Book.class,
+    Map.of(
+        "isbn", string("isbn").map(Isbn::new),
+        "authors", int64("id").map(Author::selectByBookId)
+    )
+);
+```
+
+
 ### [1.3.0](https://github.com/jenetics/facilejdbc/releases/tag/v1.3.0)
 
 * [#45](https://github.com/jenetics/facilejdbc/issues/45): Make `RowParser` composable.
