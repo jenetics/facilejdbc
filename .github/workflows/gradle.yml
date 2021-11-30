@@ -1,4 +1,4 @@
-name: JPX Build
+name: FacileJDBC Build
 
 on:
   push:
