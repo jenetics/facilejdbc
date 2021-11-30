@@ -234,7 +234,7 @@ final Optional<Integer> inserted = INSERT
     .executeInsert(RowParser.int32(1), conn);
 ```
 
-if you are need to control the parsing of the generated primary key.
+if you are needed to control the parsing of the generated primary key.
 
 ### Batch insertion
 
