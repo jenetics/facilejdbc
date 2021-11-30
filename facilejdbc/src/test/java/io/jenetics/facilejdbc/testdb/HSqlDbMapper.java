@@ -17,29 +17,25 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc;
+package io.jenetics.facilejdbc.testdb;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+
+import io.jenetics.facilejdbc.spi.SqlTypeMapper;
 
 /**
- * This is the, effectively sealed, base interface of the {@link Param} and
- * {@link MultiParam} class. Since it is currently not possible to enforce this
- * behavior (until the <em>sealed classes</em> feature is released) an exception
- * is thrown at runtime, when an other implementation than {@link Param} or
- * {@link MultiParam} is detected in the {@link Query#on(BaseParam...)} method.
- *
- * @see Param
- * @see MultiParam
- *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.3
- * @since 1.3
  */
-public /*sealed*/ interface BaseParam /*permits Param, MultiParam*/ {
+public class HSqlDbMapper extends SqlTypeMapper {
 
-	/**
-	 * Return the parameter name.
-	 *
-	 * @return the parameter name
-	 */
-	String name();
+	@Override
+	public Object convert(final Object value) {
+		if (value instanceof Instant instant) {
+			return Timestamp.from(instant);
+		} else {
+			return value;
+		}
+	}
 
 }

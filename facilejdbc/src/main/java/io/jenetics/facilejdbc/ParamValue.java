@@ -27,7 +27,7 @@ import java.sql.SQLException;
  * representing the parameter value directly, a value is defined by it's
  * <em>insertion</em> strategy.
  *
- * @see Param
+ * @see SingleParam
  * @see ParamValues
  * @see Dctor.Field
  *

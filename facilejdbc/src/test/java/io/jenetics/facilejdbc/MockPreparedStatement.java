@@ -67,97 +67,78 @@ public final class MockPreparedStatement implements PreparedStatement {
 
 	@Override
 	public void setNull(int i, int i1) {
-
 	}
 
 	@Override
 	public void setBoolean(int i, boolean b) {
-
 	}
 
 	@Override
 	public void setByte(int i, byte b) {
-
 	}
 
 	@Override
 	public void setShort(int i, short i1) {
-
 	}
 
 	@Override
 	public void setInt(int i, int i1) {
-
 	}
 
 	@Override
 	public void setLong(int i, long l) {
-
 	}
 
 	@Override
 	public void setFloat(int i, float v) {
-
 	}
 
 	@Override
 	public void setDouble(int i, double v) {
-
 	}
 
 	@Override
 	public void setBigDecimal(int i, BigDecimal bigDecimal) {
-
 	}
 
 	@Override
 	public void setString(int i, String s) {
-
 	}
 
 	@Override
 	public void setBytes(int i, byte[] bytes) {
-
 	}
 
 	@Override
 	public void setDate(int i, Date date) {
-
 	}
 
 	@Override
 	public void setTime(int i, Time time) {
-
 	}
 
 	@Override
 	public void setTimestamp(int i, Timestamp timestamp) {
-
 	}
 
 	@Override
 	public void setAsciiStream(int i, InputStream inputStream, int i1) {
-
 	}
 
 	@Override
 	public void setUnicodeStream(int i, InputStream inputStream, int i1) {
-
 	}
 
 	@Override
 	public void setBinaryStream(int i, InputStream inputStream, int i1) {
-
 	}
 
 	@Override
 	public void clearParameters() {
-
 	}
 
 	@Override
 	public void setObject(int i, Object o, int i1) {
-
 	}
 
 	@Override
@@ -172,32 +153,26 @@ public final class MockPreparedStatement implements PreparedStatement {
 
 	@Override
 	public void addBatch() {
-
 	}
 
 	@Override
 	public void setCharacterStream(int i, Reader reader, int i1) {
-
 	}
 
 	@Override
 	public void setRef(int i, Ref ref) {
-
 	}
 
 	@Override
 	public void setBlob(int i, Blob blob) {
-
 	}
 
 	@Override
 	public void setClob(int i, Clob clob) {
-
 	}
 
 	@Override
 	public void setArray(int i, Array array) {
-
 	}
 
 	@Override
@@ -207,27 +182,22 @@ public final class MockPreparedStatement implements PreparedStatement {
 
 	@Override
 	public void setDate(int i, Date date, Calendar calendar) {
-
 	}
 
 	@Override
 	public void setTime(int i, Time time, Calendar calendar) {
-
 	}
 
 	@Override
 	public void setTimestamp(int i, Timestamp timestamp, Calendar calendar) {
-
 	}
 
 	@Override
 	public void setNull(int i, int i1, String s) {
-
 	}
 
 	@Override
 	public void setURL(int i, URL url) {
-
 	}
 
 	@Override
@@ -237,97 +207,78 @@ public final class MockPreparedStatement implements PreparedStatement {
 
 	@Override
 	public void setRowId(int i, RowId rowId) {
-
 	}
 
 	@Override
 	public void setNString(int i, String s) {
-
 	}
 
 	@Override
 	public void setNCharacterStream(int i, Reader reader, long l) {
-
 	}
 
 	@Override
 	public void setNClob(int i, NClob nClob) {
-
 	}
 
 	@Override
 	public void setClob(int i, Reader reader, long l) {
-
 	}
 
 	@Override
 	public void setBlob(int i, InputStream inputStream, long l) {
-
 	}
 
 	@Override
 	public void setNClob(int i, Reader reader, long l) {
-
 	}
 
 	@Override
 	public void setSQLXML(int i, SQLXML sqlxml) {
-
 	}
 
 	@Override
 	public void setObject(int i, Object o, int i1, int i2) {
-
 	}
 
 	@Override
 	public void setAsciiStream(int i, InputStream inputStream, long l) {
-
 	}
 
 	@Override
 	public void setBinaryStream(int i, InputStream inputStream, long l) {
-
 	}
 
 	@Override
 	public void setCharacterStream(int i, Reader reader, long l) {
-
 	}
 
 	@Override
 	public void setAsciiStream(int i, InputStream inputStream) {
-
 	}
 
 	@Override
 	public void setBinaryStream(int i, InputStream inputStream) {
-
 	}
 
 	@Override
 	public void setCharacterStream(int i, Reader reader) {
-
 	}
 
 	@Override
 	public void setNCharacterStream(int i, Reader reader) {
-
 	}
 
 	@Override
 	public void setClob(int i, Reader reader) {
-
 	}
 
 	@Override
 	public void setBlob(int i, InputStream inputStream) {
-
 	}
 
 	@Override
 	public void setNClob(int i, Reader reader) {
-
 	}
 
 	@Override
@@ -342,7 +293,6 @@ public final class MockPreparedStatement implements PreparedStatement {
 
 	@Override
 	public void close() {
-
 	}
 
 	@Override
@@ -352,7 +302,6 @@ public final class MockPreparedStatement implements PreparedStatement {
 
 	@Override
 	public void setMaxFieldSize(int i) {
-
 	}
 
 	@Override
@@ -362,12 +311,10 @@ public final class MockPreparedStatement implements PreparedStatement {
 
 	@Override
 	public void setMaxRows(int i) {
-
 	}
 
 	@Override
 	public void setEscapeProcessing(boolean b) {
-
 	}
 
 	@Override
@@ -377,12 +324,10 @@ public final class MockPreparedStatement implements PreparedStatement {
 
 	@Override
 	public void setQueryTimeout(int i) {
-
 	}
 
 	@Override
 	public void cancel() {
-
 	}
 
 	@Override
@@ -392,12 +337,10 @@ public final class MockPreparedStatement implements PreparedStatement {
 
 	@Override
 	public void clearWarnings() {
-
 	}
 
 	@Override
 	public void setCursorName(String s) {
-
 	}
 
 	@Override
@@ -422,7 +365,6 @@ public final class MockPreparedStatement implements PreparedStatement {
 
 	@Override
 	public void setFetchDirection(int i) {
-
 	}
 
 	@Override
@@ -432,7 +374,6 @@ public final class MockPreparedStatement implements PreparedStatement {
 
 	@Override
 	public void setFetchSize(int i) {
-
 	}
 
 	@Override
@@ -452,12 +393,10 @@ public final class MockPreparedStatement implements PreparedStatement {
 
 	@Override
 	public void addBatch(String s) {
-
 	}
 
 	@Override
 	public void clearBatch() {
-
 	}
 
 	@Override
@@ -522,7 +461,6 @@ public final class MockPreparedStatement implements PreparedStatement {
 
 	@Override
 	public void setPoolable(boolean b) {
-
 	}
 
 	@Override
@@ -532,7 +470,6 @@ public final class MockPreparedStatement implements PreparedStatement {
 
 	@Override
 	public void closeOnCompletion() {
-
 	}
 
 	@Override

@@ -26,8 +26,24 @@
 pluginManagement {
 	repositories {
 		mavenLocal()
-		jcenter()
 		gradlePluginPortal()
+	}
+}
+
+enableFeaturePreview("VERSION_CATALOGS")
+dependencyResolutionManagement {
+	versionCatalogs {
+		create("libs") {
+			alias("assertj").to("org.assertj:assertj-core:3.20.2")
+			alias("commonsmath").to("org.apache.commons:commons-math3:3.6.1")
+			alias("equalsverifier").to("nl.jqno.equalsverifier:equalsverifier:3.7.1")
+			alias("hsqldb").to("org.hsqldb:hsqldb:2.6.1")
+			alias("javafaker").to("com.github.javafaker:javafaker:1.0.2")
+			alias("jpx").to("io.jenetics:jpx:2.3.0")
+			alias("prngine").to("io.jenetics:prngine:2.0.0")
+			alias("rxjava").to("io.reactivex.rxjava2:rxjava:2.1.14")
+			alias("testng").to("org.testng:testng:7.4.0")
+		}
 	}
 }
 

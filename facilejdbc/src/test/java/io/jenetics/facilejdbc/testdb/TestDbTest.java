@@ -17,9 +17,10 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc.library;
+package io.jenetics.facilejdbc.testdb;
 
-import static io.jenetics.facilejdbc.library.Book.PARSER;
+import static org.assertj.core.api.Assertions.assertThat;
+import static io.jenetics.facilejdbc.testdb.Book.PARSER;
 
 import java.io.IOException;
 import java.sql.Date;
@@ -28,13 +29,16 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import io.jenetics.facilejdbc.Batch;
 import io.jenetics.facilejdbc.Query;
 import io.jenetics.facilejdbc.ResultSetParser;
 import io.jenetics.facilejdbc.RowParser;
@@ -44,7 +48,7 @@ import io.jenetics.facilejdbc.util.Queries;
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-public class LibraryTest {
+public class TestDbTest {
 
 	private final Transactional db = () -> DriverManager.getConnection(
 		"jdbc:hsqldb:mem:testdb",
@@ -52,12 +56,18 @@ public class LibraryTest {
 		""
 	);
 
+	private final Random random = new Random();
+	private final List<Location> locations = Stream.generate(() -> Location.next(random))
+		.limit(1000)
+		.toList();
+
 	private static final List<Book> BOOKS = List.of(
 		new Book(
 			"Auf der Suche nach der verlorenen Zeit",
-			"978-3518061756",
+			new Isbn("978-3518061756"),
 			5100,
 			LocalDate.of(1987, 2, 4),
+			"german",
 			List.of(
 				new Author(
 					"Marcel Proust",
@@ -67,9 +77,10 @@ public class LibraryTest {
 		),
 		new Book(
 			"Database Design for Mere Mortals",
-			"978-0321884497",
+			new Isbn("978-0321884497"),
 			654,
 			LocalDate.of(1945, 1, 4),
+			"english",
 			List.of(
 				new Author(
 					"Michael J. Hernandez",
@@ -79,9 +90,10 @@ public class LibraryTest {
 		),
 		new Book(
 			"Der alte Mann und das Meer",
-			"B00JM4RD2S",
+			new Isbn("B00JM4RD2S"),
 			142,
 			LocalDate.of(1887, 2, 4),
+			"german",
 			List.of(
 				new Author(
 					"Ernest Hemingway",
@@ -110,8 +122,22 @@ public class LibraryTest {
 		final long id = db.transaction().apply(conn ->
 			Book.insert(BOOKS.get(0), conn)
 		);
-
 		Assert.assertTrue(id >= 0);
+
+		final var batch = Batch.of(locations, Location.DCTOR);
+		db.transaction().accept(conn -> Location.INSERT.execute(batch, conn));
+	}
+
+	@Test(dependsOnMethods = "insert")
+	public void selectLocations() throws SQLException {
+		db.transaction().accept(conn -> {
+			final Stream<Location> stream = Location.SELECT_ALL
+				.as(Location.PARSER.stream(), conn);
+
+			try (stream) {
+				assertThat(stream.toList()).isEqualTo(locations);
+			}
+		});
 	}
 
 	@Test(dependsOnMethods = "insert")
@@ -155,21 +181,14 @@ public class LibraryTest {
 	@Test(dependsOnMethods = "insertRestOfBooks")
 	public void selectAll() throws SQLException {
 		final Set<Book> books = db.transaction().apply(Book::selectAll);
-		Assert.assertEquals(
-			books,
-			Set.copyOf(BOOKS)
-		);
+		assertThat(books).containsAll(BOOKS);
 
 		db.transaction().accept(conn -> {
 			final var result = Query.of("SELECT * FROM book;")
 				.as(PARSER.stream(), conn);
 
 			try (result) {
-				final Set<Book> set = result.collect(Collectors.toSet());
-				Assert.assertEquals(
-					books,
-					Set.copyOf(BOOKS)
-				);
+				assertThat(result.toList()).containsAll(BOOKS);
 			}
 		});
 	}
@@ -204,12 +223,13 @@ public class LibraryTest {
 			final var select = Query.of("SELECT * FROM book ORDER BY id;");
 			final var csv = select.as(ResultSetParser.csvLine(), conn);
 
-			final var expected =
-				"\"ID\",\"PUBLISHED_AT\",\"TITLE\",\"ISBN\",\"PAGES\"\r\n" +
-				"\"0\",\"1987-02-04\",\"Auf der Suche nach der verlorenen Zeit\",\"978-3518061756\",\"5100\"\r\n" +
-				"\"1\",\"1945-01-04\",\"Database Design for Mere Mortals\",\"978-0321884497\",\"654\"\r\n" +
-				"\"2\",\"1887-02-04\",\"Der alte Mann und das Meer\",\"B00JM4RD2S\",\"142\"\r\n";
-			Assert.assertEquals(csv, expected);
+			final var expected = """
+				"ID","PUBLISHED_AT","TITLE","LANGUAGE","ISBN","PAGES"
+				"0","1987-02-04","Auf der Suche nach der verlorenen Zeit","german","978-3518061756","5100"
+				"1","1945-01-04","Database Design for Mere Mortals","english","978-0321884497","654"
+				"2","1887-02-04","Der alte Mann und das Meer","german","B00JM4RD2S","142"
+				""";
+			assertThat(csv).isEqualToIgnoringNewLines(expected);
 		});
 	}
 

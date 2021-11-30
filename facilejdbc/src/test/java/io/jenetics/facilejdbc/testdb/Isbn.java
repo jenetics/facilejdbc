@@ -17,35 +17,15 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc.function;
+package io.jenetics.facilejdbc.testdb;
 
-import java.sql.SQLException;
+import static java.util.Objects.requireNonNull;
 
 /**
- * Represents a function that accepts one argument and produces a result. In
- * contrast to the Java {@link java.util.function.Consumer} interface, a
- * SQL-function is allowed to throw a {@link SQLException}.
- *
- * @see java.util.function.Function
- *
- * @param <T> the argument type
- *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.0
- * @since 1.0
- *
- * @deprecated Use {@link SqlConsumer} instead
  */
-@Deprecated
-@FunctionalInterface
-public interface SqlFunction0<T> {
-
-	/**
-	 * Applies this function to the given argument.
-	 *
-	 * @param t the function argument
-	 * @throws SQLException if the execution of the SQL-function fails
-	 */
-	void accept(final T t) throws SQLException;
-
+public record Isbn(String value) {
+	public Isbn {
+		requireNonNull(value);
+	}
 }

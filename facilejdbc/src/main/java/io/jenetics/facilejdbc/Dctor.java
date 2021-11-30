@@ -42,9 +42,14 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * final Dctor<Book> dctor = Dctor.of(
  *     Dctor.field("title", Book::title),
  *     Dctor.field("isbn", Book::isbn),
- *     Dctor.field("published_at", Book::publishedAt, Date::valueOf),
+ *     Dctor.field("published_at", Book::publishedAt),
  *     Dctor.field("pages", Book::pages)
  * );
+ * }</pre>
+ *
+ * If the {@code Book} class is a record, you can just write
+ * <pre>{@code
+ * final Dctor<Book> dctor = Dctor.of(Book.class);
  * }</pre>
  *
  * @apiNote
@@ -54,11 +59,12 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * record of a DB result row.
  *
  * @see RowParser
+ * @see Records
  *
  * @param <T> the record type to be deconstructed
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.2
+ * @version 2.0
  * @since 1.0
  */
 @FunctionalInterface
@@ -72,7 +78,7 @@ public interface Dctor<T> {
 	interface Field<T> {
 
 		/**
-		 * Return the name of the record field.
+		 * Return the <em>column</em> name of the record field.
 		 *
 		 * @return the field name
 		 */
@@ -145,18 +151,27 @@ public interface Dctor<T> {
 	 * @param fields the fields which describe the deconstruction
 	 * @param <T> the type of the record to be deconstructed
 	 * @return a new deconstructor from the given field definitions
+	 * @throws NullPointerException if the given {@code fields} are {@code null}
+	 * @throws IllegalArgumentException if there are duplicate fields
 	 */
 	static <T> Dctor<T> of(final List<? extends Field<? super T>> fields) {
-		final Map<String, Field<? super T>> map = fields.isEmpty()
-			? Map.of()
-			: fields.stream().collect(toMap(Field::name, f -> f, (a, b) -> b));
+		final Map<String, Field<? super T>> fieldMap = fields.stream()
+			.collect(toMap(
+				Field::name,
+				f -> f,
+				(a, b) -> {
+					throw new IllegalArgumentException(
+						"Duplicate field detected: %s".formatted(a.name())
+					);
+				}
+			));
 
 		return (record, conn) -> (params, stmt) -> {
-			if (!map.isEmpty()) {
+			if (!fieldMap.isEmpty()) {
 				int index = 0;
 				for (String name : params) {
 					++index;
-					final Field<? super T> field = map.get(name);
+					final Field<? super T> field = fieldMap.get(name);
 					if (field != null) {
 						field.value(record, conn).set(index, stmt);
 					}
@@ -173,11 +188,57 @@ public interface Dctor<T> {
 	 * @param fields the fields which describe the deconstruction
 	 * @param <T> the type of the record to be deconstructed
 	 * @return a new deconstructor from the given field definitions
+	 * @throws NullPointerException if the given {@code fields} are {@code null}
+	 * @throws IllegalArgumentException if there are duplicate fields
 	 */
 	@SafeVarargs
 	static <T> Dctor<T> of(final Field<? super T>... fields) {
-		final List<? extends Field<? super T>> list = asList(fields);
+		final List<Field<? super T>> list = asList(fields);
 		return Dctor.of(list);
+	}
+
+	/**
+	 * Create a new deconstructor for the given record type.
+	 *
+	 * <pre>{@code
+	 * // Matching column names, with book columns:
+	 * // [title, author, isbn, pages, published_at]
+	 * final Dctor<Book> dctor = Dctor.of(Book.class);
+	 *
+	 * // Handling additional column, with book columns:
+	 * // [title, author, isbn, pages, published_at, title_hash]
+	 * final Dctor<Book> dctor = Dctor.of(
+	 *     Book.class,
+	 *     field("title_hash", book -> book.title().hashCode())
+	 * );
+	 *
+	 * // Handling column "transformation", with book columns:
+	 * // [title, author, isbn, pages, published_at, title_hash]
+	 * final Dctor<Book> dctor = Dctor.of(
+	 *     Book.class,
+	 *     field("pages", book -> book.pages()*3),
+	 *     field("title_hash", book -> book.title().hashCode())
+	 * );
+	 * }</pre>
+	 *
+	 * @see Records#dctor(Class, Field[])
+	 *
+	 * @param type the record type to deconstruct
+	 * @param fields The fields which overrides/extends the
+	 *        automatically extracted fields from the record. It also allows
+	 *        defining additional column values, derived from the given record
+	 *        values.
+	 * @param <T> the record type
+	 * @return a new deconstructor for the given record type
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 * @throws IllegalArgumentException if there are duplicate fields defined
+	 */
+	@SafeVarargs
+	static <T extends Record> Dctor<T> of(
+		final Class<T> type,
+		final Dctor.Field<? super T>... fields
+	) {
+		return Records.dctor(type, fields);
 	}
 
 	/**

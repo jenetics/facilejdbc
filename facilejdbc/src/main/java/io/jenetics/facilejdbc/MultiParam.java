@@ -33,15 +33,15 @@ import java.util.List;
  * SELECT_QUERY.on(Param.values("ids", 1, 2, 3, 4))
  * }</pre>
  *
- * @see Param
- * @see Param#values(String, Iterable)
- * @see Param#lazyValues(String, Iterable)
+ * @see SingleParam
+ * @see SingleParam#values(String, Iterable)
+ * @see SingleParam#lazyValues(String, Iterable)
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.3
+ * @version 2.0
  * @since 1.3
  */
-public /*non-sealed*/ interface MultiParam extends BaseParam {
+public non-sealed interface MultiParam extends Param {
 
 	/**
 	 * Return the parameter values.
@@ -76,7 +76,7 @@ public /*non-sealed*/ interface MultiParam extends BaseParam {
 		}
 
 		final List<ParamValue> list = new ArrayList<>();
-		values.forEach(list::add);
+		it.forEachRemaining(list::add);
 		final var vals = List.copyOf(list);
 
 		return new MultiParam() {

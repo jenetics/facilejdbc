@@ -1,8 +1,8 @@
-[![Build Status](https://travis-ci.org/jenetics/facilejdbc.svg?branch=master)](https://travis-ci.org/jenetics/facilejdbc)
+![Build Status](https://github.com/jenetics/facilejdbc/actions/workflows/gradle.yml/badge.svg)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.jenetics/facilejdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.jenetics/facilejdbc)
 [![Javadoc](https://www.javadoc.io/badge/io.jenetics/facilejdbc.svg)](http://www.javadoc.io/doc/io.jenetics/facilejdbc)
 
-**_For building and running the library, Java 11 (or above) is required._**
+**_For building and running the library, Java 17 (or above) is required._**
 
 # Facile JDBC
 
@@ -10,7 +10,7 @@ _Making the JDBC usage simpler and less verbose._
 
 ## Overview
 
-JDBC is the basic API for accessing relational databases. Being basic makes it quite tedious to use directly. This lead to higher level abstractions like [JPA](https://docs.oracle.com/javaee/7/tutorial/partpersist.htm). Using a full grown _Object Relational Mapper_ on the other side might be to heavy weight for many uses cases. _FacileJDBC_ tries to fill the gap by making the low level JDBC access less verbose and tedious. SQL is still used as query language.
+JDBC is the basic API for accessing relational databases. Being basic makes it quite tedious to use directly. This lead to higher level abstractions like [JPA](https://docs.oracle.com/javaee/7/tutorial/partpersist.htm). Using a full-grown _Object Relational Mapper_ on the other side might be to heavy weight for many uses cases. _FacileJDBC_ tries to fill the gap by making the low level JDBC access less verbose and tedious. SQL is still used as query language.
 
 > The API of this library has been heavily influenced by the Scala [Anorm](https://playframework.github.io/anorm/) library.
 
@@ -62,23 +62,21 @@ The `execute` method returns a `boolean` value as specified in the [`PreparedSta
 Usually, your selected rows will be stored in [DTO](https://en.wikipedia.org/wiki/Data_transfer_object) objects. For the _simple_ examples the following `Person` DTO will be used.
 
 ```java
-@Value
-@Builder(builderClassName = "Builder", toBuilder = true)
-@Accessors(fluent = true)
-public final class Person { 
-    private final String name;
-    private final String email;
-    private final String link;
-}
+public record Person( 
+    String name,
+    String email,
+    String link
+){}
 ```
 
 The following query will select all persons which matches a given name _pattern_.
 
 ```java
-static final Query SELECT = Query.of(
-    "SELECT name, email, link " +
-    "FROM person " +
-    "WHERE name like :name"
+static final Query SELECT = Query.of("""
+    SELECT name, email, link
+    FROM person
+    WHERE name like :name
+    """
 );
 ```
 
@@ -95,14 +93,19 @@ The `Query.on` method is used for filling the query parameters. The variables us
 The following code snippet shows the `RowParser` implementation for our `Person` DTO.
 
 ```java
-static final RowParser<Person> PARSER = (row, conn) -> Person.builder()
-    .name(row.getString("name"))
-    .email(row.getString("email"))
-    .link(row.getString("link"))
-    .build();
+static final RowParser<Person> PARSER = (row, conn) -> new Person(
+    row.getString("name"),
+    row.getString("email"),
+    row.getString("link")
+);
 ```
 
 Since the `RowParser` is a _functional_ interface it can be written as shown. The first function parameter represents the actual selected row and second parameter the JDBC `Connection` used for executing the query. In most cases the `conn` will not be used, but it is quite helpful for fetching dependent DTOs in a sub-query.
+
+Whe you are useing Java `record`s as entity objects, you can create the `RowParser` with a simple factory method.
+```java
+static final RowParser<Person> PARSER = RowParser.of(Person.class);
+```
 
 ### Lazy (stream) select
 
@@ -172,9 +175,10 @@ The rows are written _without_ a header into the CSV file.
 For inserting one new `Person` into the DB an _insert_ query have to be defined. 
 
 ```java
-static final Query INSERT = Query.of(
-    "INSERT INTO person(name, email, link) " +
-    "VALUES(:name, :email, :link);"
+static final Query INSERT = Query.of("""
+    INSERT INTO person(name, email, link)
+    VALUES(:name, :email, :link);
+    """
 );
 ```
 
@@ -197,6 +201,12 @@ private static final Dctor<Person> DCTOR = Dctor.of(
     field("email", Person::email),
     field("link", Person::link)
 );
+```
+
+The `Dctor` interface also comes with a simple factory method for records.
+
+```java
+private static final Dctor<Person> DCTOR = Dctor.of(Person.class);
 ```
 
 Once a deconstructor is defined for your DTO, you can easily insert single `Person` objects.
@@ -224,7 +234,7 @@ final Optional<Integer> inserted = INSERT
     .executeInsert(RowParser.int32(1), conn);
 ```
 
-if you are need to control the parsing of the generated primary key.
+if you are needed to control the parsing of the generated primary key.
 
 ### Batch insertion
 
@@ -292,25 +302,21 @@ try (var in = Files.newInputStream(Path.of("./book.pdf"))) {
 It is possible to create automatic parameter value conversion via the SPI `SqlTypeMapper` class. Usually, it is not possible to insert an `URI` field directly into the DB. You have to convert it into a string object first.
 
 ```java
-@Value
-public static final class Person {
-    private final String name;
-    private final URI link;
-}
+public record Person(
+    String name,
+    URI link
+){}
 
 static final Dctor<Person> DCTOR = Dctor.of(
-    field("name", Person::name),
-    field("email", p -> p.link().toString())
+    Person.class, 
+    Dctor.field("email", p -> p.link().toString())
 );
 ```
 
 If a mapper for the `URI` class is defined, it is possible to write the deconstructor more concise.
 
 ```java
-static final Dctor<Person> DCTOR = Dctor.of(
-    field("name", Person::name),
-    field("email", Person::link)
-);
+static final Dctor<Person> DCTOR = Dctor.of(Person.class);
 ```
 
 The implementation of such a mapping is quite simple and will look like showed
@@ -349,24 +355,18 @@ The previous examples shows the basic usage of the library. It is possible to us
 Lets extend our initial example an convert the _link_ of the `Person` into an object
 
 ```java
-@Value
-@Builder(builderClassName = "Builder", toBuilder = true)
-@Accessors(fluent = true)
-public final class Person { 
-    private final String name;
-    private final String email;
-    private final Link link;
-}
+public record Person( 
+    String name,
+    String email,
+    Link link
+){}
 ```
 and with a `Link` class, which will look like the following.
 ```java
-@Value
-@Builder(builderClassName = "Builder", toBuilder = true)
-@Accessors(fluent = true)
-public final class Link { 
-    private final String name;
-    private final URI link;
-}
+public record Link( 
+    String name,
+    URI link
+){}
 ```
 
 It is now possible to create one `RowParser<Person>` and one `Dctor<Person>` which automatically takes care about the linked `Link` object. The new parser will look like the following code snippet.
@@ -381,8 +381,7 @@ static final RowParser<Person> PERSON_PARSER = (row, conn) -> new Person(
 With the shown deconstructor.
 ```java
 static final Dctor<Person> PERSON_DCTOR = Dctor.of(
-    field("name", Person::name),
-    field("email", Person::email),
+    Person.class,
     field("link_id", (p, c) -> insertLink(p.link(), c))
 );
 ```
@@ -487,61 +486,44 @@ The library is licensed under the [Apache License, Version 2.0](http://www.apach
 
 ## Release notes
 
-### [1.3.0](https://github.com/jenetics/facilejdbc/releases/tag/v1.3.0)
-
-* [#45](https://github.com/jenetics/facilejdbc/issues/45): Make `RowParser` composable.
-* [#40](https://github.com/jenetics/facilejdbc/issues/40): Allow streaming of selection results.
-```java
-final var select = Query.of("SELECT * FROM person;");
-
-// Make sure to close the returned stream.
-try (var persons = select.as(PARSER.stream(), conn)) {
-    // Do some processing with the person stream.
-    persons.forEach(person -> ...);
-}
-```
-* [#39](https://github.com/jenetics/facilejdbc/issues/39): Parser for exporting results as CSV file/string.
-```java
-final var select = Query.of("SELECT * FROM book;");
-final var csv = select.as(ResultSetParser.csvLine(), conn);
-System.out.println(csv);
-```
-* [#26](https://github.com/jenetics/facilejdbc/issues/26): Implement multi-value parameter
-```java
-final List<Book> results = Query.of("SELECT * FROM book WHERE id IN(:ids);")
-    .on(Param.values("ids", 1, 2, 3, 4))
-    .as(PARSER.list(), conn);
-```
+### [2.0.0](https://github.com/jenetics/facilejdbc/releases/tag/v2.0.0)
 
 #### Improvements
 
-### [1.2.0](https://github.com/jenetics/facilejdbc/releases/tag/v1.2.0)
-
-#### Improvements
-
-* [#24](https://github.com/jenetics/facilejdbc/issues/24): Support for SQL type transformation methods.
-* [#27](https://github.com/jenetics/facilejdbc/issues/27): Allow to define the query timeout and fetch size.
-
-### [1.1.0](https://github.com/jenetics/facilejdbc/releases/tag/v1.1.0)
-
-#### Improvements
-
-* [#15](https://github.com/jenetics/facilejdbc/issues/15): Make the `Query` class serializable.
-* [#17](https://github.com/jenetics/facilejdbc/issues/17): Add lightwieght transaction functionality.
+* [#21](https://github.com/jenetics/facilejdbc/issues/21): Create `Ctor` instances from Record classes. It is now possible to create `Ctor` directly from `record` classes.
 ```java
-final Transactional db = () -> DriverManager.getConnection(
-    "jdbc:hsqldb:mem:testdb",
-    "SA",
-    ""
-);
-db.transaction().accept(conn -> {
-    for (var query : queries) {
-        query.execute(conn);
+// Simple `Dctor` creation.
+final Dctor<Book> dctor = Dctor.of(Book.class);
+
+// Adapt the name conversion.
+final Dctor<Book> dctor = Records.dctor(
+    Book.class,
+    component -> switch (component.getName()) {
+        case "author" -> "primary_author";
+        case "isbn" -> "isbn13";
+        default -> Records.toSnakeCase(component);
     }
-});
-final long id = db.transaction().apply(conn ->
-    Book.insert(BOOKS.get(0), conn)
+);
+
+// Add additional columns.
+final Dctor<Book> dctor = Records.dctor(
+    Book.class,
+    field("title_hash", book -> book.title().hashCode())
 );
 ```
-* [#19](https://github.com/jenetics/facilejdbc/issues/19): The original SQL string is reconstructible from the query object; `Query.rawSql()`.
+* [#43](https://github.com/jenetics/facilejdbc/issues/43): Create `RowParser` instances from `record` classes.
+```java
+// Simple `RowParser` creation.
+final RowParser<Book> parser = RowParser.of(Book.class);
 
+// Adapting the record component parsing.
+final RowParser<Book> parser = Records.parserWithFields(
+    Book.class,
+    Map.of(
+        "isbn", string("isbn").map(Isbn::new),
+        "authors", int64("id").map(Author::selectByBookId)
+    )
+);
+```
+
+_[All Release Notes](RELEASE_NOTES.md)_

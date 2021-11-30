@@ -45,15 +45,17 @@ import java.util.stream.Stream;
  * defined by \W ([a-zA-Z_0-9]) in the Regex syntax.
  *
  * <pre>{@code
- * private static final Sql SELECT = Sql.of(
- *     "SELECT * FROM person " +
- *     "WHERE forename like :forename " +
- *     "ORDER BY surname;"
+ * private static final Sql SELECT = Sql.of("""
+ *     SELECT * FROM person
+ *     WHERE forename like :forename
+ *     ORDER BY surname;
+ *     """
  * );
  *
- * private static final Sql INSERT = Sql.of(
- *     "INSERT INTO person(forename, surname, birthday, email) " +
- *     "VALUES(:forename, :surname, :birthday, :email);"
+ * private static final Sql INSERT = Sql.of("""
+ *     INSERT INTO person(forename, surname, birthday, email)
+ *     VALUES(:forename, :surname, :birthday, :email);
+ *     """
  * );
  * }</pre>
  *
@@ -65,38 +67,12 @@ import java.util.stream.Stream;
  */
 final class Sql {
 
-	private static final class Param {
-		final int index;
-		final String name;
+	private record Param(int index, String name){}
 
-		private Param(final int index, final String name) {
-			this.index = index;
-			this.name = name;
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(index, name);
-		}
-
-		@Override
-		public boolean equals(final Object obj) {
-			return obj == this ||
-				obj instanceof Param &&
-				index == ((Param)obj).index &&
-				Objects.equals(name, ((Param)obj).name);
-		}
-
-		@Override
-		public String toString() {
-			return format("%s[%d]", name, index);
-		}
-	}
-
-	private static final Pattern PARAM_PATTERN = Pattern.compile(
-		"(?<!:):\\w+\\b(?=(?:[^\"'\\\\]*" +
-		"(?:\\\\.|([\"'])(?:(?:(?!\\\\|\\1).)*\\\\.)*" +
-		"(?:(?!\\\\|\\1).)*\\1))*[^\"']*$)"
+	private static final Pattern PARAM_PATTERN = Pattern.compile("""
+		(?<!:):\\w+\\b(?=(?:[^"'\\\\]*\
+		(?:\\\\.|(["'])(?:(?:(?!\\\\|\\1).)*\\\\.)*\
+		(?:(?!\\\\|\\1).)*\\1))*[^"']*$)"""
 	);
 
 	private final String string;
@@ -104,7 +80,7 @@ final class Sql {
 
 	private List<String> paramNames = null;
 
-	Sql(final String string, final List<Param> params) {
+	private Sql(final String string, final List<Param> params) {
 		this.string = requireNonNull(string);
 		this.params = List.copyOf(params);
 	}
@@ -158,7 +134,7 @@ final class Sql {
 		if (names == null) {
 			paramNames = names = params.stream()
 				.map(p -> p.name)
-				.collect(Collectors.toUnmodifiableList());
+				.toList();
 		}
 
 		return names;
@@ -211,9 +187,9 @@ final class Sql {
 	@Override
 	public boolean equals(final Object obj) {
 		return this == obj ||
-			obj instanceof Sql &&
-			string.equals(((Sql)obj).string) &&
-			params.equals(((Sql)obj).params);
+			obj instanceof Sql sql &&
+			string.equals(sql.string) &&
+			params.equals(sql.params);
 	}
 
 	@Override
@@ -251,7 +227,8 @@ final class Sql {
 		final var invalid = params.stream()
 			.map(p -> p.name)
 			.filter(not(Sql::isIdentifier))
-			.collect(Collectors.toList());
+			.toList();
+
 		if (!invalid.isEmpty()) {
 			throw new IllegalArgumentException(format(
 				"Found invalid parameter names: %s", invalid

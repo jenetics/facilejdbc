@@ -22,6 +22,7 @@ package io.jenetics.facilejdbc;
 import static java.util.Objects.requireNonNull;
 import static java.util.Spliterators.spliteratorUnknownSize;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -55,13 +56,22 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  *     row.getString("link")
  * );
  * }</pre>
+ * <p>
+ * If you are using <em>records</em> as entity objects, the creation of
+ * row-parser instances is even simpler.
+ * <pre>{@code
+ * // Handling different column names and column types:
+ * // [title, author, isbn, pages, published_at]
+ * final RowParser<Book> parser = RowParser.of(Book.class);
+ * }</pre>
  *
  * @see ResultSetParser
  * @see Dctor
+ * @see Records
  *
  * @apiNote
  * The {@code RowParser} is the counterpart of the {@link Dctor} interface. In
- * contrast of splitting a record into a set of <em>fields</em>, it creates a
+ * contrast, of splitting a record into a set of <em>fields</em>, it creates a
  * record from a selected DB row.
  *
  * @param <T> the row type
@@ -197,7 +207,7 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Return a new parser witch parses a the whole selection result.
+	 * Return a new parser witch parses the whole selection result.
 	 *
 	 * @since 1.1
 	 *
@@ -214,7 +224,7 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Return a new parser witch parses a the whole selection result.
+	 * Return a new parser witch parses the whole selection result.
 	 *
 	 * @see #unmodifiableList()
 	 *
@@ -244,13 +254,13 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Return a new parser witch parses a the whole selection result.
+	 * Return a new parser witch parses the whole selection result.
 	 *
 	 * @since 1.1
 	 *
 	 * @see #list()
 	 *
-	 * @return a new parser witch parses a the whole selection result, as an
+	 * @return a new parser witch parses the whole selection result, as an
 	 *         unmodifiable list
 	 */
 	default ResultSetParser<List<T>> unmodifiableList() {
@@ -265,26 +275,26 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Return a new parser witch parses a the whole selection result.
+	 * Return a new parser witch parses the whole selection result.
 	 *
 	 * @since 1.1
 	 *
 	 * @see #unmodifiableSet()
 	 *
-	 * @return a new parser witch parses a the whole selection result
+	 * @return a new parser witch parses the whole selection result
 	 */
 	default ResultSetParser<Set<T>> set() {
 		return collection(HashSet::new);
 	}
 
 	/**
-	 * Return a new parser witch parses a the whole selection result.
+	 * Return a new parser witch parses the whole selection result.
 	 *
 	 * @since 1.1
 	 *
 	 * @see #set()
 	 *
-	 * @return a new parser witch parses a the whole selection result, as an
+	 * @return a new parser witch parses the whole selection result, as an
 	 *         unmodifiable list
 	 */
 	default ResultSetParser<Set<T>> unmodifiableSet() {
@@ -475,6 +485,30 @@ public interface RowParser<T> {
 	}
 
 	/**
+	 * Return a row parser for short values for the given column name.
+	 *
+	 * @since 2.0
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Short> int16(final String name) {
+		return (row, conn) -> row.getShort(name);
+	}
+
+	/**
+	 * Return a row parser for short values for the given column index.
+	 *
+	 * @since 2.0
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Short> int16(final int index) {
+		return (row, conn) -> row.getShort(index);
+	}
+
+	/**
 	 * Return a row parser for int values for the given column name.
 	 *
 	 * @param name the column name
@@ -563,6 +597,54 @@ public interface RowParser<T> {
 	}
 
 	/**
+	 * Return a row parser for big-decimal values for the given column name.
+	 *
+	 * @since 2.0
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<BigDecimal> decimal(final String name) {
+		return (row, conn) -> row.getBigDecimal(name);
+	}
+
+	/**
+	 * Return a row parser for big-decimal values for the given column index.
+	 *
+	 * @since 2.0
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<BigDecimal> decimal(final int index) {
+		return (row, conn) -> row.getBigDecimal(index);
+	}
+
+	/**
+	 * Return a row parser for boolean values for the given column name.
+	 *
+	 * @since 2.0
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Boolean> bool(final String name) {
+		return (row, conn) -> row.getBoolean(name);
+	}
+
+	/**
+	 * Return a row parser for boolean values for the given column index.
+	 *
+	 * @since 2.0
+	 *
+	 * @param index the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Boolean> bool(final int index) {
+		return (row, conn) -> row.getBoolean(index);
+	}
+
+	/**
 	 * Return a row parser for long values for the given column name.
 	 *
 	 * @param name the column name
@@ -615,7 +697,7 @@ public interface RowParser<T> {
 	 * @return the row-parser for the given column
 	 */
 	static RowParser<Instant> instant(final String name) {
-		return timestamp(name).map(Timestamp::toInstant);
+		return timestamp(name).map(ts -> ts != null ? ts.toInstant() : null);
 	}
 
 	/**
@@ -627,7 +709,7 @@ public interface RowParser<T> {
 	 * @return the row-parser for the given column
 	 */
 	static RowParser<Instant> instant(final int index) {
-		return timestamp(index).map(Timestamp::toInstant);
+		return timestamp(index).map(ts -> ts != null ? ts.toInstant() : null);
 	}
 
 	/**
@@ -689,8 +771,28 @@ public interface RowParser<T> {
 			for (int i = 0; i < cols.length; ++i) {
 				cols[i] = row.getObject(i + 1);
 			}
+
 			return ctor.apply(cols);
 		};
+	}
+
+	/**
+	 * Creates a {@link RowParser} for the given record {@code type}.
+	 * <pre>{@code
+	 * // Handling different column names and column types:
+	 * // [title, author, isbn, pages, published_at]
+	 * final RowParser<Book> parser = RowParser.of(Book.class);
+	 * }</pre>
+	 *
+	 * @see Records#parser(Class)
+	 *
+	 * @param type the record type
+	 * @param <T> the record type
+	 * @return a new row-parser for the given record {@code type}
+	 * @throws NullPointerException if one of the arguments is {@code null}
+	 */
+	static <T extends Record> RowParser<T> of(final Class<T> type) {
+		return Records.parser(type);
 	}
 
 }

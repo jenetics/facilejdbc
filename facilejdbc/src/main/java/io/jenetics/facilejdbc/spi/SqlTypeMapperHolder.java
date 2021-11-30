@@ -61,15 +61,11 @@ final class SqlTypeMapperHolder {
 	}
 
 	Object map(final Object value) {
-		final Object nullable = toNullable(value);
+		final Object nullable = value instanceof Optional<?> opt
+			? opt.orElse(null)
+			: value;
+
 		return mapper.apply(nullable);
 	}
 
-	private static Object toNullable(final Object value) {
-		Object result = value;
-		while (result instanceof Optional) {
-			result = ((Optional<?>)result).orElse(null);
-		}
-		return result;
-	}
 }

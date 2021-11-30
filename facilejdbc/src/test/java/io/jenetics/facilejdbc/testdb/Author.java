@@ -17,17 +17,15 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc.library;
+package io.jenetics.facilejdbc.testdb;
 
 import static java.util.Objects.requireNonNull;
-import static io.jenetics.facilejdbc.Dctor.field;
 import static io.jenetics.facilejdbc.Param.value;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import io.jenetics.facilejdbc.Dctor;
@@ -37,57 +35,23 @@ import io.jenetics.facilejdbc.RowParser;
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-public final class Author {
-
-	private final String name;
-	private final LocalDate birthDay;
-
-	public Author(final String name, final LocalDate birthDay) {
-		this.name = requireNonNull(name);
-		this.birthDay = birthDay;
+public final record Author(String name, LocalDate birthDay) {
+	public Author {
+		requireNonNull(name);
 	}
-
-	public String name() {
-		return name;
-	}
-
-	public LocalDate birthDay() {
-		return birthDay;
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(name, birthDay);
-	}
-
-	@Override
-	public boolean equals(final Object other) {
-		return other == this ||
-			other instanceof Author &&
-			Objects.equals(name, ((Author) other).name) &&
-			Objects.equals(birthDay, ((Author) other).birthDay);
-	}
-
 
 	/* *************************************************************************
 	 * DB access
 	 * ************************************************************************/
 
-	private static final RowParser<Author> PARSER = (row, conn) -> new Author(
-		row.getString("name"),
-		row.getDate("birth_day") != null
-			? row.getDate("birth_day").toLocalDate()
-			: null
-	);
+	private static final RowParser<Author> PARSER = RowParser.of(Author.class);
 
-	private static final Dctor<Author> DCTOR = Dctor.of(
-		field("name", Author::name),
-		field("birth_day", Author::birthDay)
-	);
+	private static final Dctor<Author> DCTOR = Dctor.of(Author.class);
 
-	private static final Query INSERT = Query.of(
-		"INSERT INTO author(name, birth_day) " +
-		"VALUES(:name, :birth_day);"
+	private static final Query INSERT = Query.of("""
+		INSERT INTO author(name, birth_day)
+		VALUES(:name, :birth_day);
+		"""
 	);
 
 	private static final Query SELECT_ID_BY_NAME = Query.of(
@@ -98,11 +62,12 @@ public final class Author {
 		"SELECT name, birth_day FROM author WHERE id = :id"
 	);
 
-	private static final Query SELECT_BY_BOOK_ID = Query.of(
-		"SELECT name, birth_day " +
-		"FROM author " +
-		"INNER JOIN book_author ON book_author.author_id = author.id " +
-		"WHERE book_id = :book_id"
+	private static final Query SELECT_BY_BOOK_ID = Query.of("""
+		SELECT name, birth_day
+		FROM author
+		INNER JOIN book_author ON book_author.author_id = author.id
+		WHERE book_id = :book_id
+		"""
 	);
 
 	/**
@@ -152,7 +117,7 @@ public final class Author {
 	 *
 	 * @param id the book id
 	 * @param conn the DB connection
-	 * @return the list of auhtors for the given book ID
+	 * @return the list of authors for the given book ID
 	 * @throws SQLException if a DB error occurs
 	 */
 	public static List<Author> selectByBookId(final long id, final Connection conn)

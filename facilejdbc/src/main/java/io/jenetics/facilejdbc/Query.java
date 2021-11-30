@@ -54,15 +54,17 @@ import io.jenetics.facilejdbc.Lifecycle.Value;
  * A {@code Query} represents an executable piece of SQL text.
  *
  * <pre>{@code
- * private static final Query SELECT = Query.of(
- *     "SELECT * FROM person " +
- *     "WHERE forename like :forename " +
- *     "ORDER BY surname;"
+ * private static final Query SELECT = Query.of("""
+ *     SELECT * FROM person
+ *     WHERE forename like :forename
+ *     ORDER BY surname;
+ *     """
  * );
  *
- * private static final Query INSERT = Query.of(
- *     "INSERT INTO person(forename, surname, birthday, email) " +
- *     "VALUES(:forename, :surname, :birthday, :email);"
+ * private static final Query INSERT = Query.of("""
+ *     INSERT INTO person(forename, surname, birthday, email)
+ *     VALUES(:forename, :surname, :birthday, :email);
+ *     """
  * );
  * }</pre>
  *
@@ -70,10 +72,12 @@ import io.jenetics.facilejdbc.Lifecycle.Value;
  * This class is immutable and thread-safe.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.3
+ * @version 2.0
  * @since 1.0
  */
 public final class Query implements Serializable {
+
+	@java.io.Serial
 	private static final long serialVersionUID = 1;
 
 	private final Sql sql;
@@ -172,9 +176,9 @@ public final class Query implements Serializable {
 	 */
 	public Query withFetchSize(final int fetchSize) {
 		if (fetchSize < 0) {
-			throw new IllegalArgumentException(format(
-				"Fetch size must be positive: %s.", fetchSize
-			));
+			throw new IllegalArgumentException(
+				"Fetch size must be positive: %s.".formatted(fetchSize)
+			);
 		}
 
 		return new Query(sql, values, fetchSize, timeout);
@@ -182,10 +186,11 @@ public final class Query implements Serializable {
 
 	/**
 	 * Sets the timeout the driver will wait for a {@link Statement} object to
-	 * execute. By default there is no limit on the amount of time allowed for a
+	 * execute. By default, there is no limit on the amount of time allowed for a
 	 * running statement to complete. If the limit is exceeded, an
 	 * {@link SQLTimeoutException} is thrown. A JDBC driver must apply this
-	 * limit to the execute, executeQuery and executeUpdate methods.
+	 * limit to execute, {@link Statement#executeQuery(String)} and
+	 * {@link Statement#executeUpdate(String)} methods.
 	 *
 	 * @since 1.2
 	 *
@@ -211,27 +216,26 @@ public final class Query implements Serializable {
 	 *     .as(PARSER.singleOpt(), conn);
 	 * }</pre>
 	 *
-	 * @see #on(BaseParam...)
+	 * @see #on(Param...)
 	 * @see #on(Map)
 	 * @see #on(Object, Dctor)
 	 *
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if the given {@code params} is {@code null}
-	 * @throws IllegalArgumentException if an other type then {@link Param} or
-	 *         {@link MultiParam} is given
 	 */
-	public Query on(final Iterable<? extends BaseParam> params) {
-		final List<Param> singleParams = new ArrayList<>();
+	public Query on(final Iterable<? extends Param> params) {
+		final List<SingleParam> singleParams = new ArrayList<>();
 		final List<MultiParam> multiParams = new ArrayList<>();
 		for (var param : params) {
-			if (param instanceof Param) {
-				singleParams.add((Param)param);
-			} else if (param instanceof MultiParam) {
-				multiParams.add((MultiParam)param);
+
+			if (param instanceof SingleParam p) {
+				singleParams.add(p);
+			} else if (param instanceof MultiParam p) {
+				multiParams.add(p);
 			} else {
-				throw new IllegalArgumentException(format(
-					"Type '%s' not allowed.", param.getClass().getName()
+				throw new AssertionError(format(
+					"Type '%s' not expected.", param.getClass().getName()
 				));
 			}
 		}
@@ -239,7 +243,7 @@ public final class Query implements Serializable {
 		return onSingleParam(singleParams).onMultiParam(multiParams);
 	}
 
-	private Query onSingleParam(final List<Param> params) {
+	private Query onSingleParam(final List<SingleParam> params) {
 		return params.isEmpty()
 			? this
 			: new Query(sql, values.andThen(new Params(params)), fetchSize, timeout);
@@ -249,13 +253,13 @@ public final class Query implements Serializable {
 		if (params.isEmpty()) {
 			return this;
 		} else {
-			final var sql = params.stream()
+			final Sql sql = params.stream()
 				.reduce(
 					this.sql,
 					(s, p) -> s.expand(p.name(), p.values().size()),
 					(s1, s2) -> { throw new AssertionError(); });
 
-			final var values = this.values.andThen(
+			final ParamValues values = this.values.andThen(
 				new Params(
 					params.stream()
 						.flatMap(Query::toParams)
@@ -267,10 +271,10 @@ public final class Query implements Serializable {
 		}
 	}
 
-	private static Stream<Param> toParams(final MultiParam param) {
-		final var values = param.values();
+	private static Stream<SingleParam> toParams(final MultiParam param) {
+		final List<ParamValue> values = param.values();
 		return IntStream.range(0, values.size())
-			.mapToObj(i -> Param.of(Sql.name(param.name(), i), values.get(i)));
+			.mapToObj(i -> SingleParam.of(Sql.name(param.name(), i), values.get(i)));
 	}
 
 	/**
@@ -285,10 +289,10 @@ public final class Query implements Serializable {
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if the given {@code params} is {@code null}
-	 * @throws IllegalArgumentException if an other type then {@link Param} or
+	 * @throws IllegalArgumentException if an other type then {@link SingleParam} or
 	 *         {@link MultiParam} is given
 	 */
-	public Query on(final BaseParam... params) {
+	public Query on(final Param... params) {
 		return on(asList(params));
 	}
 
@@ -309,7 +313,7 @@ public final class Query implements Serializable {
 		return on(
 			params.entrySet().stream()
 				.map(e -> Param.value(e.getKey(), e.getValue()))
-				.collect(Collectors.toList())
+				.toList()
 		);
 	}
 
@@ -332,6 +336,26 @@ public final class Query implements Serializable {
 
 		return new Query(sql, this.values.andThen(values), fetchSize, timeout);
 	}
+
+	/**
+	 * Return a new query object with the given query parameter values. They are
+	 * automatically extracted from the record components.
+	 *
+	 * @since 2.0
+	 *
+	 * @see Dctor#of(Class, Dctor.Field[])
+	 *
+	 * @param record the query parameters
+	 * @param <T> the parameter record type
+	 * @return a new query object with the set parameters
+	 * @throws NullPointerException if the given {@code record} is {@code null}
+	 */
+	public <T extends Record> Query on(final T record) {
+		@SuppressWarnings("unchecked")
+		final var type = (Class<T>)record.getClass();
+		return on(record, Dctor.of(type));
+	}
+
 
 	/* *************************************************************************
 	 * Executing query.
@@ -373,8 +397,8 @@ public final class Query implements Serializable {
 	private static <T> T prepare(final Value<T, SQLException> result)
 		throws SQLException
 	{
-		if (result.get() instanceof Stream<?>) {
-			return (T)((Stream<?>)result.get()).onClose(() ->
+		if (result.get() instanceof Stream<?> stream) {
+			return (T)stream.onClose(() ->
 				result.uncheckedClose(UncheckedSQLException::new)
 			);
 		} else {
@@ -622,10 +646,12 @@ public final class Query implements Serializable {
 	 *  Java object serialization
 	 * ************************************************************************/
 
+	@java.io.Serial
 	private Object writeReplace() {
 		return new Serial(this);
 	}
 
+	@java.io.Serial
 	private void readObject(final ObjectInputStream stream)
 		throws InvalidObjectException
 	{
@@ -641,6 +667,7 @@ public final class Query implements Serializable {
 	}
 
 	private static final class Serial implements Externalizable {
+		@java.io.Serial
 		private static final long serialVersionUID = 1;
 
 		/**
@@ -673,6 +700,7 @@ public final class Query implements Serializable {
 			object = Query.read(in);
 		}
 
+		@java.io.Serial
 		private Object readResolve() {
 			return object;
 		}

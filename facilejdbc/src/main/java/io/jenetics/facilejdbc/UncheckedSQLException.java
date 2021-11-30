@@ -6,6 +6,7 @@ import static java.util.Objects.requireNonNull;
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.sql.SQLException;
 
 /**
@@ -17,6 +18,8 @@ import java.sql.SQLException;
  * @version 1.3
  */
 public class UncheckedSQLException extends RuntimeException {
+
+	@Serial
 	private static final long serialVersionUID = 1;
 
 	/**
@@ -59,6 +62,7 @@ public class UncheckedSQLException extends RuntimeException {
 	 * @throws ClassNotFoundException if some error occurs while creating the
 	 *         serialised exception
 	 */
+	@Serial
 	private void readObject(final ObjectInputStream s)
 		throws IOException, ClassNotFoundException
 	{

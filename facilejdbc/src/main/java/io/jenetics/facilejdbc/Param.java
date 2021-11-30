@@ -24,17 +24,16 @@ import static java.util.Objects.requireNonNull;
 import static io.jenetics.facilejdbc.spi.SqlTypeMapper.map;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import io.jenetics.facilejdbc.function.SqlSupplier;
 
 /**
- * Represents a query parameter with <em>name</em> and <em>value</em>. The
- * parameter value is evaluated lazily. But it is also possible to create
- * {@code Param} objects with eagerly evaluated values.
- *
+ * This is the  base interface of the {@link SingleParam} and {@link MultiParam}
+ * class.
+ * <p>
+ * Creating single valued parameters:
  * <pre>{@code
  * INSERT_QUERY.on(
  *     Param.value("forename", "Werner"),
@@ -42,56 +41,31 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  *     Param.value("email", "some.email@gmail.com"))
  * }</pre>
  *
+ * Creating multivalued parameters:
+ * <pre>{@code
+ * Query.of("SELECT * FROM table WHERE id = IN(:ids);")
+ *     .on(Param.values("ids", 1, 2, 3, 4))
+ * }</pre>
+ *
+ * @see SingleParam
+ * @see MultiParam
+ *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.3
- * @since 1.0
+ * @version 2.0
+ * @since 1.3
  */
-public /*non-sealed*/ interface Param extends BaseParam {
+public sealed interface Param permits SingleParam, MultiParam {
 
 	/**
-	 * Return the parameter value.
+	 * Return the parameter name.
 	 *
-	 * @return the parameter value
+	 * @return the parameter name
 	 */
-	ParamValue value();
-
+	String name();
 
 	/* *************************************************************************
 	 * Static factory methods.
 	 * ************************************************************************/
-
-	/**
-	 * Create a new query parameter object from the given {@code name} and
-	 * {@code value}.
-	 *
-	 * @see #value(String, Object)
-	 * @see #lazyValue(String, SqlSupplier)
-	 *
-	 * @param name the parameter name
-	 * @param value the parameter values
-	 * @return a new query parameter object
-	 * @throws NullPointerException if the given parameter {@code name} is
-	 *         {@code null}
-	 */
-	static Param of(final String name, final ParamValue value) {
-		requireNonNull(name);
-		requireNonNull(value);
-
-		return new Param() {
-			@Override
-			public String name() {
-				return name;
-			}
-			@Override
-			public ParamValue value() {
-				return value;
-			}
-			@Override
-			public String toString() {
-				return ":" + name;
-			}
-		};
-	}
 
 	/**
 	 * Create a new query parameter object for the given {@code name} and
@@ -109,11 +83,11 @@ public /*non-sealed*/ interface Param extends BaseParam {
 	 * @throws NullPointerException if the given parameter {@code name} is
 	 *         {@code null}
 	 */
-	static Param value(final String name, final Object value) {
+	static SingleParam value(final String name, final Object value) {
 		requireNonNull(value);
-		return Param.of(
+		return SingleParam.of(
 			name,
-			(index, stmt) -> stmt.setObject(index, map(value))
+			(idx, stmt) -> stmt.setObject(idx, map(value))
 		);
 	}
 
@@ -142,8 +116,8 @@ public /*non-sealed*/ interface Param extends BaseParam {
 		return MultiParam.of(
 			name,
 			stream(values)
-				.map(v -> (ParamValue)(index, stmt) -> stmt.setObject(index, map(v)))
-				.collect(Collectors.toUnmodifiableList())
+				.map(v -> (ParamValue)(idx, stmt) -> stmt.setObject(idx, map(v)))
+				.toList()
 		);
 	}
 
@@ -194,27 +168,12 @@ public /*non-sealed*/ interface Param extends BaseParam {
 	 * @return a new query parameter object
 	 * @throws NullPointerException if one the arguments is {@code null}
 	 */
-	static Param lazyValue(final String name, final SqlSupplier<?> value) {
+	static SingleParam lazyValue(final String name, final SqlSupplier<?> value) {
 		requireNonNull(value);
-		return Param.of(
+		return SingleParam.of(
 			name,
-			(index, stmt) -> stmt.setObject(index, map(value.get()))
+			(idx, stmt) -> stmt.setObject(idx, map(value.get()))
 		);
-	}
-
-	/**
-	 * Create a new query parameter object from the given {@code name} and
-	 * lazily evaluated {@code value}.
-	 *
-	 * @param name the parameter name
-	 * @param value the lazily evaluated parameter values
-	 * @return a new query parameter object
-	 * @throws NullPointerException if one the arguments is {@code null}
-	 * @deprecated use {@link #lazyValue(String, SqlSupplier)} instead
-	 */
-	@Deprecated(forRemoval = true, since = "1.3")
-	static Param lazy(final String name, final SqlSupplier<?> value) {
-		return lazyValue(name, value);
 	}
 
 	/**
@@ -244,7 +203,7 @@ public /*non-sealed*/ interface Param extends BaseParam {
 			name,
 			stream(values)
 				.map(v -> (ParamValue)(i, stmt) -> stmt.setObject(i, map(v.get())))
-				.collect(Collectors.toUnmodifiableList())
+				.toList()
 		);
 	}
 
