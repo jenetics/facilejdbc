@@ -127,7 +127,7 @@ fun setupTestReporting(project: Project) {
 	project.apply(plugin = "jacoco")
 
 	project.configure<JacocoPluginExtension> {
-		toolVersion = "0.8.7"
+		toolVersion = "0.8.11"
 	}
 
 	project.tasks {
