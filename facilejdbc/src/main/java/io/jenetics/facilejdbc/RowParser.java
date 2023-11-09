@@ -485,6 +485,26 @@ public interface RowParser<T> {
 	}
 
 	/**
+	 * Returns a parser for the given record {@code type}.
+	 *
+	 * <pre>{@code
+	 * final Book book = Query.of("SELECT * FROM book WHERE id = :id")
+	 *     .on(value("id", 23))
+	 *     .as(record(Book.class).singleNull(), conn);
+	 * }</pre>
+	 *
+	 * @since 2.1
+	 *
+	 * @param type the record type
+	 * @return the record type parser
+	 * @param <T> the record type
+	 * @throws NullPointerException if the give {@code type} is {@code null}
+	 */
+	static <T extends Record> RowParser<T> record(final Class<T> type) {
+		return Records.parser(type);
+	}
+
+	/**
 	 * Return a row parser for short values for the given column name.
 	 *
 	 * @since 2.0
