@@ -10,7 +10,7 @@ _Making the JDBC usage simpler and less verbose._
 
 ## Overview
 
-JDBC is the basic API for accessing relational databases. Being basic makes it quite tedious to use directly. This lead to higher level abstractions like [JPA](https://docs.oracle.com/javaee/7/tutorial/partpersist.htm). Using a full-grown _Object Relational Mapper_ on the other side might be to heavy weight for many uses cases. _FacileJDBC_ tries to fill the gap by making the low level JDBC access less verbose and tedious. SQL is still used as query language.
+JDBC is the basic API for accessing relational databases. Being basic makes it quite tedious to use directly. This leads to higher level abstractions like [JPA](https://docs.oracle.com/javaee/7/tutorial/partpersist.htm). Using a full-grown _Object Relational Mapper_ on the other side might be to heavy weight for many uses cases. _FacileJDBC_ tries to fill the gap by making the low-level JDBC access less verbose and tedious. SQL is still used as a query language.
 
 > The API of this library has been heavily influenced by the Scala [Anorm](https://playframework.github.io/anorm/) library.
 
