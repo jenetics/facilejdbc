@@ -27,13 +27,13 @@
 
 plugins {
 	base
-	id("me.champeau.jmh") version "0.6.6" apply false
+	alias(libs.plugins.jmh)
 }
 
 rootProject.version = FacileJDBC.VERSION
 
 tasks.named<Wrapper>("wrapper") {
-	version = "7.3"
+	version = "8.4"
 	distributionType = Wrapper.DistributionType.ALL
 }
 
