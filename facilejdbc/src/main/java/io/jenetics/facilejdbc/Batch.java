@@ -30,7 +30,7 @@ import java.util.function.Function;
 /**
  * Represents a whole batch of query parameter values. A <em>batch</em> is
  * essentially an {@link Iterable} of records or row-creation functions. The
- * available factory functions makes it easy to create a batch from a given
+ * available factory functions make it easy to create a batch from a given
  * list of records or parameters.
  *
  * <pre>{@code

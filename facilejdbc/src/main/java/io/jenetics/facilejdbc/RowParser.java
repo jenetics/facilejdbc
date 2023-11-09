@@ -133,7 +133,7 @@ public interface RowParser<T> {
 	/**
 	 * Returns a parser that will apply the given {@code mapper} to the result
 	 * of {@code this} first parser, which will then be used for parsing the
-	 * final result. This allows to combine existing row parsers.
+	 * final result. This allows combining existing row parsers.
 	 *
 	 * <pre>{@code
 	 * static final RowParser<Book> PARSER =
@@ -228,7 +228,7 @@ public interface RowParser<T> {
 	 *
 	 * @see #unmodifiableList()
 	 *
-	 * @return a new parser witch parses a the whole selection result
+	 * @return a new parser witch parses a whole selection result
 	 */
 	default ResultSetParser<List<T>> list() {
 		return collection(ArrayList::new);

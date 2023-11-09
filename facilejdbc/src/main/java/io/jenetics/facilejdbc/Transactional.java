@@ -102,7 +102,7 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * }</pre>
  *
  * @apiNote
- * The transactional default behaviour
+ * The transactional default behavior
  *
  * @see Transaction
  *
@@ -114,7 +114,7 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
 public interface Transactional {
 
 	/**
-	 * Return the DB connection. If you obtain a new connection you are
+	 * Return the DB connection. If you obtain a new connection, you are
 	 * responsible for closing it after usage. This is done ideally in a
 	 * resource-try block.
 	 *
@@ -140,7 +140,7 @@ public interface Transactional {
 	/**
 	 * Return a <em>Transaction</em> object, which obtains the connection,
 	 * needed for executing a query, from the {@link #connection()} factory
-	 * method. The transactional behaviour is defined by the
+	 * method. The transactional behavior is defined by the
 	 * {@link #txm(Connection, SqlSupplier)} method of {@code this} interface.
 	 *
 	 * <pre>{@code
@@ -155,7 +155,7 @@ public interface Transactional {
 	 *
 	 * @implNote
 	 * It is possible to store the {@code Transaction} instance, returned by
-	 * this methods, in a variable and use it for more than one call.
+	 * this method, in a variable and use it for more than one call.
 	 *
 	 * @see #txm(Connection, SqlSupplier)
 	 *
@@ -177,10 +177,10 @@ public interface Transactional {
 	}
 
 	/**
-	 * This method defines the transactional behaviour of the {@link Transaction}
+	 * This method defines the transactional behavior of the {@link Transaction}
 	 * interface, returned by the {@link #transaction()} method. The default
 	 * implementation is given by the {@link Transaction#txm(Connection, SqlSupplier)}
-	 * method. If a different behaviour is needed, override this method.
+	 * method. If a different behavior is needed, override this method.
 	 *
 	 * @see Transaction#txm(Connection, SqlSupplier)
 	 *

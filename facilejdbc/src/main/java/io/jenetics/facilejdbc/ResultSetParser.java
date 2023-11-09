@@ -25,7 +25,7 @@ import java.sql.SQLException;
 
 /**
  * This interface is responsible for parsing a {@link ResultSet} to a record of
- * type {@code T}. The intended way for creating a result set parser is via an
+ * type {@code T}. The intended way for creating a result-set parser is via an
  * existing {@link RowParser}.
  *
  * <pre>{@code

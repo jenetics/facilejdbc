@@ -29,7 +29,7 @@ import io.jenetics.facilejdbc.function.SqlFunction;
 import io.jenetics.facilejdbc.function.SqlSupplier;
 
 /**
- * This interface defines methods for executing a SQL query in a transactional
+ * This interface defines methods for executing an SQL query in a transactional
  * context.
  *
  * <pre>{@code
@@ -69,7 +69,7 @@ public interface Transaction {
 	 * @param <T> the returned data type
 	 * @return the result of the given SQL {@code block}
 	 * @throws SQLException it the execution of the SQL block fails. In this
-	 *         case a rollback is performed.
+	 *         case, a rollback is performed.
 	 */
 	<T> T apply(final SqlFunction<? super Connection, ? extends T> block)
 		throws SQLException;
@@ -87,7 +87,7 @@ public interface Transaction {
 	 *
 	 * @param block the SQL function which is executed within a DB transaction
 	 * @throws SQLException it the execution of the SQL block fails. In this
-	 *         case a rollback is performed.
+	 *         case, a rollback is performed.
 	 */
 	default void accept(final SqlConsumer<? super Connection> block)
 		throws SQLException

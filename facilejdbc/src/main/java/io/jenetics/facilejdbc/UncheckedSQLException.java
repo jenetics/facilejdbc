@@ -60,7 +60,7 @@ public class UncheckedSQLException extends RuntimeException {
 	 * @throws InvalidObjectException if the object is invalid or has a cause
 	 *         that is not an {@code SQLException}
 	 * @throws ClassNotFoundException if some error occurs while creating the
-	 *         serialised exception
+	 *         serialized exception
 	 */
 	@Serial
 	private void readObject(final ObjectInputStream s)

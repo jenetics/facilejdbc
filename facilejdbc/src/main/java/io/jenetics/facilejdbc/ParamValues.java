@@ -45,7 +45,7 @@ public interface ParamValues {
 	ParamValues EMPTY = (params, stmt) -> {};
 
 	/**
-	 * Fills the parameters of the given statement.
+	 * Fills the parameters with the given statement.
 	 *
 	 * @param paramNames the list of parameter names which should be set, if
 	 *        available by this {@code ParamValues} object. The list of parameter
@@ -60,8 +60,8 @@ public interface ParamValues {
 	/**
 	 * Returns a composed {@code SqlParamValues} that performs, in sequence,
 	 * {@code this} operation followed by the {@code after} operation. If
-	 * performing either operation throws an exception, it is relayed to the
-	 * caller of the composed operation. If performing this operation throws an
+	 * performing either operation, throws an exception, it is relayed to the
+	 * caller of the composed operation. If performing this operation, throws an
 	 * exception, the after operation will not be performed.
 	 *
 	 * @param after the preparer to perform after {@code this} preparer
