@@ -35,7 +35,7 @@ import io.jenetics.facilejdbc.RowParser;
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-public final record Author(String name, LocalDate birthDay) {
+public record Author(String name, LocalDate birthDay) {
 	public Author {
 		requireNonNull(name);
 	}
@@ -44,7 +44,7 @@ public final record Author(String name, LocalDate birthDay) {
 	 * DB access
 	 * ************************************************************************/
 
-	private static final RowParser<Author> PARSER = RowParser.of(Author.class);
+	private static final RowParser<Author> PARSER = RowParser.record(Author.class);
 
 	private static final Dctor<Author> DCTOR = Dctor.of(Author.class);
 
