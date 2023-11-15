@@ -603,7 +603,7 @@ public final class Query implements Serializable {
 	 * Return a prepared query from {@code this} query object. The returned
 	 * query has the given connection attached.
 	 *
-	 * @since !__version__!
+	 * @since 2.1
 	 *
 	 * @param conn the connection used by the created prepared query
 	 * @return a new prepared query

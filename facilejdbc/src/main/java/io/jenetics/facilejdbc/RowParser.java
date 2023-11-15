@@ -164,7 +164,7 @@ public interface RowParser<T> {
 	 * record, which contains the primary key of the parsed record. The primary
 	 * key is parsed with the given {@code keyParser}.
 	 *
-	 * @since !__version__!
+	 * @since 2.1
 	 *
 	 * @param keyParser the key parser used for parsing the primary key of the
 	 *        parsed records/rows
@@ -179,7 +179,7 @@ public interface RowParser<T> {
 	 * Return a row-parser which wraps the result object into a {@link Stored}
 	 * record, which contains the primary key of the parsed record.
 	 *
-	 * @since !__version__!
+	 * @since 2.1
 	 *
 	 * @return the row parser for <em>stored</em> records
 	 */

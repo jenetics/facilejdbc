@@ -22,7 +22,7 @@ package io.jenetics.facilejdbc;
 /**
  * This class combines a record, stored in the DB, with its primary key.
  *
- * @since !__version__!
+ * @since 2.1
  *
  * @param <K> the key type
  * @param <T> the record type, stored in the DB
@@ -30,8 +30,8 @@ package io.jenetics.facilejdbc;
  * @param value the DB record
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version !__version__!
- * @since !__version__!
+ * @version 2.1
+ * @since 2.1
  */
 public record Stored<K, T>(K id, T value) {
 }
