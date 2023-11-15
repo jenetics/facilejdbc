@@ -171,8 +171,7 @@ public interface RowParser<T> {
 	 * @return the row parser for <em>stored</em> records
 	 * @param <K> the key type
 	 */
-	default <K> RowParser<Stored<K, T>>
-	stored(final RowParser<? extends K> keyParser) {
+	default <K> RowParser<Stored<K, T>> stored(final RowParser<? extends K> keyParser) {
 		return RowParser.compose(Stored::new, keyParser, this);
 	}
 
