@@ -470,7 +470,7 @@ final Transactional db = ds::getConnection;
 
 The library is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
-    Copyright 2019-2021 Franz Wilhelmstötter
+    Copyright 2019-2023 Franz Wilhelmstötter
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -486,44 +486,32 @@ The library is licensed under the [Apache License, Version 2.0](http://www.apach
 
 ## Release notes
 
-### [2.0.0](https://github.com/jenetics/facilejdbc/releases/tag/v2.0.0)
+### [2.1.0](https://github.com/jenetics/facilejdbc/releases/tag/v2.1.0)
 
 #### Improvements
 
-* [#21](https://github.com/jenetics/facilejdbc/issues/21): Create `Ctor` instances from Record classes. It is now possible to create `Ctor` directly from `record` classes.
+* [#23](https://github.com/jenetics/facilejdbc/issues/23): Implementation of `Stored` class.
 ```java
-// Simple `Dctor` creation.
-final Dctor<Book> dctor = Dctor.of(Book.class);
+// Reading 'Link' objects from db.
+final List<Stored<Long, Link>> links = select
+	.as(LINK_PARSER.stored("id").list(), conn);
 
-// Adapt the name conversion.
-final Dctor<Book> dctor = Records.dctor(
-    Book.class,
-    component -> switch (component.getName()) {
-        case "author" -> "primary_author";
-        case "isbn" -> "isbn13";
-        default -> Records.toSnakeCase(component);
-    }
-);
+// Printing the result + its DB ids.
+links.forEach(System.out::println);
 
-// Add additional columns.
-final Dctor<Book> dctor = Records.dctor(
-    Book.class,
-    field("title_hash", book -> book.title().hashCode())
-);
+// > Stored[id=1, value=Link[http://jenetics.io, text=null, type=null]]
+// > Stored[id=2, value=Link[http://jenetics.io, text=Jenetics, type=web]]
+// > Stored[id=3, value=Link[https://duckduckgo.com, text=DuckDuckGo, type=search]]
 ```
-* [#43](https://github.com/jenetics/facilejdbc/issues/43): Create `RowParser` instances from `record` classes.
+* [#49](https://github.com/jenetics/facilejdbc/issues/49): Implement `PreparedQuery` class.
 ```java
-// Simple `RowParser` creation.
-final RowParser<Book> parser = RowParser.of(Book.class);
-
-// Adapting the record component parsing.
-final RowParser<Book> parser = Records.parserWithFields(
-    Book.class,
-    Map.of(
-        "isbn", string("isbn").map(Isbn::new),
-        "authors", int64("id").map(Author::selectByBookId)
-    )
-);
+final var query = INSERT_LINK.prepareQuery(conn);
+final var batch = Batch.of(links, LINK_DCTOR);
+query.execute(batch);
 ```
+
+#### Bug
+
+* [#23](https://github.com/jenetics/facilejdbc/issues/23): Remove wrong `null` check in `Param` factory method.
 
 _[All Release Notes](RELEASE_NOTES.md)_
