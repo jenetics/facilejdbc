@@ -22,13 +22,16 @@ package io.jenetics.facilejdbc;
 import static java.util.Objects.requireNonNull;
 import static java.util.Spliterators.spliteratorUnknownSize;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +41,7 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -133,7 +137,7 @@ public interface RowParser<T> {
 	/**
 	 * Returns a parser that will apply the given {@code mapper} to the result
 	 * of {@code this} first parser, which will then be used for parsing the
-	 * final result. This allows to combine existing row parsers.
+	 * final result. This allows combining existing row parsers.
 	 *
 	 * <pre>{@code
 	 * static final RowParser<Book> PARSER =
@@ -156,9 +160,37 @@ public interface RowParser<T> {
 	}
 
 	/**
+	 * Return a row-parser which wraps the result object into a {@link Stored}
+	 * record, which contains the primary key of the parsed record. The primary
+	 * key is parsed with the given {@code keyParser}.
+	 *
+	 * @since 2.1
+	 *
+	 * @param keyParser the key parser used for parsing the primary key of the
+	 *        parsed records/rows
+	 * @return the row parser for <em>stored</em> records
+	 * @param <K> the key type
+	 */
+	default <K> RowParser<Stored<K, T>> stored(final RowParser<? extends K> keyParser) {
+		return RowParser.compose(Stored::new, keyParser, this);
+	}
+
+	/**
+	 * Return a row-parser which wraps the result object into a {@link Stored}
+	 * record, which contains the primary key of the parsed record.
+	 *
+	 * @since 2.1
+	 *
+	 * @return the row parser for <em>stored</em> records
+	 */
+	default RowParser<Stored<Long, T>> stored(final String name) {
+		return stored(int64(name));
+	}
+
+	/**
 	 * Return a new parser which expects at least one result. If no result is
 	 * available, a {@link NoSuchElementException} is thrown by the parser.  If
-	 * more then one result is available, the first one is returned.
+	 * more than one result is available, the first one is returned.
 	 *
 	 * @see #singleNull()
 	 * @see #singleOpt()
@@ -228,10 +260,25 @@ public interface RowParser<T> {
 	 *
 	 * @see #unmodifiableList()
 	 *
-	 * @return a new parser witch parses a the whole selection result
+	 * @return a new parser witch parses a whole selection result
 	 */
 	default ResultSetParser<List<T>> list() {
 		return collection(ArrayList::new);
+	}
+
+	/**
+	 * Return a new parser witch parses the whole selection result.
+	 *
+	 * @since 2.1
+	 *
+	 * @return a new parser witch parses a whole selection result
+	 */
+	default ResultSetParser<T[]> array(final Class<T> type) {
+		return (rs, conn) -> list().parse(rs, conn).toArray(length -> {
+				@SuppressWarnings("unchecked")
+				final var array = (T[])Array.newInstance(type, length);
+				return array;
+			});
 	}
 
 	private <C1 extends Collection<T>, C2 extends Collection<T>>
@@ -485,6 +532,30 @@ public interface RowParser<T> {
 	}
 
 	/**
+	 * Return a row parser for byte values for the given column name.
+	 *
+	 * @since 2.1
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Byte> int8(final String name) {
+		return (row, conn) -> row.getByte(name);
+	}
+
+	/**
+	 * Return a row parser for byte values for the given column index.
+	 *
+	 * @since 2.1
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<Byte> int8(final int index) {
+		return (row, conn) -> row.getByte(index);
+	}
+
+	/**
 	 * Return a row parser for short values for the given column name.
 	 *
 	 * @since 2.0
@@ -689,7 +760,8 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Return a row parser for instant values for the given column name.
+	 * Return a row parser for instant (timestamp) values for the given column
+	 * name.
 	 *
 	 * @since 1.3
 	 *
@@ -701,7 +773,8 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Return a row parser for instant values for the given column index.
+	 * Return a row parser for instant (timestamp) values for the given column
+	 * index.
 	 *
 	 * @since 1.3
 	 *
@@ -710,6 +783,38 @@ public interface RowParser<T> {
 	 */
 	static RowParser<Instant> instant(final int index) {
 		return timestamp(index).map(ts -> ts != null ? ts.toInstant() : null);
+	}
+
+	/**
+	 * Return a row parser for local date (date) values for the given column
+	 * name.
+	 *
+	 * @since 2.1
+	 *
+	 * @param name the column name
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<LocalDate> date(final String name) {
+		return (row, conn) -> {
+			final var date = row.getDate(name);
+			return date != null ? date.toLocalDate() : null;
+		};
+	}
+
+	/**
+	 * Return a row parser for local date (date) values for the given column
+	 * index.
+	 *
+	 * @since 2.1
+	 *
+	 * @param index the column index
+	 * @return the row-parser for the given column
+	 */
+	static RowParser<LocalDate> date(final int index) {
+		return (row, conn) -> {
+			final var date = row.getDate(index);
+			return date != null ? date.toLocalDate() : null;
+		};
 	}
 
 	/**
@@ -790,8 +895,30 @@ public interface RowParser<T> {
 	 * @param <T> the record type
 	 * @return a new row-parser for the given record {@code type}
 	 * @throws NullPointerException if one of the arguments is {@code null}
+	 * @deprecated Use {@link #record(Class)} instead
 	 */
+	@Deprecated(since = "2.1", forRemoval = true)
 	static <T extends Record> RowParser<T> of(final Class<T> type) {
+		return Records.parser(type);
+	}
+
+	/**
+	 * Returns a parser for the given record {@code type}.
+	 *
+	 * <pre>{@code
+	 * final Book book = Query.of("SELECT * FROM book WHERE id = :id")
+	 *     .on(value("id", 23))
+	 *     .as(record(Book.class).singleNull(), conn);
+	 * }</pre>
+	 *
+	 * @since 2.1
+	 *
+	 * @param type the record type
+	 * @return the record type parser
+	 * @param <T> the record type
+	 * @throws NullPointerException if the give {@code type} is {@code null}
+	 */
+	static <T extends Record> RowParser<T> record(final Class<T> type) {
 		return Records.parser(type);
 	}
 

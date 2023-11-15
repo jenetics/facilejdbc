@@ -24,7 +24,7 @@ import java.sql.SQLException;
 /**
  * Represents a function that accepts one argument and produces a result. In
  * contrast to the Java {@link java.util.function.Consumer} interface, a
- * SQL-function is allowed to throw a {@link SQLException}.
+ * SQL function is allowed to throw a {@link SQLException}.
  *
  * @see java.util.function.Function
  *
@@ -41,7 +41,7 @@ public interface SqlConsumer<T> {
 	 * Applies this function to the given argument.
 	 *
 	 * @param t the function argument
-	 * @throws SQLException if the execution of the SQL-function fails
+	 * @throws SQLException if the execution of the SQL function fails
 	 */
 	void accept(final T t) throws SQLException;
 

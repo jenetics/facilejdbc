@@ -36,8 +36,12 @@ import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * This class is a wrapper around the JDBC {@link ResultSet} without all
@@ -82,9 +86,21 @@ public interface Row {
 
 	Date getDate(int columnIndex) throws SQLException;
 
+	default LocalDate getLocalDate(int columnIndex) throws SQLException {
+		return map(getDate(columnIndex), Date::toLocalDate);
+	}
+
 	Time getTime(int columnIndex) throws SQLException;
 
+	default LocalTime getLocalTime(int columnIndex) throws SQLException {
+		return map(getTime(columnIndex), Time::toLocalTime);
+	}
+
 	Timestamp getTimestamp(int columnIndex) throws SQLException;
+
+	default Instant getInstant(int columnIndex) throws SQLException {
+		return map(getTimestamp(columnIndex), Timestamp::toInstant);
+	}
 
 	InputStream getAsciiStream(int columnIndex)
 		throws SQLException;
@@ -112,9 +128,21 @@ public interface Row {
 
 	Date getDate(String columnLabel) throws SQLException;
 
+	default LocalDate getLocalDate(String columnLabel) throws SQLException {
+		return map(getDate(columnLabel), Date::toLocalDate);
+	}
+
 	Time getTime(String columnLabel) throws SQLException;
 
+	default LocalTime getLocalTime(String columnLabel) throws SQLException {
+		return map(getTime(columnLabel), Time::toLocalTime);
+	}
+
 	Timestamp getTimestamp(String columnLabel) throws SQLException;
+
+	default Instant getInstant(String columnLabel) throws SQLException {
+		return map(getTimestamp(columnLabel), Timestamp::toInstant);
+	}
 
 	InputStream getAsciiStream(String columnLabel)
 				throws SQLException;
@@ -224,4 +252,8 @@ public interface Row {
 	<T> T unwrap(Class<T> iface) throws SQLException;
 
 	boolean isWrapperFor(Class<?> iface) throws SQLException;
+
+	static <A, B> B map(A value, Function<? super A, ? extends B> fn) {
+		return value != null ? fn.apply(value) : null;
+	}
 }

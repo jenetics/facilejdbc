@@ -27,13 +27,13 @@
 
 plugins {
 	base
-	id("me.champeau.jmh") version "0.6.6" apply false
+	alias(libs.plugins.jmh)
 }
 
 rootProject.version = FacileJDBC.VERSION
 
 tasks.named<Wrapper>("wrapper") {
-	version = "7.3"
+	version = "8.4"
 	distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -72,6 +72,10 @@ gradle.projectsEvaluated {
 			configure<JavaPluginExtension> {
 				sourceCompatibility = JavaVersion.VERSION_17
 				targetCompatibility = JavaVersion.VERSION_17
+			}
+
+			configure<JavaPluginExtension> {
+				modularity.inferModulePath.set(true)
 			}
 
 			setupJava(project)
@@ -127,7 +131,7 @@ fun setupTestReporting(project: Project) {
 	project.apply(plugin = "jacoco")
 
 	project.configure<JacocoPluginExtension> {
-		toolVersion = "0.8.7"
+		toolVersion = "0.8.11"
 	}
 
 	project.tasks {

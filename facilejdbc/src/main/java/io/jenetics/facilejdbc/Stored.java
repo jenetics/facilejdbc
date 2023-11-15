@@ -17,34 +17,21 @@
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
-package io.jenetics.facilejdbc.function;
-
-import java.sql.SQLException;
+package io.jenetics.facilejdbc;
 
 /**
- * Represents a function that accepts one argument and produces a result. In
- * contrast to the Java {@link java.util.function.Function} interface, a
- * SQL function is allowed to throw a {@link SQLException}.
+ * This class combines a record, stored in the DB, with its primary key.
  *
- * @see java.util.function.Function
+ * @since 2.1
  *
- * @param <T> the argument type
- * @param <R> the result type
+ * @param <K> the key type
+ * @param <T> the record type, stored in the DB
+ * @param id the primary key
+ * @param value the DB record
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @version 1.0
- * @since 1.0
+ * @version 2.1
+ * @since 2.1
  */
-@FunctionalInterface
-public interface SqlFunction<T, R> {
-
-	/**
-	 * Applies this function to the given argument.
-	 *
-	 * @param t the function argument
-	 * @return the function result
-	 * @throws SQLException if the execution of the SQL function fails
-	 */
-	R apply(final T t) throws SQLException;
-
+public record Stored<K, T>(K id, T value) {
 }

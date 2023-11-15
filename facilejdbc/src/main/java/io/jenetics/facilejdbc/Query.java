@@ -99,7 +99,7 @@ public final class Query implements Serializable {
 	}
 
 	/**
-	 * Return the prepared SQL string. All parameter names has been replaced
+	 * Return the prepared SQL string. All parameter names have been replaced
 	 * with '?' placeholders.
 	 *
 	 * @return the prepared SQL string
@@ -127,7 +127,7 @@ public final class Query implements Serializable {
 
 	/**
 	 * Return the list of parsed parameter names. The list may be empty or
-	 * contain duplicate entries, depending on the input string. The list are
+	 * contain duplicate entries, depending on the input string. The list is
 	 * in exactly the order they appeared in the SQL string and can be used for
 	 * determining the parameter index for the {@link PreparedStatement}.
 	 *
@@ -289,8 +289,8 @@ public final class Query implements Serializable {
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
 	 * @throws NullPointerException if the given {@code params} is {@code null}
-	 * @throws IllegalArgumentException if an other type then {@link SingleParam} or
-	 *         {@link MultiParam} is given
+	 * @throws IllegalArgumentException if another type then {@link SingleParam}
+	 *         or {@link MultiParam} is given
 	 */
 	public Query on(final Param... params) {
 		return on(asList(params));
@@ -569,11 +569,8 @@ public final class Query implements Serializable {
 	public void execute(final Batch batch, final Connection conn)
 		throws SQLException
 	{
-		try (var stmt = prepare(conn)) {
-			for (var row : batch) {
-				row.apply(conn).set(paramNames(), stmt);
-				stmt.execute();
-			}
+		try (var query = prepareQuery(conn)) {
+			query.execute(batch);
 		}
 	}
 
@@ -597,16 +594,23 @@ public final class Query implements Serializable {
 	public int[] executeUpdate(final Batch batch, final Connection conn)
 		throws SQLException
 	{
-		final IntStream.Builder counts = IntStream.builder();
-		try (var stmt = prepare(conn)) {
-			for (var row : batch) {
-				row.apply(conn).set(paramNames(), stmt);
-				final int count = stmt.executeUpdate();
-				counts.add(count);
-			}
+		try (var query = prepareQuery(conn)) {
+			return query.executeUpdate(batch);
 		}
+	}
 
-		return counts.build().toArray();
+	/**
+	 * Return a prepared query from {@code this} query object. The returned
+	 * query has the given connection attached.
+	 *
+	 * @since 2.1
+	 *
+	 * @param conn the connection used by the created prepared query
+	 * @return a new prepared query
+	 * @throws SQLException if preparing the query fails
+	 */
+	public PreparedQuery prepareQuery(final Connection conn) throws SQLException {
+		return new PreparedQuery(prepare(conn), paramNames());
 	}
 
 	@Override
@@ -621,15 +625,17 @@ public final class Query implements Serializable {
 	/**
 	 * Create a new query object from the given SQL string.
 	 * <pre>{@code
-	 * private static final Query SELECT = Query.of(
-	 *     "SELECT * FROM person " +
-	 *     "WHERE forename like :forename " +
-	 *     "ORDER BY surname;"
+	 * private static final Query SELECT = Query.of("""
+	 *     SELECT * FROM person
+	 *     WHERE forename like :forename
+	 *     ORDER BY surname;
+	 *     """
 	 * );
 	 *
-	 * private static final Query INSERT = Query.of(
-	 *     "INSERT INTO person(forename, surname, birthday, email) " +
-	 *     "VALUES(:forename, :surname, :birthday, :email);"
+	 * private static final Query INSERT = Query.of("""
+	 *     INSERT INTO person(forename, surname, birthday, email)
+	 *     VALUES(:forename, :surname, :birthday, :email);
+	 *     """
 	 * );
 	 * }</pre>
 	 *

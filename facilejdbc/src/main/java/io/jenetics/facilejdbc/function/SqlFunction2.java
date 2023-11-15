@@ -22,9 +22,9 @@ package io.jenetics.facilejdbc.function;
 import java.sql.SQLException;
 
 /**
- * Represents a function that accepts two argument and produces a result. In
+ * Represents a function that accepts two arguments and produces a result. In
  * contrast to the Java {@link java.util.function.BiFunction} interface, a
- * SQL-function is allowed to throw a {@link SQLException}.
+ * SQL function is allowed to throw a {@link SQLException}.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version 1.0
@@ -39,7 +39,7 @@ public interface SqlFunction2<T, U, R> {
 	 * @param t the first function argument
 	 * @param u the second function argument
 	 * @return the function result
-	 * @throws SQLException if the execution of the SQL-function fails
+	 * @throws SQLException if the execution of the SQL function fails
 	 */
 	R apply(final T t, final U u) throws SQLException;
 

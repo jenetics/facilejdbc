@@ -25,7 +25,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 
 /**
- * Helper class for exporting DB result to CSV string.
+ * Helper class for exporting a DB result to CSV string.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version 1.3

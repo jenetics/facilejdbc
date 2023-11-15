@@ -86,7 +86,7 @@ final class Sql {
 	}
 
 	/**
-	 * Return the prepared SQL string. All parameter names has been replaced
+	 * Return the prepared SQL string. All parameter names have been replaced
 	 * with '?' placeholders.
 	 *
 	 * @return the prepared SQL string
@@ -124,7 +124,7 @@ final class Sql {
 
 	/**
 	 * Return the list of parsed parameter names. The list may be empty or
-	 * contain duplicate entries, depending on the input string. The list are
+	 * contain duplicate entries, depending on the input string. The list is
 	 * in exactly the order they appeared in the SQL string.
 	 *
 	 * @return the parsed parameter names

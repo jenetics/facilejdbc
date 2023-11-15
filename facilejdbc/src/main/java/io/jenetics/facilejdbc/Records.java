@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Helper methods for creating de-constructors from {@link Record} types.
+ * Helper methods for creating deconstructors from {@link Record} types.
  * In the simplest case the component names of the records (converted to
  * <em>snake_case</em>) correspond to column names of the table.
  * <p>
@@ -65,7 +65,7 @@ public final class Records {
 	}
 
 	/* *************************************************************************
-	 * Factory methods for creating de-constructors.
+	 * Factory methods for creating deconstructors.
 	 * ************************************************************************/
 
 	/**
@@ -243,7 +243,7 @@ public final class Records {
 	}
 
 	/**
-	 * Converts to given record component to a column name in
+	 * Converts to given a record component to a column name in
 	 * <a href="https://en.wikipedia.org/wiki/Snake_case">snake_case</a>.
 	 *
 	 * @see #toSnakeCase(String)
@@ -316,7 +316,7 @@ public final class Records {
 
 	/**
 	 * Creates a {@link RowParser} for the given record {@code type}. This
-	 * method gives you the greatest flexibility on creating row-parser
+	 * method gives you the greatest flexibility in creating row-parser
 	 * instances.
 	 * <pre>{@code
 	 * // Handling different column names and column types:
@@ -382,7 +382,7 @@ public final class Records {
 
 	/**
 	 * Creates a {@link RowParser} for the given record {@code type}. This
-	 * method gives you the greatest flexibility on creating row-parser
+	 * method gives you the greatest flexibility in creating row-parser
 	 * instances.
 	 * <pre>{@code
 	 * // Handling different column names and column types:

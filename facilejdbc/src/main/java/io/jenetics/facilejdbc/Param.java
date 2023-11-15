@@ -33,7 +33,7 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * This is the  base interface of the {@link SingleParam} and {@link MultiParam}
  * class.
  * <p>
- * Creating single valued parameters:
+ * Creating single-valued parameters:
  * <pre>{@code
  * INSERT_QUERY.on(
  *     Param.value("forename", "Werner"),
@@ -84,7 +84,6 @@ public sealed interface Param permits SingleParam, MultiParam {
 	 *         {@code null}
 	 */
 	static SingleParam value(final String name, final Object value) {
-		requireNonNull(value);
 		return SingleParam.of(
 			name,
 			(idx, stmt) -> stmt.setObject(idx, map(value))

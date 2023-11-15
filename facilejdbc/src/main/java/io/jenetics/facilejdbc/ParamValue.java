@@ -23,7 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
- * Represents a SQL value which can be set to a prepared statement. Instead of
+ * Represents an SQL value which can be set to a prepared statement. Instead of
  * representing the parameter value directly, a value is defined by it's
  * <em>insertion</em> strategy.
  *
