@@ -599,6 +599,16 @@ public final class Query implements Serializable {
 		}
 	}
 
+	/**
+	 * Return a prepared query from {@code this} query object. The returned
+	 * query has the given connection attached.
+	 *
+	 * @since !__version__!
+	 *
+	 * @param conn the connection used by the created prepared query
+	 * @return a new prepared query
+	 * @throws SQLException if preparing the query fails
+	 */
 	public PreparedQuery prepareQuery(final Connection conn) throws SQLException {
 		return new PreparedQuery(prepare(conn), paramNames());
 	}

@@ -160,9 +160,38 @@ public interface RowParser<T> {
 	}
 
 	/**
+	 * Return a row-parser which wraps the result object into a {@link Stored}
+	 * record, which contains the primary key of the parsed record. The primary
+	 * key is parsed with the given {@code keyParser}.
+	 *
+	 * @since !__version__!
+	 *
+	 * @param keyParser the key parser used for parsing the primary key of the
+	 *        parsed records/rows
+	 * @return the row parser for <em>stored</em> records
+	 * @param <K> the key type
+	 */
+	default <K> RowParser<Stored<K, T>>
+	stored(final RowParser<? extends K> keyParser) {
+		return RowParser.compose(Stored::new, keyParser, this);
+	}
+
+	/**
+	 * Return a row-parser which wraps the result object into a {@link Stored}
+	 * record, which contains the primary key of the parsed record.
+	 *
+	 * @since !__version__!
+	 *
+	 * @return the row parser for <em>stored</em> records
+	 */
+	default RowParser<Stored<Long, T>> stored(final String name) {
+		return stored(int64(name));
+	}
+
+	/**
 	 * Return a new parser which expects at least one result. If no result is
 	 * available, a {@link NoSuchElementException} is thrown by the parser.  If
-	 * more then one result is available, the first one is returned.
+	 * more than one result is available, the first one is returned.
 	 *
 	 * @see #singleNull()
 	 * @see #singleOpt()
