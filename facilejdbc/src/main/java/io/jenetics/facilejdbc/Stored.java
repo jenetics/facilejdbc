@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 /*
  * Facile JDBC Library (@__identifier__@).
  * Copyright (c) @__year__@ Franz Wilhelmstötter
@@ -19,28 +17,21 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
  * Author:
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
+package io.jenetics.facilejdbc;
 
 /**
+ * This class combines a record, stored in the DB, with its primary key.
+ *
+ * @since !__version__!
+ *
+ * @param <K> the key type
+ * @param <T> the record type, stored in the DB
+ * @param id the primary key
+ * @param value the DB record
+ *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @since 1.2
- * @version 1.2
+ * @version !__version__!
+ * @since !__version__!
  */
-plugins {
-	`java-gradle-plugin`
-	`kotlin-dsl`
-
-}
-
-repositories {
-	mavenLocal()
-	gradlePluginPortal()
-}
-
-tasks.withType<KotlinCompile>().configureEach {
-	kotlinOptions.jvmTarget = "17"
-}
-
-configure<JavaPluginExtension> {
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+public record Stored<K, T>(K id, T value) {
 }

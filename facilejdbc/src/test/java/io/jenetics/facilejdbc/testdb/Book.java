@@ -42,7 +42,7 @@ import io.jenetics.facilejdbc.RowParser;
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  */
-public final record Book(
+public record Book(
 	String title,
 	Isbn isbn,
 	Integer pages,

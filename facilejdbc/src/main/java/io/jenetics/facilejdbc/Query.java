@@ -569,11 +569,8 @@ public final class Query implements Serializable {
 	public void execute(final Batch batch, final Connection conn)
 		throws SQLException
 	{
-		try (var stmt = prepare(conn)) {
-			for (var row : batch) {
-				row.apply(conn).set(paramNames(), stmt);
-				stmt.execute();
-			}
+		try (var query = prepareQuery(conn)) {
+			query.execute(batch);
 		}
 	}
 
@@ -597,16 +594,23 @@ public final class Query implements Serializable {
 	public int[] executeUpdate(final Batch batch, final Connection conn)
 		throws SQLException
 	{
-		final IntStream.Builder counts = IntStream.builder();
-		try (var stmt = prepare(conn)) {
-			for (var row : batch) {
-				row.apply(conn).set(paramNames(), stmt);
-				final int count = stmt.executeUpdate();
-				counts.add(count);
-			}
+		try (var query = prepareQuery(conn)) {
+			return query.executeUpdate(batch);
 		}
+	}
 
-		return counts.build().toArray();
+	/**
+	 * Return a prepared query from {@code this} query object. The returned
+	 * query has the given connection attached.
+	 *
+	 * @since !__version__!
+	 *
+	 * @param conn the connection used by the created prepared query
+	 * @return a new prepared query
+	 * @throws SQLException if preparing the query fails
+	 */
+	public PreparedQuery prepareQuery(final Connection conn) throws SQLException {
+		return new PreparedQuery(prepare(conn), paramNames());
 	}
 
 	@Override
