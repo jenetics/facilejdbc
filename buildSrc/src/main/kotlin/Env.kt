@@ -52,7 +52,7 @@ object Env {
  * Information about the library and author.
  */
 object FacileJDBC {
-	const val VERSION = "2.1.0"
+	const val VERSION = "2.1.1"
 	const val ID = "facilejdbc"
 	const val NAME = "facilejdbc"
 	const val GROUP = "io.jenetics"
