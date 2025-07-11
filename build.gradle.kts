@@ -26,14 +26,14 @@
  */
 
 plugins {
-	base
 	alias(libs.plugins.jmh)
+	alias(libs.plugins.version.catalog.update)
 }
 
 rootProject.version = FacileJDBC.VERSION
 
 tasks.named<Wrapper>("wrapper") {
-	version = "8.4"
+	version = "8.14.3"
 	distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -199,29 +199,10 @@ fun setupJavadoc(project: Project) {
 			directory = javadoc.destinationDir!!
 		}
 
-		project.tasks.register("java2html") {
-			doLast {
-				project.javaexec {
-					mainClass.set("de.java2html.Java2Html")
-					args = listOf(
-						"-srcdir", "src/main/java",
-						"-targetdir", "${javadoc.destinationDir}/src-html"
-					)
-					classpath = files("${project.rootDir}/buildSrc/lib/java2html.jar")
-				}
-			}
-		}
-
 		javadoc.doLast {
 			val colorizer = project.tasks.findByName("colorizer")
 			colorizer?.actions?.forEach {
 				it.execute(colorizer)
-			}
-
-
-			val java2html = project.tasks.findByName("java2html")
-			java2html?.actions?.forEach {
-				it.execute(java2html)
 			}
 		}
 	}
