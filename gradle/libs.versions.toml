@@ -1,18 +1,16 @@
 [versions]
 assertj = "3.27.3"
+hsqldb = "2.7.4"
+javafaker = "1.0.2"
 jmh = "0.7.3"
 testng = "7.11.0"
 version-catalog-update = "1.0.0"
-javafaker = "1.0.2"
-hsqldb = "2.7.2"
 
 [plugins]
-
 jmh = { id = "me.champeau.jmh", version.ref = "jmh" }
 version-catalog-update = { id = "nl.littlerobots.version-catalog-update", version.ref = "version-catalog-update" }
 
 [libraries]
-
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 hsqldb = { module = "org.hsqldb:hsqldb", version.ref = "hsqldb" }
 javafaker = { module = "com.github.javafaker:javafaker", version.ref = "javafaker" }
