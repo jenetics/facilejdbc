@@ -422,7 +422,7 @@ public final class Query implements Serializable {
 			stmt.setFetchSize(fetchSize);
 		}
 		if (timeout != null) {
-			stmt.setFetchSize((int)timeout.toSeconds());
+			stmt.setQueryTimeout((int)timeout.toSeconds());
 		}
 	}
 
