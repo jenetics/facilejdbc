@@ -27,6 +27,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
  */
 plugins {
 	base
+	alias(libs.plugins.version.catalog.update)
 	alias(libs.plugins.jmh)
 }
 
