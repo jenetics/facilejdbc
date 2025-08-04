@@ -527,7 +527,7 @@ public final class Query implements Serializable {
 
 	/**
 	 * Executes the SQL statement in a {@link PreparedStatement} object, which
-	 * must be an SQL {@code INSERT}. It returns, the optionally generated, key
+	 * must be an SQL {@code INSERT}. It returns the optionally generated, key
 	 * for the inserted row.
 	 *
 	 * @see PreparedStatement#executeUpdate()

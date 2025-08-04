@@ -119,7 +119,7 @@ public interface Transaction {
 	 * }</pre>
 	 *
 	 * @apiNote
-	 * This method implements the transactional default behaviour ot the
+	 * This method implements the transactional default behavior of the
 	 * {@link Transaction} implementation, returned by the
 	 * {@link Transactional#transaction()} interface.
 	 *

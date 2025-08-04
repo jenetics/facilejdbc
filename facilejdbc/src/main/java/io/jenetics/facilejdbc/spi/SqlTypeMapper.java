@@ -22,7 +22,6 @@ package io.jenetics.facilejdbc.spi;
 /**
  * The purpose of this SPI is to map simple <em>domain</em> values into the
  * proper type of the used DB. This may lead to a more readable insertion code.
- *
  * Usually, it is not possible to insert an {@code URI} field directly into the
  * DB. You have to convert it into a string object first.
  * <pre>{@code

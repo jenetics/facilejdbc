@@ -98,7 +98,7 @@ public final class Records {
 	 * @param type the record type to deconstruct
 	 * @param toColumnName function for mapping the record component to the
 	 *        column names of the DB
-	 * @param fields The fields which overrides/extends the
+	 * @param fields The fields that override/extend the
 	 *        automatically extracted fields from the record. It also allows
 	 *        defining additional column values, derived from the given record
 	 *        values.
@@ -178,7 +178,7 @@ public final class Records {
 	 * @param type the record type to deconstruct
 	 * @param toColumnName function for mapping the record component to the
 	 *        column names of the DB
-	 * @param fields The fields which overrides/extends the
+	 * @param fields The fields that override/extend the
 	 *        automatically extracted fields from the record. It also allows
 	 *        defining additional column values, derived from the given record
 	 *        values.
@@ -225,7 +225,7 @@ public final class Records {
 	 * @see Dctor#of(Class, Dctor.Field[])
 	 *
 	 * @param type the record type to deconstruct
-	 * @param fields The fields which overrides/extends the
+	 * @param fields The fields that override/extend the
 	 *        automatically extracted fields from the record. It also allows
 	 *        defining additional column values, derived from the given record
 	 *        values.
@@ -243,7 +243,7 @@ public final class Records {
 	}
 
 	/**
-	 * Converts to given a record component to a column name in
+	 * Converts to give a record component to a column name in
 	 * <a href="https://en.wikipedia.org/wiki/Snake_case">snake_case</a>.
 	 *
 	 * @see #toSnakeCase(String)

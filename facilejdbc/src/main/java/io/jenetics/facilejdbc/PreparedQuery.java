@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
 
 /**
  * A prepared query has a {@link PreparedStatement} attached and lets you do
- * batch inserts in a convenient way.
+ * batch inserts conveniently.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version 2.1
