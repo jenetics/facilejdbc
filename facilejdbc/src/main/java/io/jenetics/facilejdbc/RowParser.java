@@ -31,7 +31,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -41,7 +40,6 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -872,27 +870,6 @@ public interface RowParser<T> {
 
 			return ctor.apply(cols);
 		};
-	}
-
-	/**
-	 * Creates a {@link RowParser} for the given record {@code type}.
-	 * {@snippet lang="java":
-	 * // Handling different column names and column types:
-	 * // [title, author, isbn, pages, published_at]
-	 * final RowParser<Book> parser = RowParser.record(Book.class);
-	 * }
-	 *
-	 * @see Records#parser(Class)
-	 *
-	 * @param type the record type
-	 * @param <T> the record type
-	 * @return a new row-parser for the given record {@code type}
-	 * @throws NullPointerException if one of the arguments is {@code null}
-	 * @deprecated Use {@link #record(Class)} instead
-	 */
-	@Deprecated(since = "2.1", forRemoval = true)
-	static <T extends Record> RowParser<T> of(final Class<T> type) {
-		return Records.parser(type);
 	}
 
 	/**
