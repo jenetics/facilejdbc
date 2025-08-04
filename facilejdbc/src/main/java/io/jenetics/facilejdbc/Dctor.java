@@ -38,19 +38,19 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
  * This interface is responsible for <em>deconstructing</em> a given record, of
  * type {@code T}, to a DB-<em>row</em> ({@link ParamValues}).
  *
- * <pre>{@code
+ * {@snippet lang="java":
  * final Dctor<Book> dctor = Dctor.of(
  *     Dctor.field("title", Book::title),
  *     Dctor.field("isbn", Book::isbn),
  *     Dctor.field("published_at", Book::publishedAt),
  *     Dctor.field("pages", Book::pages)
  * );
- * }</pre>
+ * }
  *
  * If the {@code Book} class is a record, you can just write
- * <pre>{@code
+ * {@snippet lang="java":
  * final Dctor<Book> dctor = Dctor.of(Book.class);
- * }</pre>
+ * }
  *
  * @apiNote
  * A {@code Dctor} (deconstructor) is responsible for splitting a given record
@@ -199,8 +199,7 @@ public interface Dctor<T> {
 
 	/**
 	 * Create a new deconstructor for the given record type.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Matching column names, with book columns:
 	 * // [title, author, isbn, pages, published_at]
 	 * final Dctor<Book> dctor = Dctor.of(Book.class);
@@ -219,7 +218,7 @@ public interface Dctor<T> {
 	 *     field("pages", book -> book.pages()*3),
 	 *     field("title_hash", book -> book.title().hashCode())
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see Records#dctor(Class, Field[])
 	 *

@@ -31,15 +31,14 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
 /**
  * This interface defines methods for executing an SQL query in a transactional
  * context.
- *
- * <pre>{@code
- * final Transaction transaction = ...;
+ * {@snippet lang="java":
+ * final Transaction transaction = null; // @replace substring='null' replacement="..."
  * final Optional<Long> id = transaction.apply(conn ->
  *     Query.of("SELECT id FROM author WHERE name = :name")
- *         .on(value("name", "Hemingway"))
- *         .as(RowParser.int64("id").singleOpt(), conn);
+ *         .on(Param.value("name", "Hemingway"))
+ *         .as(RowParser.int64("id").singleOpt(), conn)
  * );
- * }</pre>
+ * }
  *
  * All queries within the {@code apply} block are executed within the same
  * transaction. If any exception is thrown within this block, a rollback on the
@@ -56,14 +55,13 @@ public interface Transaction {
 
 	/**
 	 * Executes the given {@code block} with a DB connection.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final Optional<Long> id = apply(conn ->
 	 *     Query.of("SELECT id FROM author WHERE name = :name")
 	 *         .on(value("name", "Hemingway"))
-	 *         .as(RowParser.int64("id").singleOpt(), conn);
+	 *         .as(RowParser.int64("id").singleOpt(), conn)
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @param block the SQL function which is executed within a DB transaction
 	 * @param <T> the returned data type
@@ -76,14 +74,13 @@ public interface Transaction {
 
 	/**
 	 * Executes the given {@code block} with a DB connection.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * accept(conn ->
 	 *     Query.of("SELECT id FROM author WHERE name = :name")
-	 *         .on(value("name", "Hemingway"))
-	 *         .as(RowParser.int64("id").singleOpt(), conn);
+	 *         .on(Param.value("name", "Hemingway"))
+	 *         .as(RowParser.int64("id").singleOpt(), conn)
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @param block the SQL function which is executed within a DB transaction
 	 * @throws SQLException it the execution of the SQL block fails. In this
@@ -107,16 +104,16 @@ public interface Transaction {
 	 *     exception is then propagated to the caller.</li>
 	 * </ul>
 	 *
-	 * <pre>{@code
-	 * final DataSource ds = ...;
+	 * {@snippet lang="java":
+	 * final DataSource ds = null;  // @replace substring='null' replacement="..."
 	 * try (var conn = ds.getConnection()) {
 	 *     return Transaction.txm(conn, () ->
 	 *         Query.of("SELECT id FROM author WHERE name = :name")
-	 *             .on(value("name", "Hemingway"))
-	 *             .as(RowParser.int64("id").singleOpt(), conn);
+	 *             .on(Param.value("name", "Hemingway"))
+	 *             .as(RowParser.int64("id").singleOpt(), conn)
 	 *     );
 	 * }
-	 * }</pre>
+	 * }
 	 *
 	 * @apiNote
 	 * This method implements the transactional default behavior of the

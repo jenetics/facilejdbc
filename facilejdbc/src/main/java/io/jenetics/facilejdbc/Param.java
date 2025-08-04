@@ -34,18 +34,18 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * class.
  * <p>
  * Creating single-valued parameters:
- * <pre>{@code
+ * {@snippet lang="java":
  * INSERT_QUERY.on(
  *     Param.value("forename", "Werner"),
  *     Param.value("birthday", LocalDate.now()),
  *     Param.value("email", "some.email@gmail.com"))
- * }</pre>
+ * }
  *
  * Creating multivalued parameters:
- * <pre>{@code
+ * {@snippet lang="java":
  * Query.of("SELECT * FROM table WHERE id = IN(:ids);")
  *     .on(Param.values("ids", 1, 2, 3, 4))
- * }</pre>
+ * }
  *
  * @see SingleParam
  * @see MultiParam
@@ -70,12 +70,11 @@ public sealed interface Param permits SingleParam, MultiParam {
 	/**
 	 * Create a new query parameter object for the given {@code name} and
 	 * {@code value}.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final var result = Query.of("SELECT * FROM table WHERE id = :id;")
 	 *     .on(Param.value("id", 43245)
 	 *     .as(PARSER.singleOpt(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @param name the parameter name
 	 * @param value the parameter values, which may be {@code null}
@@ -93,12 +92,11 @@ public sealed interface Param permits SingleParam, MultiParam {
 	/**
 	 * Create a new (multi) query parameter object for the given {@code name}
 	 * and the given {@code values}.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final var result = Query.of("SELECT * FROM table WHERE id = IN(:ids);")
 	 *     .on(Param.values("ids", List.of(43245, 434, 23, 987, 1239))
 	 *     .as(PARSER.list(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @since 1.3
 	 *
@@ -130,12 +128,11 @@ public sealed interface Param permits SingleParam, MultiParam {
 	/**
 	 * Create a new (multi) query parameter object for the given {@code name}
 	 * and the given {@code values}.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final var result = Query.of("SELECT * FROM table WHERE id = IN(:ids);")
 	 *     .on(Param.values("ids", 43245, 434, 23, 987, 1239)
 	 *     .as(PARSER.list(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @since 1.3
 	 *
@@ -155,12 +152,11 @@ public sealed interface Param permits SingleParam, MultiParam {
 	/**
 	 * Create a new query parameter object from the given {@code name} and
 	 * lazily evaluated {@code value}.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final var result = Query.of("SELECT * FROM table WHERE date < :date;")
 	 *     .on(Param.lazyValue("date", LocalDate::now)
 	 *     .as(PARSER.singleOpt(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @param name the parameter name
 	 * @param value the lazily evaluated parameter value
@@ -178,14 +174,13 @@ public sealed interface Param permits SingleParam, MultiParam {
 	/**
 	 * Create a new query parameter object for the given {@code name} and
 	 * lazily evaluated {@code values}.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final SqlSupplier<Integer> id1 = ...;
 	 * final SqlSupplier<Integer> id2 = ...;
 	 * final var result = Query.of("SELECT * FROM table WHERE id = IN(:ids);")
 	 *     .on(Param.lazyValues("id", List.of(id1, id2))
 	 *     .as(PARSER.list(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @param name the parameter name
 	 * @param values the parameter values
@@ -209,12 +204,11 @@ public sealed interface Param permits SingleParam, MultiParam {
 	/**
 	 * Create a new query parameter object for the given {@code name} and
 	 * lazily evaluated {@code values}.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final var result = Query.of("SELECT * FROM table WHERE id = IN(:ids);")
 	 *     .on(Param.lazyValues("id", () -> 324, () -> 9967))
 	 *     .as(PARSER.list(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @param name the parameter name
 	 * @param values the parameter values

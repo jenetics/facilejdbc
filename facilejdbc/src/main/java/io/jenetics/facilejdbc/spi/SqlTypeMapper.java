@@ -24,48 +24,44 @@ package io.jenetics.facilejdbc.spi;
  * proper type of the used DB. This may lead to a more readable insertion code.
  * Usually, it is not possible to insert an {@code URI} field directly into the
  * DB. You have to convert it into a string object first.
- * <pre>{@code
- * public static final class Person {
- *     private final String name;
- *     private final URI link;
- * }
+ * {@snippet lang="java":
+ * public record Person(String name, URI link) {}
  *
  * static final Dctor<Person> DCTOR = Dctor.of(
  *     field("name", Person::name),
  *     field("email", p -> p.link().toString())
  * );
- * }</pre>
+ * }
  *
  * If a mapper for the {@code URI} class is defined, it is possible to write the
  * deconstructor more concise.
- * <pre>{@code
+ * {@snippet lang="java":
  * static final Dctor<Person> DCTOR = Dctor.of(
  *     field("name", Person::name),
  *     field("email", Person::link)
  * );
- * }</pre>
+ * }
  *
  * The implementation of such a mapping is quite simple and will look like showed
  * in the following code snippet.
- * <pre>{@code
+ * {@snippet lang="java":
  * public class MyTypeMapper extends SqlTypeMapper {
  *     public Object convert(final Object value) {
  *         if (value instanceof URI) return value.toString();
  *         return value;
  *     }
  * }
- * }</pre>
+ * }
  *
  * Add the following line
- * <pre>{@code
+ * {@snippet lang="java":
  * org.foobar.MyTypeMapper
- * }</pre>
+ * }
  *
  * to the service definition file
- *
- * <pre>{@code
+ * {@snippet lang="java":
  * META-INF/services/io.jenetics.facilejdbc.spi.SqlTypeMapper
- * }</pre>
+ * }
  *
  * and you are done.
  *
