@@ -1,5 +1,5 @@
 /*
- * Facile JDBC Library (@__identifier__@).
+ * Java Genetic Algorithm Library (@__identifier__@).
  * Copyright (c) @__year__@ Franz Wilhelmstötter
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,27 +18,28 @@
  *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
  */
 
+import org.apache.tools.ant.filters.ReplaceTokens
 
 /**
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
- * @since 1.0
- * @version 1.2
+ * @since 1.2
+ * @version 3.0
  */
-
 plugins {
 	base
 	alias(libs.plugins.jmh)
 }
 
-rootProject.version = FacileJDBC.VERSION
+rootProject.version = providers.gradleProperty("facilejdbc.version").get()
+
 
 tasks.named<Wrapper>("wrapper") {
-	version = "8.4"
+	gradleVersion = "8.14"
 	distributionType = Wrapper.DistributionType.ALL
 }
 
 /**
- * Project configuration *before* the projects has been evaluated.
+ * Project configuration *before* the projects have been evaluated.
  */
 allprojects {
 	group =  FacileJDBC.GROUP
@@ -53,41 +54,63 @@ allprojects {
 	}
 
 	configurations.all {
-		resolutionStrategy.failOnVersionConflict()
+		resolutionStrategy.preferProjectModules()
 	}
 }
 
-/**
- * Project configuration *after* the projects has been evaluated.
- */
+subprojects {
+	val project = this
+
+	tasks.withType<Test> {
+		useTestNG()
+	}
+
+	plugins.withType<JavaPlugin> {
+
+		configure<JavaPluginExtension> {
+			modularity.inferModulePath = true
+
+			sourceCompatibility = JavaVersion.VERSION_21
+			targetCompatibility = JavaVersion.VERSION_21
+
+			toolchain {
+				languageVersion = JavaLanguageVersion.of(21)
+			}
+		}
+
+		setupJava(project)
+		setupTestReporting(project)
+	}
+
+	tasks.withType<JavaCompile> {
+		modularity.inferModulePath = true
+
+		options.compilerArgs.add("-Xlint:${xlint()}")
+	}
+
+}
+
 gradle.projectsEvaluated {
 	subprojects {
-		val project = this
-
-		tasks.withType<JavaCompile> {
-			options.compilerArgs.add("-Xlint:" + xlint())
-		}
-
-		plugins.withType<JavaPlugin> {
-			configure<JavaPluginExtension> {
-				sourceCompatibility = JavaVersion.VERSION_17
-				targetCompatibility = JavaVersion.VERSION_17
-			}
-
-			configure<JavaPluginExtension> {
-				modularity.inferModulePath.set(true)
-			}
-
-			setupJava(project)
-			setupTestReporting(project)
-			setupJavadoc(project)
-		}
-
 		if (plugins.hasPlugin("maven-publish")) {
 			setupPublishing(project)
 		}
-	}
 
+		// Enforcing the library version defined in the version catalogs.
+		val catalogs = extensions.getByType<VersionCatalogsExtension>()
+		val libraries = catalogs.catalogNames
+			.map { catalogs.named(it) }
+			.flatMap { catalog -> catalog.libraryAliases.map { alias -> Pair(catalog, alias) } }
+			.map { it.first.findLibrary(it.second).get().get() }
+			.filter { it.version != null }
+			.map { it.toString() }
+			.toTypedArray()
+
+		configurations.all {
+			resolutionStrategy.preferProjectModules()
+			resolutionStrategy.force(*libraries)
+		}
+	}
 }
 
 /**
@@ -96,11 +119,11 @@ gradle.projectsEvaluated {
 fun setupJava(project: Project) {
 	val attr = mutableMapOf(
 		"Implementation-Title" to project.name,
-		"Implementation-Version" to FacileJDBC.VERSION,
+		"Implementation-Version" to project.version,
 		"Implementation-URL" to FacileJDBC.URL,
 		"Implementation-Vendor" to FacileJDBC.NAME,
 		"ProjectName" to FacileJDBC.NAME,
-		"Version" to FacileJDBC.VERSION,
+		"Version" to project.version,
 		"Maintainer" to FacileJDBC.AUTHOR,
 		"Project" to project.name,
 		"Project-Version" to project.version,
@@ -122,6 +145,31 @@ fun setupJava(project: Project) {
 			attributes(attr)
 		}
 	}
+
+	project.tasks.withType<Javadoc> {
+		val doclet = options as StandardJavadocDocletOptions
+		doclet.addBooleanOption("Xdoclint:accessibility,html,reference,syntax", true)
+		doclet.addStringOption("-show-module-contents", "api")
+		doclet.addStringOption("-show-packages", "exported")
+		doclet.version(true)
+		doclet.docEncoding = "UTF-8"
+		doclet.charSet = "UTF-8"
+		doclet.linkSource(true)
+		doclet.linksOffline(
+			"https://docs.oracle.com/en/java/javase/21/docs/api/",
+			"${project.rootDir}/buildSrc/resources/javadoc/java.se"
+		)
+		doclet.windowTitle = "Jenetics ${project.version}"
+		doclet.docTitle = "<h1>Jenetics ${project.version}</h1>"
+		doclet.bottom = "&copy; ${Env.COPYRIGHT_YEAR} Franz Wilhelmst&ouml;tter  &nbsp;<i>(${Env.BUILD_DATE})</i>"
+
+		doclet.addStringOption("docfilessubdirs")
+		doclet.tags = listOf(
+			"apiNote:a:API Note:",
+			"implSpec:a:Implementation Requirements:",
+			"implNote:a:Implementation Note:"
+		)
+	}
 }
 
 /**
@@ -131,7 +179,7 @@ fun setupTestReporting(project: Project) {
 	project.apply(plugin = "jacoco")
 
 	project.configure<JacocoPluginExtension> {
-		toolVersion = "0.8.11"
+		toolVersion = libs.jacoco.agent.get().version.toString()
 	}
 
 	project.tasks {
@@ -146,115 +194,46 @@ fun setupTestReporting(project: Project) {
 		}
 
 		named<Test>("test") {
-			useTestNG()
 			finalizedBy("jacocoTestReport")
 		}
 	}
 }
 
-/**
- * Setup of the projects Javadoc.
- */
-fun setupJavadoc(project: Project) {
-	project.tasks.withType<Javadoc> {
-		val doclet = options as StandardJavadocDocletOptions
-		doclet.addBooleanOption("Xdoclint:accessibility,html,reference,syntax", true)
-
-		exclude("**/internal/**")
-
-		doclet.memberLevel = JavadocMemberLevel.PROTECTED
-		doclet.version(true)
-		doclet.docEncoding = "UTF-8"
-		doclet.charSet = "UTF-8"
-		doclet.linkSource(true)
-		doclet.linksOffline(
-			"https://docs.oracle.com/en/java/javase/17/docs/api/",
-			"${project.rootDir}/buildSrc/resources/javadoc/java.se"
+fun snippetPaths(project: Project): String? {
+	return File("${project.projectDir}/src/main/java").walk()
+		.filter { file -> file.isDirectory && file.endsWith("snippet-files") }
+		.joinToString(
+			transform = { file -> file.absolutePath },
+			separator = File.pathSeparator
 		)
-		doclet.windowTitle = "FacileJDBC ${project.version}"
-		doclet.docTitle = "<h1>FacileJDBC ${project.version}</h1>"
-		doclet.bottom = "&copy; ${Env.COPYRIGHT_YEAR} Franz Wilhelmst&ouml;tter  &nbsp;<i>(${Env.BUILD_DATE})</i>"
-		doclet.stylesheetFile = project.file("${project.rootDir}/buildSrc/resources/javadoc/stylesheet.css")
-
-		doclet.tags = listOf(
-			"apiNote:a:API Note:",
-			"implSpec:a:Implementation Requirements:",
-			"implNote:a:Implementation Note:"
-		)
-
-		doLast {
-			project.copy {
-				from("src/main/java") {
-					include("io/**/doc-files/*.*")
-				}
-				includeEmptyDirs = false
-				into(destinationDir!!)
-			}
-		}
-	}
-
-	val javadoc = project.tasks.findByName("javadoc") as Javadoc?
-	if (javadoc != null) {
-		project.tasks.register<io.jenetics.gradle.ColorizerTask>("colorizer") {
-			directory = javadoc.destinationDir!!
-		}
-
-		project.tasks.register("java2html") {
-			doLast {
-				project.javaexec {
-					mainClass.set("de.java2html.Java2Html")
-					args = listOf(
-						"-srcdir", "src/main/java",
-						"-targetdir", "${javadoc.destinationDir}/src-html"
-					)
-					classpath = files("${project.rootDir}/buildSrc/lib/java2html.jar")
-				}
-			}
-		}
-
-		javadoc.doLast {
-			val colorizer = project.tasks.findByName("colorizer")
-			colorizer?.actions?.forEach {
-				it.execute(colorizer)
-			}
-
-
-			val java2html = project.tasks.findByName("java2html")
-			java2html?.actions?.forEach {
-				it.execute(java2html)
-			}
-		}
-	}
+		.ifEmpty { null }
 }
 
 /**
  * The Java compiler XLint flags.
  */
 fun xlint(): String {
-	// See https://docs.oracle.com/javase/9/tools/javac.htm#JSWOR627
+	// See https://docs.oracle.com/en/java/javase/17/docs/specs/man/javac.html
 	return listOf(
-		"auxiliaryclass",
 		"cast",
+		"auxiliaryclass",
 		"classfile",
 		"dep-ann",
 		"deprecation",
 		"divzero",
 		"empty",
-		"exports",
 		"finally",
-		"module",
-		"opens",
 		"overrides",
 		"rawtypes",
 		"removal",
-		"serial",
+		// "serial" -- Creates unnecessary warnings.,
 		"static",
 		"try",
 		"unchecked"
 	).joinToString(separator = ",")
 }
 
-val identifier = "${FacileJDBC.ID}-${FacileJDBC.VERSION}"
+val identifier = "${FacileJDBC.ID}-${providers.gradleProperty("facilejdbc.version").get()}"
 
 /**
  * Setup of the Maven publishing.
@@ -267,26 +246,29 @@ fun setupPublishing(project: Project) {
 
 	project.tasks.named<Jar>("sourcesJar") {
 		filter(
-			org.apache.tools.ant.filters.ReplaceTokens::class, "tokens" to mapOf(
-			"__identifier__" to identifier,
-			"__year__" to Env.COPYRIGHT_YEAR
-		)
+			ReplaceTokens::class, "tokens" to mapOf(
+				"__identifier__" to identifier,
+				"__year__" to Env.COPYRIGHT_YEAR
+			)
 		)
 	}
 
 	project.tasks.named<Jar>("javadocJar") {
 		filter(
-			org.apache.tools.ant.filters.ReplaceTokens::class, "tokens" to mapOf(
-			"__identifier__" to identifier,
-			"__year__" to Env.COPYRIGHT_YEAR
-		)
+			ReplaceTokens::class, "tokens" to mapOf(
+				"__identifier__" to identifier,
+				"__year__" to Env.COPYRIGHT_YEAR
+			)
 		)
 	}
 
 	project.configure<PublishingExtension> {
 		publications {
 			create<MavenPublication>("mavenJava") {
-				artifactId = FacileJDBC.ID
+				suppressPomMetadataWarningsFor("testFixturesApiElements")
+				suppressPomMetadataWarningsFor("testFixturesRuntimeElements")
+
+				artifactId = project.name
 				from(project.components["java"])
 				versionMapping {
 					usage("java-api") {
@@ -326,24 +308,23 @@ fun setupPublishing(project: Project) {
 		}
 		repositories {
 			maven {
-				url = if (version.toString().endsWith("SNAPSHOT")) {
-					uri(Maven.SNAPSHOT_URL)
-				} else {
-					uri(Maven.RELEASE_URL)
-				}
+				url = if (version.toString().endsWith("SNAPSHOT"))
+					uri(layout.buildDirectory.dir("repos/releases"))
+				else
+					uri(layout.buildDirectory.dir("repos/snapshots"))
+			}
+		}
 
-				credentials {
-					username = if (extra.properties["nexus_username"] != null) {
-						extra.properties["nexus_username"] as String
-					} else {
-						"nexus_username"
-					}
-					password = if (extra.properties["nexus_password"] != null) {
-						extra.properties["nexus_password"] as String
-					} else {
-						"nexus_password"
-					}
-				}
+		// Exclude test fixtures from publication, as we use them only internally
+		plugins.withId("org.gradle.java-test-fixtures") {
+			val component = components["java"] as AdhocComponentWithVariants
+			component.withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
+			component.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
+
+			// Workaround to not publish test fixtures sources added by com.vanniktech.maven.publish plugin
+			// TODO: Remove as soon as https://github.com/vanniktech/gradle-maven-publish-plugin/issues/779 closed
+			afterEvaluate {
+				component.withVariantsFromConfiguration(configurations["testFixturesSourcesElements"]) { skip() }
 			}
 		}
 	}
@@ -355,4 +336,3 @@ fun setupPublishing(project: Project) {
 	}
 
 }
-
