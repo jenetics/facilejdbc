@@ -107,7 +107,7 @@ public final class Records {
 	 * @throws IllegalArgumentException if there are duplicate fields defined
 	 */
 	public static <T extends Record> Dctor<T> dctor(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Function<? super RecordComponent, String> toColumnName,
 		final List<? extends Dctor.Field<? super T>> fields
 	) {
@@ -187,7 +187,7 @@ public final class Records {
 	 */
 	@SafeVarargs
 	public static <T extends Record> Dctor<T> dctor(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Function<? super RecordComponent, String> toColumnName,
 		final Dctor.Field<? super T>... fields
 	) {
@@ -233,7 +233,7 @@ public final class Records {
 	 */
 	@SafeVarargs
 	public static <T extends Record> Dctor<T> dctor(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Dctor.Field<? super T>... fields
 	) {
 		return dctor(type, Records::toSnakeCase, List.of(fields));
@@ -343,7 +343,7 @@ public final class Records {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
 	public static <T extends Record> RowParser<T> parser(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Function<? super RecordComponent, String> toColumnName,
 		final Function<? super RecordComponent, ? extends RowParser<?>> fields
 	) {
@@ -357,7 +357,7 @@ public final class Records {
 			.map(toColumnName)
 			.toArray(String[]::new);
 
-		final Constructor<T> ctor = ctor(type);
+		final var ctor = ctor(type);
 
 		return (row, conn) -> {
 			final Object[] values = new Object[components.length];
@@ -402,7 +402,7 @@ public final class Records {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
 	public static <T extends Record> RowParser<T> parser(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Map<? super String, String> toColumnName,
 		final Map<? super String, ? extends RowParser<?>> fields
 	) {
@@ -442,7 +442,7 @@ public final class Records {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
 	public static <T extends Record> RowParser<T> parserWithColumnNames(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Function<? super RecordComponent, String> toColumnName
 	) {
 		return parser(type, toColumnName, component -> null);
@@ -470,7 +470,7 @@ public final class Records {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
 	public static <T extends Record> RowParser<T> parserWithColumnNames(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Map<? super String, String> toColumnName
 	) {
 		return parser(type, toColumnName, Map.of());
@@ -502,7 +502,7 @@ public final class Records {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
 	public static <T extends Record> RowParser<T> parserWithFields(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Function<? super RecordComponent, ? extends RowParser<?>> fields
 	) {
 		return parser(type, Records::toSnakeCase, fields);
@@ -529,7 +529,7 @@ public final class Records {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
 	public static <T extends Record> RowParser<T> parserWithFields(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Map<? super String, ? extends RowParser<?>> fields
 	) {
 		return parser(type, Records::toSnakeCase, cmp -> fields.get(cmp.getName()));
@@ -550,7 +550,7 @@ public final class Records {
 	 * @return a new row-parser for the given record {@code type}
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
-	public static <T extends Record> RowParser<T> parser(final Class<T> type) {
+	public static <T extends Record> RowParser<T> parser(final Class<? extends T> type) {
 		return parser(type, Records::toSnakeCase, component -> null);
 	}
 

@@ -247,7 +247,7 @@ public interface RowParser<T> {
 	 * @throws NullPointerException if the given {@code factory} is {@code null}
 	 */
 	default  <C extends Collection<T>>
-	ResultSetParser<C> collection(final Supplier<C> factory) {
+	ResultSetParser<C> collection(final Supplier<? extends C> factory) {
 		return collection(factory, Function.identity());
 	}
 
@@ -269,7 +269,7 @@ public interface RowParser<T> {
 	 *
 	 * @return a new parser witch parses a whole selection result
 	 */
-	default ResultSetParser<T[]> array(final Class<T> type) {
+	default ResultSetParser<T[]> array(final Class<? extends T> type) {
 		return (rs, conn) -> list().parse(rs, conn).toArray(length -> {
 				@SuppressWarnings("unchecked")
 				final var array = (T[])Array.newInstance(type, length);
@@ -279,7 +279,7 @@ public interface RowParser<T> {
 
 	private <C1 extends Collection<T>, C2 extends Collection<T>>
 	ResultSetParser<C2> collection(
-		final Supplier<C1> factory,
+		final Supplier<? extends C1> factory,
 		final Function<? super C1, ? extends C2> mapper
 	) {
 		requireNonNull(factory);
@@ -461,7 +461,7 @@ public interface RowParser<T> {
 	 * Returns a parser for a scalar not-null value.
 	 * {@snippet lang="java":
 	 * final String name = Query.of("SELECT name FROM person WHERE id = :id")
-	 *     .on(value("id", 23))
+	 *     .on(Param.value("id", 23))
 	 *     .as(scalar(String.class).single(), conn);
 	 * }
 	 *
@@ -473,7 +473,7 @@ public interface RowParser<T> {
 	 * @return a parser for a scalar not-null value
 	 * @throws NullPointerException if the give {@code type} is {@code null}
 	 */
-	static <T> RowParser<T> scalar(final Class<T> type) {
+	static <T> RowParser<T> scalar(final Class<? extends T> type) {
 		return scalar(1, type);
 	}
 
@@ -481,7 +481,7 @@ public interface RowParser<T> {
 	 * Returns a parser for a scalar not-null value.
 	 * {@snippet lang="java":
 	 * final String name = Query.of("SELECT id, name FROM person WHERE id = :id")
-	 *     .on(value("id", 23))
+	 *     .on(Param.value("id", 23))
 	 *     .as(scalar(2, String.class).single(), conn);
 	 * }
 	 *
@@ -496,7 +496,7 @@ public interface RowParser<T> {
 	 * @return a parser for a scalar not-null value
 	 * @throws NullPointerException if the give {@code type} is {@code null}
 	 */
-	static <T> RowParser<T> scalar(final int index, final Class<T> type) {
+	static <T> RowParser<T> scalar(final int index, final Class<? extends T> type) {
 		return (row, conn) -> row.getObject(index, type);
 	}
 
@@ -504,7 +504,7 @@ public interface RowParser<T> {
 	 * Returns a parser for a scalar not-null value.
 	 * {@snippet lang="java":
 	 * final String name = Query.of("SELECT id, name FROM person WHERE id = :id")
-	 *     .on(value("id", 23))
+	 *     .on(Param.value("id", 23))
 	 *     .as(scalar("name", String.class).single(), conn);
 	 * }
 	 *
@@ -519,7 +519,7 @@ public interface RowParser<T> {
 	 * @return a parser for a scalar not-null value
 	 * @throws NullPointerException if the give {@code type} is {@code null}
 	 */
-	static <T> RowParser<T> scalar(final String name, final Class<T> type) {
+	static <T> RowParser<T> scalar(final String name, final Class<? extends T> type) {
 		return (row, conn) -> row.getObject(name, type);
 	}
 
@@ -887,7 +887,7 @@ public interface RowParser<T> {
 	 * @param <T> the record type
 	 * @throws NullPointerException if the give {@code type} is {@code null}
 	 */
-	static <T extends Record> RowParser<T> record(final Class<T> type) {
+	static <T extends Record> RowParser<T> record(final Class<? extends T> type) {
 		return Records.parser(type);
 	}
 

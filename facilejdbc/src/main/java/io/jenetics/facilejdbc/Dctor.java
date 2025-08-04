@@ -37,7 +37,6 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
 /**
  * This interface is responsible for <em>deconstructing</em> a given record, of
  * type {@code T}, to a DB-<em>row</em> ({@link ParamValues}).
- *
  * {@snippet lang="java":
  * final Dctor<Book> dctor = Dctor.of(
  *     Dctor.field("title", Book::title),

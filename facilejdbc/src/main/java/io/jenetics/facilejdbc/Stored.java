@@ -22,8 +22,6 @@ package io.jenetics.facilejdbc;
 /**
  * This class combines a record, stored in the DB, with its primary key.
  *
- * @since 2.1
- *
  * @param <K> the key type
  * @param <T> the record type, stored in the DB
  * @param id the primary key
