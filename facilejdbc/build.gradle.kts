@@ -25,8 +25,8 @@
  */
 
 plugins {
+	java
 	`java-library`
-	idea
 	`maven-publish`
 }
 
@@ -35,8 +35,8 @@ description = "FacileJDBC Library"
 extra["moduleName"] = "io.jenetics.facilejdbc"
 
 dependencies {
-	testImplementation(libs.testng)
-	testImplementation(libs.assertj)
+	testImplementation(libs.assertj.core)
 	testImplementation(libs.hsqldb)
 	testImplementation(libs.javafaker)
+	testImplementation(libs.testng)
 }
