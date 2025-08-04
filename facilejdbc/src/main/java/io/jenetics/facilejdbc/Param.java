@@ -33,18 +33,26 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * This is the  base interface of the {@link SingleParam} and {@link MultiParam}
  * class.
  * <p>
- * Creating single-valued parameters:
+ * <b>Creating single-valued parameters</b>
  * {@snippet lang="java":
  * INSERT_QUERY.on(
  *     Param.value("forename", "Werner"),
  *     Param.value("birthday", LocalDate.now()),
- *     Param.value("email", "some.email@gmail.com"))
+ *     Param.value("email", "some.email@gmail.com")
+ * );
  * }
- *
- * Creating multivalued parameters:
+ * <p>
+ * <b>Creating multi-valued parameters</b>
  * {@snippet lang="java":
- * Query.of("SELECT * FROM table WHERE id = IN(:ids);")
+ * var query = Query.of("SELECT * FROM table WHERE id = IN(:ids);")
  *     .on(Param.values("ids", 1, 2, 3, 4))
+ *
+ * assert query.rawSql().equals(
+ *     "SELECT * FROM book WHERE id IN(:ids[0],:ids[1],:ids[2],:ids[3]);"
+ * );
+ * assert query.sql().equals(
+ *     "SELECT * FROM book WHERE id IN(?,?,?,?);"
+ * );
  * }
  *
  * @see SingleParam
@@ -72,7 +80,7 @@ public sealed interface Param permits SingleParam, MultiParam {
 	 * {@code value}.
 	 * {@snippet lang="java":
 	 * final var result = Query.of("SELECT * FROM table WHERE id = :id;")
-	 *     .on(Param.value("id", 43245)
+	 *     .on(Param.value("id", 43245))
 	 *     .as(PARSER.singleOpt(), conn);
 	 * }
 	 *
@@ -91,11 +99,20 @@ public sealed interface Param permits SingleParam, MultiParam {
 
 	/**
 	 * Create a new (multi) query parameter object for the given {@code name}
-	 * and the given {@code values}.
+	 * and the given {@code values}. Each value is converted into prepared
+	 * statement parameter.
 	 * {@snippet lang="java":
-	 * final var result = Query.of("SELECT * FROM table WHERE id = IN(:ids);")
-	 *     .on(Param.values("ids", List.of(43245, 434, 23, 987, 1239))
-	 *     .as(PARSER.list(), conn);
+	 * final var query = Query.of("SELECT * FROM table WHERE id = IN(:ids);")
+	 *     .on(Param.values("ids", List.of(43245, 434, 23, 987)));
+	 *
+	 * assert query.rawSql().equals(
+	 *     "SELECT * FROM table WHERE id IN(:ids[0],:ids[1],:ids[2],:ids[3]);"
+	 * );
+	 * assert query.sql().equals(
+	 *     "SELECT * FROM table WHERE id IN(?,?,?,?);"
+	 * );
+	 *
+	 * final var result = query.as(PARSER.list(), conn);
 	 * }
 	 *
 	 * @since 1.3
@@ -118,20 +135,31 @@ public sealed interface Param permits SingleParam, MultiParam {
 		);
 	}
 
-	@SuppressWarnings("unchecked")
 	private static <T> Stream<T> stream(final Iterable<? extends T> values) {
-		return values instanceof Collection<?>
-			? ((Collection<T>)values).stream()
-			: StreamSupport.stream(((Iterable<T>)values).spliterator(), false);
+		@SuppressWarnings("unchecked")
+		final var vals = (Iterable<T>)values;
+
+		return vals instanceof Collection<T> collection
+			? collection.stream()
+			: StreamSupport.stream((vals).spliterator(), false);
 	}
 
 	/**
 	 * Create a new (multi) query parameter object for the given {@code name}
-	 * and the given {@code values}.
+	 * and the given {@code values}. Each value is converted into prepared
+	 * statement parameter.
 	 * {@snippet lang="java":
-	 * final var result = Query.of("SELECT * FROM table WHERE id = IN(:ids);")
-	 *     .on(Param.values("ids", 43245, 434, 23, 987, 1239)
-	 *     .as(PARSER.list(), conn);
+	 * final var query = Query.of("SELECT * FROM table WHERE id = IN(:ids);")
+	 *     .on(Param.values("ids", 43245, 434, 23, 987));
+	 *
+	 * assert query.rawSql().equals(
+	 *     "SELECT * FROM table WHERE id IN(:ids[0],:ids[1],:ids[2],:ids[3]);"
+	 * );
+	 * assert query.sql().equals(
+	 *     "SELECT * FROM table WHERE id IN(?,?,?,?);"
+	 * );
+	 *
+	 * final var result = query.as(PARSER.list(), conn);
 	 * }
 	 *
 	 * @since 1.3
@@ -154,7 +182,7 @@ public sealed interface Param permits SingleParam, MultiParam {
 	 * lazily evaluated {@code value}.
 	 * {@snippet lang="java":
 	 * final var result = Query.of("SELECT * FROM table WHERE date < :date;")
-	 *     .on(Param.lazyValue("date", LocalDate::now)
+	 *     .on(Param.lazyValue("date", LocalDate::now))
 	 *     .as(PARSER.singleOpt(), conn);
 	 * }
 	 *
@@ -175,10 +203,10 @@ public sealed interface Param permits SingleParam, MultiParam {
 	 * Create a new query parameter object for the given {@code name} and
 	 * lazily evaluated {@code values}.
 	 * {@snippet lang="java":
-	 * final SqlSupplier<Integer> id1 = ...;
-	 * final SqlSupplier<Integer> id2 = ...;
+	 * final SqlSupplier<Integer> id1 = null; // @replace substring='null' replacement="..."
+	 * final SqlSupplier<Integer> id2 = null; // @replace substring='null' replacement="..."
 	 * final var result = Query.of("SELECT * FROM table WHERE id = IN(:ids);")
-	 *     .on(Param.lazyValues("id", List.of(id1, id2))
+	 *     .on(Param.lazyValues("id", List.of(id1, id2)))
 	 *     .as(PARSER.list(), conn);
 	 * }
 	 *

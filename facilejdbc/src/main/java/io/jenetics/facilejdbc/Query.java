@@ -19,7 +19,6 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.lang.String.format;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
@@ -44,7 +43,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -223,18 +221,13 @@ public final class Query implements Serializable {
 	 * @throws NullPointerException if the given {@code params} is {@code null}
 	 */
 	public Query on(final Iterable<? extends Param> params) {
-		final List<SingleParam> singleParams = new ArrayList<>();
-		final List<MultiParam> multiParams = new ArrayList<>();
-		for (var param : params) {
+		final var singleParams = new ArrayList<SingleParam>();
+		final var multiParams = new ArrayList<MultiParam>();
 
-			if (param instanceof SingleParam p) {
-				singleParams.add(p);
-			} else if (param instanceof MultiParam p) {
-				multiParams.add(p);
-			} else {
-				throw new AssertionError(format(
-					"Type '%s' not expected.", param.getClass().getName()
-				));
+		for (var param : params) {
+			switch (param) {
+				case SingleParam sp -> singleParams.add(sp);
+				case MultiParam mp -> multiParams.add(mp);
 			}
 		}
 
@@ -261,7 +254,7 @@ public final class Query implements Serializable {
 				new Params(
 					params.stream()
 						.flatMap(Query::toParams)
-						.collect(Collectors.toList())
+						.toList()
 				)
 			);
 
