@@ -1,5 +1,11 @@
 ## Release notes
 
+### [2.1.1](https://github.com/jenetics/facilejdbc/releases/tag/v2.1.1)
+
+#### Bug
+
+* [#53](https://github.com/jenetics/facilejdbc/issues/53): RTimeout not being set on the `Query` object.
+
 ### [2.1.0](https://github.com/jenetics/facilejdbc/releases/tag/v2.1.0)
 
 #### Improvements
