@@ -32,7 +32,6 @@ plugins {
 
 rootProject.version = providers.gradleProperty("facilejdbc.version").get()
 
-
 tasks.named<Wrapper>("wrapper") {
 	gradleVersion = "8.14"
 	distributionType = Wrapper.DistributionType.ALL
@@ -43,7 +42,7 @@ tasks.named<Wrapper>("wrapper") {
  */
 allprojects {
 	group =  FacileJDBC.GROUP
-	version = FacileJDBC.VERSION
+	version = rootProject.version
 
 	repositories {
 		flatDir {
