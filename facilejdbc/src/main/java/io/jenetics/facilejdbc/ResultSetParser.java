@@ -27,8 +27,7 @@ import java.sql.SQLException;
  * This interface is responsible for parsing a {@link ResultSet} to a record of
  * type {@code T}. The intended way for creating a result-set parser is via an
  * existing {@link RowParser}.
- *
- * <pre>{@code
+ * {@snippet lang="java":
  * final RowParser<Person> parser = (row, conn) -> new Person(
  *     row.getString("name"),
  *     row.getString("email"),
@@ -38,7 +37,7 @@ import java.sql.SQLException;
  * final ResultSetParser<Person> rsp1 = parser.single();
  * final ResultSetParser<Optional<Person>> rsp2 = parser.singleOpt();
  * final ResultSetParser<List<Person>> rsp3 = parser.list();
- * }</pre>
+ * }
  *
  * @see RowParser
  *
@@ -69,12 +68,11 @@ public interface ResultSetParser<T> {
 	/**
 	 * Return a {@link ResultSet} parser, which converts the query result to a
 	 * CSV line.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final var select = Query.of("SELECT * FROM book;");
 	 * final var csv = select.as(ResultSetParser.csvLine(), conn);
 	 * System.out.println(csv);
-	 * }</pre>
+	 * }
 	 * The CSV output will look like this:
 	 * <pre>
 	 * "ID","PUBLISHED_AT","TITLE","ISBN","PAGES"

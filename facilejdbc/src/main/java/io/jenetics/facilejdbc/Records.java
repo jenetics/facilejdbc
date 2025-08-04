@@ -41,7 +41,7 @@ import java.util.stream.Stream;
  * <em>snake_case</em>) correspond to column names of the table.
  * <p>
  * Creating a {@link Dctor} from a given record type:
- * <pre>{@code
+ * {@snippet lang="java":
  * // The book record.
  * record Book(
  *     String title,
@@ -54,7 +54,7 @@ import java.util.stream.Stream;
  * // Matching column names, with book columns:
  * // [title, author, isbn, pages, published_at]
  * final Dctor<Book> dctor = Records.dctor(Book.class);
- * }</pre>
+ * }
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version 2.0
@@ -71,8 +71,7 @@ public final class Records {
 	/**
 	 * Create a new deconstructor for the given record type. This method gives
 	 * you the greatest flexibility
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling additional columns and different column names, with book columns:
 	 * // [title, primary_author, isbn13, pages, published_at, title_hash]
 	 * final Dctor<Book> dctor = Records.dctor(
@@ -91,7 +90,7 @@ public final class Records {
 	 *         field("title_hash", book -> book.title().hashCode())
 	 *     )
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #dctor(Class, Function, Dctor.Field[])
 	 *
@@ -153,8 +152,7 @@ public final class Records {
 	/**
 	 * Create a new deconstructor for the given record type. This method gives
 	 * you the greatest flexibility
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling additional columns and different column names, with book columns:
 	 * // [title, primary_author, isbn13, pages, published_at, title_hash]
 	 * final Dctor<Book> dctor = Records.dctor(
@@ -171,7 +169,7 @@ public final class Records {
 	 *     // Define an additional column and it's value.
 	 *     field("title_hash", book -> book.title().hashCode())
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #dctor(Class, Function, List)
 	 *
@@ -198,8 +196,7 @@ public final class Records {
 
 	/**
 	 * Create a new deconstructor for the given record type.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Matching column names, with book columns:
 	 * // [title, author, isbn, pages, published_at]
 	 * final Dctor<Book> dctor = Records.dctor(Book.class);
@@ -218,7 +215,7 @@ public final class Records {
 	 *     field("pages", book -> book.pages()*3),
 	 *     field("title_hash", book -> book.title().hashCode())
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #dctor(Class, Function, List)
 	 * @see #dctor(Class, Function, Dctor.Field[])
@@ -318,7 +315,7 @@ public final class Records {
 	 * Creates a {@link RowParser} for the given record {@code type}. This
 	 * method gives you the greatest flexibility in creating row-parser
 	 * instances.
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling different column names and column types:
 	 * // [title, primary_author, isbn, pages, published_at]
 	 * final RowParser<Book> parser = Records.parser(
@@ -335,7 +332,7 @@ public final class Records {
 	 *         default -> null;
 	 *     }
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @param type the record type
 	 * @param toColumnName function for mapping the record component to the
@@ -384,7 +381,7 @@ public final class Records {
 	 * Creates a {@link RowParser} for the given record {@code type}. This
 	 * method gives you the greatest flexibility in creating row-parser
 	 * instances.
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling different column names and column types:
 	 * // [title, primary_author, isbn, pages, published_at]
 	 * final RowParser<Book> parser = Records.parser(
@@ -392,7 +389,7 @@ public final class Records {
 	 *     Map.of("author", "primary_author"),
 	 *     Map.of("isbn", RowParser.string("isbn").map(Isbn::new))
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #parser(Class, Function, Function)
 	 *
@@ -422,7 +419,7 @@ public final class Records {
 	/**
 	 * Creates a {@link RowParser} for the given record {@code type} and an
 	 * additional record-component to column name mapping.
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling different column names and column types:
 	 * // [title, primary_author, isbn, pages, published_at]
 	 * final RowParser<Book> parser = Records.parserWithColumnNames(
@@ -433,7 +430,7 @@ public final class Records {
 	 *         default -> Records.toSnakeCase(component);
 	 *     }
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #parserWithColumnNames(Class, Map)
 	 *
@@ -454,14 +451,14 @@ public final class Records {
 	/**
 	 * Creates a {@link RowParser} for the given record {@code type} and an
 	 * additional record-component name to column name mapping.
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling different column names and column types:
 	 * // [title, primary_author, isbn, pages, published_at]
 	 * final RowParser<Book> parser = Records.parserWithColumnNames(
 	 *     Book.class,
 	 *     Map.of("author", "primary_author")
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #parserWithColumnNames(Class, Function)
 	 *
@@ -482,7 +479,7 @@ public final class Records {
 	/**
 	 * Creates a {@link RowParser} for the given record {@code type} and an
 	 * additional record-component to column mapping.
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling different column names and column types:
 	 * // [title, author, isbn, pages, published_at]
 	 * final RowParser<Book> parser = Records.parserWithFields(
@@ -494,7 +491,7 @@ public final class Records {
 	 *         default -> null;
 	 *     }
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #parserWithFields(Class, Map)
 	 *
@@ -514,14 +511,14 @@ public final class Records {
 	/**
 	 * Creates a {@link RowParser} for the given record {@code type} and an
 	 * additional record-component name to column mapping.
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling different column names and column types:
 	 * // [title, author, isbn, pages, published_at]
 	 * final RowParser<Book> parser = Records.parserWithFields(
 	 *     Book.class,
 	 *     Map.of("isbn", RowParser.string("isbn").map(Isbn::new))
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #parserWithFields(Class, Function)
 	 *
@@ -540,13 +537,13 @@ public final class Records {
 
 	/**
 	 * Creates a {@link RowParser} for the given record {@code type}.
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling different column names and column types:
 	 * // [title, author, isbn, pages, published_at]
 	 * final RowParser<Book> parser = Records.parser(Book.class);
-	 * }</pre>
+	 * }
 	 *
-	 * @see RowParser#of(Class)
+	 * @see RowParser#record(Class)
 	 *
 	 * @param type the record type
 	 * @param <T> the record type

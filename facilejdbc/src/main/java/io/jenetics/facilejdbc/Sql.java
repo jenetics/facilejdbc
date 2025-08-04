@@ -43,8 +43,7 @@ import java.util.stream.Stream;
  * the SQL string, respectively finds the query parameters. A query parameter
  * starts with a colon ':' and contains of one or more Word-Character, as
  * defined by \W ([a-zA-Z_0-9]) in the Regex syntax.
- *
- * <pre>{@code
+ * {@snippet lang="java":
  * private static final Sql SELECT = Sql.of("""
  *     SELECT * FROM person
  *     WHERE forename like :forename
@@ -57,7 +56,7 @@ import java.util.stream.Stream;
  *     VALUES(:forename, :surname, :birthday, :email);
  *     """
  * );
- * }</pre>
+ * }
  *
  * @see Query
  *
@@ -98,11 +97,11 @@ final class Sql {
 	/**
 	 * Return the original SQL string, this object is created with. So the
 	 * following assertion holds for every possible SQL string;
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final String query = "SELECT * FROM table WHERE id = :id;";
 	 * final Sql sql = Sql.of(query);
 	 * assert query.equals(sql.sql());
-	 * }</pre>
+	 * }
 	 *
 	 * @since 1.1
 	 *

@@ -28,10 +28,9 @@ import java.util.List;
  * Represents a query parameter with <em>name</em> and one or more <em>values</em>.
  * The parameter values are evaluated lazily. But it is also possible to create
  * {@code MultiParam} objects with eagerly evaluated values.
- *
- * <pre>{@code
+ * {@snippet lang="java":
  * SELECT_QUERY.on(Param.values("ids", 1, 2, 3, 4))
- * }</pre>
+ * }
  *
  * @see SingleParam
  * @see SingleParam#values(String, Iterable)

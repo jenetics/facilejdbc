@@ -52,8 +52,7 @@ import io.jenetics.facilejdbc.Lifecycle.Value;
 
 /**
  * A {@code Query} represents an executable piece of SQL text.
- *
- * <pre>{@code
+ * {@snippet lang="java":
  * private static final Query SELECT = Query.of("""
  *     SELECT * FROM person
  *     WHERE forename like :forename
@@ -66,7 +65,7 @@ import io.jenetics.facilejdbc.Lifecycle.Value;
  *     VALUES(:forename, :surname, :birthday, :email);
  *     """
  * );
- * }</pre>
+ * }
  *
  * @apiNote
  * This class is immutable and thread-safe.
@@ -111,11 +110,11 @@ public final class Query implements Serializable {
 	/**
 	 * Return the original SQL string, this object is created with. So the
 	 * following assertion holds for every possible SQL string;
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final String sql = "SELECT * FROM table WHERE id = :id;";
 	 * final Query query = Query.of(sql);
 	 * assert sql.equals(query.rawSql());
-	 * }</pre>
+	 * }
 	 *
 	 * @since 1.1
 	 *
@@ -209,12 +208,11 @@ public final class Query implements Serializable {
 
 	/**
 	 * Return a new query object with the given query parameter values.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final var result = Query.of("SELECT * FROM table WHERE id = :id;")
-	 *     .on(List.of(Param.value("id", 43245))
+	 *     .on(List.of(Param.value("id", 43245)))
 	 *     .as(PARSER.singleOpt(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @see #on(Param...)
 	 * @see #on(Map)
@@ -279,12 +277,11 @@ public final class Query implements Serializable {
 
 	/**
 	 * Return a new query object with the given query parameter values.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final var result = Query.of("SELECT * FROM table WHERE id = :id;")
-	 *     .on(Param.value("id", 43245)
+	 *     .on(Param.value("id", 43245))
 	 *     .as(PARSER.singleOpt(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
@@ -298,12 +295,11 @@ public final class Query implements Serializable {
 
 	/**
 	 * Return a new query object with the given query parameter values.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final var result = Query.of("SELECT * FROM table WHERE id = :id;")
 	 *     .on(Map.of("id", 43245))
 	 *     .as(PARSER.singleOpt(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
@@ -624,7 +620,7 @@ public final class Query implements Serializable {
 
 	/**
 	 * Create a new query object from the given SQL string.
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * private static final Query SELECT = Query.of("""
 	 *     SELECT * FROM person
 	 *     WHERE forename like :forename
@@ -637,7 +633,7 @@ public final class Query implements Serializable {
 	 *     VALUES(:forename, :surname, :birthday, :email);
 	 *     """
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @param sql the SQL string of the created query
 	 * @return a new query object from the given SQL string

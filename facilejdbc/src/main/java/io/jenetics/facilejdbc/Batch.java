@@ -32,12 +32,11 @@ import java.util.function.Function;
  * essentially an {@link Iterable} of records or row-creation functions. The
  * available factory functions make it easy to create a batch from a given
  * list of records or parameters.
- *
- * <pre>{@code
- * final List<Person> persons = ...;
- * final Dctor<Person> dctor = ...;
+ * {@snippet lang="java":
+ * final List<Person> persons = null; // @replace substring='null' replacement="..."
+ * final Dctor<Person> dctor = null; // @replace substring='null' replacement="..."
  * final Batch batch = Batch.of(persons, dctor);
- * }</pre>
+ * }
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version 1.0
