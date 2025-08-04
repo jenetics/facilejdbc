@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 /*
  * Facile JDBC Library (@__identifier__@).
  * Copyright (c) @__year__@ Franz Wilhelmstötter
