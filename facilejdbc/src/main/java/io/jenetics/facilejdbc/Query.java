@@ -50,6 +50,8 @@ import io.jenetics.facilejdbc.Lifecycle.Value;
 
 /**
  * A {@code Query} represents an executable piece of SQL text.
+ * <p>
+ * <b>Select query</b>
  * {@snippet lang="java":
  * private static final Query SELECT = Query.of("""
  *     SELECT * FROM person
@@ -57,7 +59,10 @@ import io.jenetics.facilejdbc.Lifecycle.Value;
  *     ORDER BY surname;
  *     """
  * );
- *
+ * }
+ * <p>
+ * <b>Insert query</b>
+ * {@snippet lang="java":
  * private static final Query INSERT = Query.of("""
  *     INSERT INTO person(forename, surname, birthday, email)
  *     VALUES(:forename, :surname, :birthday, :email);
@@ -613,6 +618,8 @@ public final class Query implements Serializable {
 
 	/**
 	 * Create a new query object from the given SQL string.
+	 * <p>
+	 * <b>Select query</b>
 	 * {@snippet lang="java":
 	 * private static final Query SELECT = Query.of("""
 	 *     SELECT * FROM person
@@ -620,7 +627,10 @@ public final class Query implements Serializable {
 	 *     ORDER BY surname;
 	 *     """
 	 * );
-	 *
+	 * }
+	 * <p>
+	 * <b>Insert query</b>
+	 * {@snippet lang="java":
 	 * private static final Query INSERT = Query.of("""
 	 *     INSERT INTO person(forename, surname, birthday, email)
 	 *     VALUES(:forename, :surname, :birthday, :email);

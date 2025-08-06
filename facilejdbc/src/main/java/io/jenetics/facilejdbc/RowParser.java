@@ -358,7 +358,10 @@ public interface RowParser<T> {
 	 * While consuming the result {@link Stream}, possible {@link SQLException}s
 	 * are wrapped into {@link UncheckedSQLException}s.
 	 * {@snippet lang="java":
+	 * static final RowParser<Book> PARSER = RowParser.record(Book.class);
 	 * final var select = Query.of("SELECT * FROM book;");
+	 *
+	 * // Query result stream must be used within a try-with-resources block.
 	 * try (var stream = select.as(PARSER.stream(), conn)) {
 	 *     stream.forEach(book -> null); // @replace substring='null' replacement="..."
 	 * }

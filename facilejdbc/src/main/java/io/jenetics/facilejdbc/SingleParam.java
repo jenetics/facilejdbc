@@ -31,7 +31,7 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * INSERT_QUERY.on(
  *     Param.value("forename", "Werner"),
  *     Param.value("birthday", LocalDate.now()),
- *     Param.value("email", "some.email@gmail.com"))
+ *     Param.value("email", "some.email@gmail.com"));
  * }
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>

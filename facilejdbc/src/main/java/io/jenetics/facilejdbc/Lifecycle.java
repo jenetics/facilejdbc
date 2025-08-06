@@ -257,25 +257,25 @@ final class Lifecycle {
 		implements Supplier<T>, ExtendedCloseable<E>
 	{
 
-		private final T _value;
-		private final ThrowingConsumer<? super T, ? extends E> _release;
+		private final T value;
+		private final ThrowingConsumer<? super T, ? extends E> release;
 
 		private Value(
 			final T value,
 			final ThrowingConsumer<? super T, ? extends E> release
 		) {
-			_value = value;
-			_release = requireNonNull(release);
+			this.value = value;
+			this.release = requireNonNull(release);
 		}
 
 		@Override
 		public T get() {
-			return _value;
+			return value;
 		}
 
 		@Override
 		public void close() throws E {
-			_release.accept(get());
+			release.accept(get());
 		}
 
 		@Override
@@ -430,7 +430,7 @@ final class Lifecycle {
 		implements ExtendedCloseable<E>
 	{
 
-		private final List<ThrowingRunnable<? extends E>> _resources = new ArrayList<>();
+		private final List<ThrowingRunnable<? extends E>> resources = new ArrayList<>();
 
 		/**
 		 * Create a new {@code Resources} object, initialized with the given
@@ -441,7 +441,7 @@ final class Lifecycle {
 		public Resources(
 			final Collection<? extends ThrowingRunnable<? extends E>> releases
 		) {
-			_resources.addAll(releases);
+			resources.addAll(releases);
 		}
 
 		/**
@@ -480,14 +480,14 @@ final class Lifecycle {
 			requireNonNull(resource);
 			requireNonNull(release);
 
-			_resources.add(() -> release.accept(resource));
+			resources.add(() -> release.accept(resource));
 			return resource;
 		}
 
 		@Override
 		public void close() throws E {
-			if (!_resources.isEmpty()) {
-				ExtendedCloseable.of(_resources).close();
+			if (!resources.isEmpty()) {
+				ExtendedCloseable.of(resources).close();
 			}
 		}
 

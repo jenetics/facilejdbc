@@ -51,6 +51,7 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * @version 1.1
  * @since 1.1
  */
+@FunctionalInterface
 public interface Transaction {
 
 	/**
