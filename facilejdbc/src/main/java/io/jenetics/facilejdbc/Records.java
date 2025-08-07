@@ -41,7 +41,7 @@ import java.util.stream.Stream;
  * <em>snake_case</em>) correspond to column names of the table.
  * <p>
  * Creating a {@link Dctor} from a given record type:
- * <pre>{@code
+ * {@snippet lang="java":
  * // The book record.
  * record Book(
  *     String title,
@@ -54,7 +54,7 @@ import java.util.stream.Stream;
  * // Matching column names, with book columns:
  * // [title, author, isbn, pages, published_at]
  * final Dctor<Book> dctor = Records.dctor(Book.class);
- * }</pre>
+ * }
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
  * @version 2.0
@@ -71,8 +71,7 @@ public final class Records {
 	/**
 	 * Create a new deconstructor for the given record type. This method gives
 	 * you the greatest flexibility
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling additional columns and different column names, with book columns:
 	 * // [title, primary_author, isbn13, pages, published_at, title_hash]
 	 * final Dctor<Book> dctor = Records.dctor(
@@ -91,14 +90,14 @@ public final class Records {
 	 *         field("title_hash", book -> book.title().hashCode())
 	 *     )
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #dctor(Class, Function, Dctor.Field[])
 	 *
 	 * @param type the record type to deconstruct
 	 * @param toColumnName function for mapping the record component to the
 	 *        column names of the DB
-	 * @param fields The fields which overrides/extends the
+	 * @param fields The fields that override/extend the
 	 *        automatically extracted fields from the record. It also allows
 	 *        defining additional column values, derived from the given record
 	 *        values.
@@ -108,7 +107,7 @@ public final class Records {
 	 * @throws IllegalArgumentException if there are duplicate fields defined
 	 */
 	public static <T extends Record> Dctor<T> dctor(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Function<? super RecordComponent, String> toColumnName,
 		final List<? extends Dctor.Field<? super T>> fields
 	) {
@@ -153,8 +152,7 @@ public final class Records {
 	/**
 	 * Create a new deconstructor for the given record type. This method gives
 	 * you the greatest flexibility
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling additional columns and different column names, with book columns:
 	 * // [title, primary_author, isbn13, pages, published_at, title_hash]
 	 * final Dctor<Book> dctor = Records.dctor(
@@ -171,14 +169,14 @@ public final class Records {
 	 *     // Define an additional column and it's value.
 	 *     field("title_hash", book -> book.title().hashCode())
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #dctor(Class, Function, List)
 	 *
 	 * @param type the record type to deconstruct
 	 * @param toColumnName function for mapping the record component to the
 	 *        column names of the DB
-	 * @param fields The fields which overrides/extends the
+	 * @param fields The fields that override/extend the
 	 *        automatically extracted fields from the record. It also allows
 	 *        defining additional column values, derived from the given record
 	 *        values.
@@ -189,7 +187,7 @@ public final class Records {
 	 */
 	@SafeVarargs
 	public static <T extends Record> Dctor<T> dctor(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Function<? super RecordComponent, String> toColumnName,
 		final Dctor.Field<? super T>... fields
 	) {
@@ -198,8 +196,7 @@ public final class Records {
 
 	/**
 	 * Create a new deconstructor for the given record type.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Matching column names, with book columns:
 	 * // [title, author, isbn, pages, published_at]
 	 * final Dctor<Book> dctor = Records.dctor(Book.class);
@@ -218,14 +215,14 @@ public final class Records {
 	 *     field("pages", book -> book.pages()*3),
 	 *     field("title_hash", book -> book.title().hashCode())
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #dctor(Class, Function, List)
 	 * @see #dctor(Class, Function, Dctor.Field[])
 	 * @see Dctor#of(Class, Dctor.Field[])
 	 *
 	 * @param type the record type to deconstruct
-	 * @param fields The fields which overrides/extends the
+	 * @param fields The fields that override/extend the
 	 *        automatically extracted fields from the record. It also allows
 	 *        defining additional column values, derived from the given record
 	 *        values.
@@ -236,14 +233,14 @@ public final class Records {
 	 */
 	@SafeVarargs
 	public static <T extends Record> Dctor<T> dctor(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Dctor.Field<? super T>... fields
 	) {
 		return dctor(type, Records::toSnakeCase, List.of(fields));
 	}
 
 	/**
-	 * Converts to given a record component to a column name in
+	 * Converts to give a record component to a column name in
 	 * <a href="https://en.wikipedia.org/wiki/Snake_case">snake_case</a>.
 	 *
 	 * @see #toSnakeCase(String)
@@ -318,7 +315,7 @@ public final class Records {
 	 * Creates a {@link RowParser} for the given record {@code type}. This
 	 * method gives you the greatest flexibility in creating row-parser
 	 * instances.
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling different column names and column types:
 	 * // [title, primary_author, isbn, pages, published_at]
 	 * final RowParser<Book> parser = Records.parser(
@@ -335,7 +332,7 @@ public final class Records {
 	 *         default -> null;
 	 *     }
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @param type the record type
 	 * @param toColumnName function for mapping the record component to the
@@ -346,7 +343,7 @@ public final class Records {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
 	public static <T extends Record> RowParser<T> parser(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Function<? super RecordComponent, String> toColumnName,
 		final Function<? super RecordComponent, ? extends RowParser<?>> fields
 	) {
@@ -360,7 +357,7 @@ public final class Records {
 			.map(toColumnName)
 			.toArray(String[]::new);
 
-		final Constructor<T> ctor = ctor(type);
+		final var ctor = ctor(type);
 
 		return (row, conn) -> {
 			final Object[] values = new Object[components.length];
@@ -384,7 +381,7 @@ public final class Records {
 	 * Creates a {@link RowParser} for the given record {@code type}. This
 	 * method gives you the greatest flexibility in creating row-parser
 	 * instances.
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling different column names and column types:
 	 * // [title, primary_author, isbn, pages, published_at]
 	 * final RowParser<Book> parser = Records.parser(
@@ -392,7 +389,7 @@ public final class Records {
 	 *     Map.of("author", "primary_author"),
 	 *     Map.of("isbn", RowParser.string("isbn").map(Isbn::new))
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #parser(Class, Function, Function)
 	 *
@@ -405,7 +402,7 @@ public final class Records {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
 	public static <T extends Record> RowParser<T> parser(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Map<? super String, String> toColumnName,
 		final Map<? super String, ? extends RowParser<?>> fields
 	) {
@@ -422,7 +419,7 @@ public final class Records {
 	/**
 	 * Creates a {@link RowParser} for the given record {@code type} and an
 	 * additional record-component to column name mapping.
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling different column names and column types:
 	 * // [title, primary_author, isbn, pages, published_at]
 	 * final RowParser<Book> parser = Records.parserWithColumnNames(
@@ -433,7 +430,7 @@ public final class Records {
 	 *         default -> Records.toSnakeCase(component);
 	 *     }
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #parserWithColumnNames(Class, Map)
 	 *
@@ -445,7 +442,7 @@ public final class Records {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
 	public static <T extends Record> RowParser<T> parserWithColumnNames(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Function<? super RecordComponent, String> toColumnName
 	) {
 		return parser(type, toColumnName, component -> null);
@@ -454,14 +451,14 @@ public final class Records {
 	/**
 	 * Creates a {@link RowParser} for the given record {@code type} and an
 	 * additional record-component name to column name mapping.
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling different column names and column types:
 	 * // [title, primary_author, isbn, pages, published_at]
 	 * final RowParser<Book> parser = Records.parserWithColumnNames(
 	 *     Book.class,
 	 *     Map.of("author", "primary_author")
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #parserWithColumnNames(Class, Function)
 	 *
@@ -473,7 +470,7 @@ public final class Records {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
 	public static <T extends Record> RowParser<T> parserWithColumnNames(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Map<? super String, String> toColumnName
 	) {
 		return parser(type, toColumnName, Map.of());
@@ -482,7 +479,7 @@ public final class Records {
 	/**
 	 * Creates a {@link RowParser} for the given record {@code type} and an
 	 * additional record-component to column mapping.
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling different column names and column types:
 	 * // [title, author, isbn, pages, published_at]
 	 * final RowParser<Book> parser = Records.parserWithFields(
@@ -494,7 +491,7 @@ public final class Records {
 	 *         default -> null;
 	 *     }
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #parserWithFields(Class, Map)
 	 *
@@ -505,7 +502,7 @@ public final class Records {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
 	public static <T extends Record> RowParser<T> parserWithFields(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Function<? super RecordComponent, ? extends RowParser<?>> fields
 	) {
 		return parser(type, Records::toSnakeCase, fields);
@@ -514,14 +511,14 @@ public final class Records {
 	/**
 	 * Creates a {@link RowParser} for the given record {@code type} and an
 	 * additional record-component name to column mapping.
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling different column names and column types:
 	 * // [title, author, isbn, pages, published_at]
 	 * final RowParser<Book> parser = Records.parserWithFields(
 	 *     Book.class,
 	 *     Map.of("isbn", RowParser.string("isbn").map(Isbn::new))
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @see #parserWithFields(Class, Function)
 	 *
@@ -532,7 +529,7 @@ public final class Records {
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
 	public static <T extends Record> RowParser<T> parserWithFields(
-		final Class<T> type,
+		final Class<? extends T> type,
 		final Map<? super String, ? extends RowParser<?>> fields
 	) {
 		return parser(type, Records::toSnakeCase, cmp -> fields.get(cmp.getName()));
@@ -540,20 +537,20 @@ public final class Records {
 
 	/**
 	 * Creates a {@link RowParser} for the given record {@code type}.
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Handling different column names and column types:
 	 * // [title, author, isbn, pages, published_at]
 	 * final RowParser<Book> parser = Records.parser(Book.class);
-	 * }</pre>
+	 * }
 	 *
-	 * @see RowParser#of(Class)
+	 * @see RowParser#record(Class)
 	 *
 	 * @param type the record type
 	 * @param <T> the record type
 	 * @return a new row-parser for the given record {@code type}
 	 * @throws NullPointerException if one of the arguments is {@code null}
 	 */
-	public static <T extends Record> RowParser<T> parser(final Class<T> type) {
+	public static <T extends Record> RowParser<T> parser(final Class<? extends T> type) {
 		return parser(type, Records::toSnakeCase, component -> null);
 	}
 

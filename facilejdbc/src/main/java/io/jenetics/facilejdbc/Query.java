@@ -19,7 +19,6 @@
  */
 package io.jenetics.facilejdbc;
 
-import static java.lang.String.format;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
@@ -44,7 +43,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -52,21 +50,25 @@ import io.jenetics.facilejdbc.Lifecycle.Value;
 
 /**
  * A {@code Query} represents an executable piece of SQL text.
- *
- * <pre>{@code
+ * <p>
+ * <b>Select query</b>
+ * {@snippet lang="java":
  * private static final Query SELECT = Query.of("""
  *     SELECT * FROM person
  *     WHERE forename like :forename
  *     ORDER BY surname;
  *     """
  * );
- *
+ * }
+ * <p>
+ * <b>Insert query</b>
+ * {@snippet lang="java":
  * private static final Query INSERT = Query.of("""
  *     INSERT INTO person(forename, surname, birthday, email)
  *     VALUES(:forename, :surname, :birthday, :email);
  *     """
  * );
- * }</pre>
+ * }
  *
  * @apiNote
  * This class is immutable and thread-safe.
@@ -111,11 +113,11 @@ public final class Query implements Serializable {
 	/**
 	 * Return the original SQL string, this object is created with. So the
 	 * following assertion holds for every possible SQL string;
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final String sql = "SELECT * FROM table WHERE id = :id;";
 	 * final Query query = Query.of(sql);
 	 * assert sql.equals(query.rawSql());
-	 * }</pre>
+	 * }
 	 *
 	 * @since 1.1
 	 *
@@ -209,12 +211,11 @@ public final class Query implements Serializable {
 
 	/**
 	 * Return a new query object with the given query parameter values.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final var result = Query.of("SELECT * FROM table WHERE id = :id;")
-	 *     .on(List.of(Param.value("id", 43245))
+	 *     .on(List.of(Param.value("id", 43245)))
 	 *     .as(PARSER.singleOpt(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @see #on(Param...)
 	 * @see #on(Map)
@@ -225,18 +226,13 @@ public final class Query implements Serializable {
 	 * @throws NullPointerException if the given {@code params} is {@code null}
 	 */
 	public Query on(final Iterable<? extends Param> params) {
-		final List<SingleParam> singleParams = new ArrayList<>();
-		final List<MultiParam> multiParams = new ArrayList<>();
-		for (var param : params) {
+		final var singleParams = new ArrayList<SingleParam>();
+		final var multiParams = new ArrayList<MultiParam>();
 
-			if (param instanceof SingleParam p) {
-				singleParams.add(p);
-			} else if (param instanceof MultiParam p) {
-				multiParams.add(p);
-			} else {
-				throw new AssertionError(format(
-					"Type '%s' not expected.", param.getClass().getName()
-				));
+		for (var param : params) {
+			switch (param) {
+				case SingleParam sp -> singleParams.add(sp);
+				case MultiParam mp -> multiParams.add(mp);
 			}
 		}
 
@@ -263,7 +259,7 @@ public final class Query implements Serializable {
 				new Params(
 					params.stream()
 						.flatMap(Query::toParams)
-						.collect(Collectors.toList())
+						.toList()
 				)
 			);
 
@@ -279,12 +275,11 @@ public final class Query implements Serializable {
 
 	/**
 	 * Return a new query object with the given query parameter values.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final var result = Query.of("SELECT * FROM table WHERE id = :id;")
-	 *     .on(Param.value("id", 43245)
+	 *     .on(Param.value("id", 43245))
 	 *     .as(PARSER.singleOpt(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
@@ -298,12 +293,11 @@ public final class Query implements Serializable {
 
 	/**
 	 * Return a new query object with the given query parameter values.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final var result = Query.of("SELECT * FROM table WHERE id = :id;")
 	 *     .on(Map.of("id", 43245))
 	 *     .as(PARSER.singleOpt(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @param params the query parameters
 	 * @return a new query object with the set parameters
@@ -527,7 +521,7 @@ public final class Query implements Serializable {
 
 	/**
 	 * Executes the SQL statement in a {@link PreparedStatement} object, which
-	 * must be an SQL {@code INSERT}. It returns, the optionally generated, key
+	 * must be an SQL {@code INSERT}. It returns the optionally generated, key
 	 * for the inserted row.
 	 *
 	 * @see PreparedStatement#executeUpdate()
@@ -624,20 +618,25 @@ public final class Query implements Serializable {
 
 	/**
 	 * Create a new query object from the given SQL string.
-	 * <pre>{@code
+	 * <p>
+	 * <b>Select query</b>
+	 * {@snippet lang="java":
 	 * private static final Query SELECT = Query.of("""
 	 *     SELECT * FROM person
 	 *     WHERE forename like :forename
 	 *     ORDER BY surname;
 	 *     """
 	 * );
-	 *
+	 * }
+	 * <p>
+	 * <b>Insert query</b>
+	 * {@snippet lang="java":
 	 * private static final Query INSERT = Query.of("""
 	 *     INSERT INTO person(forename, surname, birthday, email)
 	 *     VALUES(:forename, :surname, :birthday, :email);
 	 *     """
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @param sql the SQL string of the created query
 	 * @return a new query object from the given SQL string

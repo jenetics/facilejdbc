@@ -46,7 +46,7 @@ final class Lifecycle {
 	/**
 	 * Runnable task/method, which might throw an exception {@code E}.
 	 *
-	 * @param <E> the exception which might be thrown
+	 * @param <E> the exception, which might be thrown
 	 */
 	@FunctionalInterface
 	public interface ThrowingRunnable<E extends Exception> {
@@ -183,7 +183,7 @@ final class Lifecycle {
 
 		/**
 		 * Create a new {@code ExtendedCloseable} object with the given initial
-		 * release <em>methods</em>. The given list of objects are closed in
+		 * release <em>methods</em>. The given list of objects is closed in
 		 * reversed order.
 		 *
 		 * @see #of(ThrowingRunnable...)
@@ -206,7 +206,7 @@ final class Lifecycle {
 
 		/**
 		 * Create a new {@code ExtendedCloseable} object with the given initial
-		 * release <em>methods</em>. The given list of objects are closed in
+		 * release <em>methods</em>. The given list of objects is closed in
 		 * reversed order.
 		 *
 		 * @see #of(Collection)
@@ -230,10 +230,9 @@ final class Lifecycle {
 	 * This class represents a <em>closeable</em> value. It is useful in cases
 	 * where the object value doesn't implement the {@link AutoCloseable}
 	 * interface but needs some cleanup work to do after usage. In the following
-	 * example the create {@code file} is automatically deleted when leaving the
+	 * example the created {@code file} is automatically deleted when leaving the
 	 * {@code try} block.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * // Create the closeable file.
 	 * final Value<Path, IOException> file = Value.of(
 	 *     Files.createFile(Path.of("some_file")),
@@ -246,7 +245,7 @@ final class Lifecycle {
 	 *     final var writtenText = Files.readString(file.get());
 	 *     assert "foo".equals(writtenText);
 	 * }
-	 * }</pre>
+	 * }
 	 *
 	 * @see #of(Object, ThrowingConsumer)
 	 * @see #build(ThrowingFunction)
@@ -258,25 +257,25 @@ final class Lifecycle {
 		implements Supplier<T>, ExtendedCloseable<E>
 	{
 
-		private final T _value;
-		private final ThrowingConsumer<? super T, ? extends E> _release;
+		private final T value;
+		private final ThrowingConsumer<? super T, ? extends E> release;
 
 		private Value(
 			final T value,
 			final ThrowingConsumer<? super T, ? extends E> release
 		) {
-			_value = value;
-			_release = requireNonNull(release);
+			this.value = value;
+			this.release = requireNonNull(release);
 		}
 
 		@Override
 		public T get() {
-			return _value;
+			return value;
 		}
 
 		@Override
 		public void close() throws E {
-			_release.accept(get());
+			release.accept(get());
 		}
 
 		@Override
@@ -286,12 +285,11 @@ final class Lifecycle {
 
 		/**
 		 * Applies the give {@code block} to the already created closeable value.
-		 * If the {@code block} throws an exception, the  resource value is
+		 * If the {@code block} throws an exception, the resource value is
 		 * released, by calling the defined <em>release</em> method. The typical
 		 * use case for this method is when additional initialization of the
 		 * value is needed.
-		 *
-		 * <pre>{@code
+		 * {@snippet lang="java":
 		 * final var file = CloseableValue.of(
 		 *     Files.createFile(Path.of("some_file")),
 		 *     Files::deleteIfExists
@@ -303,7 +301,7 @@ final class Lifecycle {
 		 * try (file) {
 		 *     // Do something with temp file.
 		 * }
-		 * }</pre>
+		 * }
 		 *
 		 * @param <E> the exception type
 		 * @param block the codec block which is applied to the value
@@ -352,8 +350,7 @@ final class Lifecycle {
 		 * in the case of an error. If the <em>value</em> could be created, the
 		 * caller is responsible for closing the opened <em>resources</em> by
 		 * calling the {@link Value#close()} method.
-		 *
-		 * <pre>{@code
+		 * {@snippet lang="java":
 		 * final Value<Stream<Object>, IOException> result = Value.build(resources -> {
 		 *     final var fin = resources.add(new FileInputStream(file.toFile()), Closeable::close);
 		 *     final var bin = resources.add(new BufferedInputStream(fin), Closeable::close);
@@ -366,13 +363,13 @@ final class Lifecycle {
 		 * try (result) {
 		 *     result.get().forEach(System.out::println);
 		 * }
-		 * }</pre>
+		 * }
 		 *
 		 * @see Resources
 		 *
 		 * @param builder the builder method
 		 * @param <T> the value type of the created <em>closeable</em> value
-		 * @param <BE> the exception type which might be thrown while building
+		 * @param <BE> the exception type, which might be thrown while building
 		 *             the value
 		 * @param <VE> the exception type which might be thrown when releasing
 		 *              the returned <em>closeable</em> value
@@ -408,14 +405,13 @@ final class Lifecycle {
 	}
 
 	/**
-	 * This class allows to collect one or more {@link AutoCloseable} objects
+	 * This class allows collecting one or more {@link AutoCloseable} objects
 	 * into one. The registered closeable objects are closed in reverse order.
 	 * <p>
-	 * Using the {@code Resources} class can simplify the the creation of
+	 * Using the {@code Resources} class can simplify the creation of
 	 * dependent input streams, where it might be otherwise necessary to create
 	 * nested {@code try-with-resources} blocks.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * try (var resources = new Resources<IOException>()) {
 	 *     final var fin = resources.add(new FileInputStream(file), Closeable::close);
 	 *     if (fin.read() != -1) {
@@ -424,7 +420,7 @@ final class Lifecycle {
 	 *     final var oin = resources.add(new ObjectInputStream(fin), Closeable::close);
 	 *     // ...
 	 * }
-	 * }</pre>
+	 * }
 	 *
 	 * @see Value#build(ThrowingFunction)
 	 *
@@ -434,7 +430,7 @@ final class Lifecycle {
 		implements ExtendedCloseable<E>
 	{
 
-		private final List<ThrowingRunnable<? extends E>> _resources = new ArrayList<>();
+		private final List<ThrowingRunnable<? extends E>> resources = new ArrayList<>();
 
 		/**
 		 * Create a new {@code Resources} object, initialized with the given
@@ -445,7 +441,7 @@ final class Lifecycle {
 		public Resources(
 			final Collection<? extends ThrowingRunnable<? extends E>> releases
 		) {
-			_resources.addAll(releases);
+			resources.addAll(releases);
 		}
 
 		/**
@@ -470,7 +466,7 @@ final class Lifecycle {
 		 * resources.
 		 *
 		 * @param resource the new resource to register
-		 * @param release the method, which <em>releases</em> the the acquired
+		 * @param release the method, which <em>releases</em> the acquired
 		 *        resource
 		 * @param <C> the resource type
 		 * @return the registered resource
@@ -484,14 +480,14 @@ final class Lifecycle {
 			requireNonNull(resource);
 			requireNonNull(release);
 
-			_resources.add(() -> release.accept(resource));
+			resources.add(() -> release.accept(resource));
 			return resource;
 		}
 
 		@Override
 		public void close() throws E {
-			if (!_resources.isEmpty()) {
-				ExtendedCloseable.of(_resources).close();
+			if (!resources.isEmpty()) {
+				ExtendedCloseable.of(resources).close();
 			}
 		}
 
@@ -509,15 +505,14 @@ final class Lifecycle {
 	 * of the method invocations throws an exception. The first exception thrown
 	 * is rethrown after invoking the method on the remaining objects, all other
 	 * exceptions are swallowed.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final var streams = new ArrayList<InputStream>();
 	 * streams.add(new FileInputStream(file1));
 	 * streams.add(new FileInputStream(file2));
 	 * streams.add(new FileInputStream(file3));
 	 * // ...
 	 * invokeAll(Closeable::close, streams);
-	 * }</pre>
+	 * }
 	 *
 	 * @param <A> the closeable object type
 	 * @param <E> the exception type
@@ -579,7 +574,7 @@ final class Lifecycle {
 			} else {
 				try {
 					method.accept(object);
-				} catch (VirtualMachineError|ThreadDeath|LinkageError e) {
+				} catch (VirtualMachineError|LinkageError e) {
 					throw e;
 				} catch (Throwable e) {
 					error = e;

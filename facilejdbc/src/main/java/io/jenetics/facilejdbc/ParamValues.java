@@ -26,7 +26,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * This represents a whole Sql row (parameter set). Instead of representing the
+ * This represents a whole SQL row (parameter set). Instead of representing the
  * row directly, a row is defined it's <em>insertion</em> strategy.
  *
  * @see SingleParam

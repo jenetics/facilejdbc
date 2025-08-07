@@ -31,7 +31,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -41,7 +40,6 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -52,22 +50,21 @@ import io.jenetics.facilejdbc.function.SqlFunction2;
 /**
  * Converts one row from the given {@link ResultSet} into a data object from
  * the given type.
- *
- * <pre>{@code
+ * {@snippet lang="java":
  * final RowParser<Person> parser = (row, conn) -> new Person(
  *     row.getString("name"),
  *     row.getString("email"),
  *     row.getString("link")
  * );
- * }</pre>
+ * }
  * <p>
  * If you are using <em>records</em> as entity objects, the creation of
  * row-parser instances is even simpler.
- * <pre>{@code
+ * {@snippet lang="java":
  * // Handling different column names and column types:
  * // [title, author, isbn, pages, published_at]
- * final RowParser<Book> parser = RowParser.of(Book.class);
- * }</pre>
+ * final RowParser<Book> parser = RowParser.record(Book.class);
+ * }
  *
  * @see ResultSetParser
  * @see Dctor
@@ -138,15 +135,14 @@ public interface RowParser<T> {
 	 * Returns a parser that will apply the given {@code mapper} to the result
 	 * of {@code this} first parser, which will then be used for parsing the
 	 * final result. This allows combining existing row parsers.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * static final RowParser<Book> PARSER =
 	 * RowParser.string("title").flatMap(title ->
 	 *     RowParser.string("isbn").flatMap(isbn ->
 	 *         RowParser.int32("pages").map(pages -> new Book(title, isbn, pages))
 	 *     )
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @since 1.3
 	 *
@@ -251,7 +247,7 @@ public interface RowParser<T> {
 	 * @throws NullPointerException if the given {@code factory} is {@code null}
 	 */
 	default  <C extends Collection<T>>
-	ResultSetParser<C> collection(final Supplier<C> factory) {
+	ResultSetParser<C> collection(final Supplier<? extends C> factory) {
 		return collection(factory, Function.identity());
 	}
 
@@ -273,7 +269,7 @@ public interface RowParser<T> {
 	 *
 	 * @return a new parser witch parses a whole selection result
 	 */
-	default ResultSetParser<T[]> array(final Class<T> type) {
+	default ResultSetParser<T[]> array(final Class<? extends T> type) {
 		return (rs, conn) -> list().parse(rs, conn).toArray(length -> {
 				@SuppressWarnings("unchecked")
 				final var array = (T[])Array.newInstance(type, length);
@@ -283,7 +279,7 @@ public interface RowParser<T> {
 
 	private <C1 extends Collection<T>, C2 extends Collection<T>>
 	ResultSetParser<C2> collection(
-		final Supplier<C1> factory,
+		final Supplier<? extends C1> factory,
 		final Function<? super C1, ? extends C2> mapper
 	) {
 		requireNonNull(factory);
@@ -361,13 +357,15 @@ public interface RowParser<T> {
 	 * closes the underlying {@link ResultSet} and {@link java.sql.Statement}.
 	 * While consuming the result {@link Stream}, possible {@link SQLException}s
 	 * are wrapped into {@link UncheckedSQLException}s.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
+	 * static final RowParser<Book> PARSER = RowParser.record(Book.class);
 	 * final var select = Query.of("SELECT * FROM book;");
+	 *
+	 * // Query result stream must be used within a try-with-resources block.
 	 * try (var stream = select.as(PARSER.stream(), conn)) {
-	 *     stream.forEach(book -> ...);
+	 *     stream.forEach(book -> null); // @replace substring='null' replacement="..."
 	 * }
-	 * }</pre>
+	 * }
 	 *
 	 * @see UncheckedSQLException
 	 *
@@ -464,12 +462,11 @@ public interface RowParser<T> {
 
 	/**
 	 * Returns a parser for a scalar not-null value.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final String name = Query.of("SELECT name FROM person WHERE id = :id")
-	 *     .on(value("id", 23))
+	 *     .on(Param.value("id", 23))
 	 *     .as(scalar(String.class).single(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @see #scalar(int, Class)
 	 * @see #scalar(String, Class)
@@ -479,18 +476,17 @@ public interface RowParser<T> {
 	 * @return a parser for a scalar not-null value
 	 * @throws NullPointerException if the give {@code type} is {@code null}
 	 */
-	static <T> RowParser<T> scalar(final Class<T> type) {
+	static <T> RowParser<T> scalar(final Class<? extends T> type) {
 		return scalar(1, type);
 	}
 
 	/**
 	 * Returns a parser for a scalar not-null value.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final String name = Query.of("SELECT id, name FROM person WHERE id = :id")
-	 *     .on(value("id", 23))
+	 *     .on(Param.value("id", 23))
 	 *     .as(scalar(2, String.class).single(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @since 1.3
 	 *
@@ -503,18 +499,17 @@ public interface RowParser<T> {
 	 * @return a parser for a scalar not-null value
 	 * @throws NullPointerException if the give {@code type} is {@code null}
 	 */
-	static <T> RowParser<T> scalar(final int index, final Class<T> type) {
+	static <T> RowParser<T> scalar(final int index, final Class<? extends T> type) {
 		return (row, conn) -> row.getObject(index, type);
 	}
 
 	/**
 	 * Returns a parser for a scalar not-null value.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final String name = Query.of("SELECT id, name FROM person WHERE id = :id")
-	 *     .on(value("id", 23))
+	 *     .on(Param.value("id", 23))
 	 *     .as(scalar("name", String.class).single(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @since 1.3
 	 *
@@ -527,7 +522,7 @@ public interface RowParser<T> {
 	 * @return a parser for a scalar not-null value
 	 * @throws NullPointerException if the give {@code type} is {@code null}
 	 */
-	static <T> RowParser<T> scalar(final String name, final Class<T> type) {
+	static <T> RowParser<T> scalar(final String name, final Class<? extends T> type) {
 		return (row, conn) -> row.getObject(name, type);
 	}
 
@@ -821,8 +816,7 @@ public interface RowParser<T> {
 	 * Return a row parser which converts a DB row into a CSV row. This parser
 	 * can be used for exporting a huge amount of data into a file. The
 	 * following example shows how to stream a DB result into a file.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final var select = Query.of("SELECT * FROM book ORDER BY id;");
 	 * try (var lines = select.as(RowParser.csvLine().stream(), conn);
 	 *     var out = Files.newBufferedWriter(Path.of("out.csv")))
@@ -836,7 +830,7 @@ public interface RowParser<T> {
 	 *         }
 	 *     });
 	 * }
-	 * }</pre>
+	 * }
 	 *
 	 * The rows are written without a CSV header and will look like this:
 	 * <pre>
@@ -882,34 +876,12 @@ public interface RowParser<T> {
 	}
 
 	/**
-	 * Creates a {@link RowParser} for the given record {@code type}.
-	 * <pre>{@code
-	 * // Handling different column names and column types:
-	 * // [title, author, isbn, pages, published_at]
-	 * final RowParser<Book> parser = RowParser.of(Book.class);
-	 * }</pre>
-	 *
-	 * @see Records#parser(Class)
-	 *
-	 * @param type the record type
-	 * @param <T> the record type
-	 * @return a new row-parser for the given record {@code type}
-	 * @throws NullPointerException if one of the arguments is {@code null}
-	 * @deprecated Use {@link #record(Class)} instead
-	 */
-	@Deprecated(since = "2.1", forRemoval = true)
-	static <T extends Record> RowParser<T> of(final Class<T> type) {
-		return Records.parser(type);
-	}
-
-	/**
 	 * Returns a parser for the given record {@code type}.
-	 *
-	 * <pre>{@code
+	 * {@snippet lang="java":
 	 * final Book book = Query.of("SELECT * FROM book WHERE id = :id")
 	 *     .on(value("id", 23))
 	 *     .as(record(Book.class).singleNull(), conn);
-	 * }</pre>
+	 * }
 	 *
 	 * @since 2.1
 	 *
@@ -918,7 +890,7 @@ public interface RowParser<T> {
 	 * @param <T> the record type
 	 * @throws NullPointerException if the give {@code type} is {@code null}
 	 */
-	static <T extends Record> RowParser<T> record(final Class<T> type) {
+	static <T extends Record> RowParser<T> record(final Class<? extends T> type) {
 		return Records.parser(type);
 	}
 

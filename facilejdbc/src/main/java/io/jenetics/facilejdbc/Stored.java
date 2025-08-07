@@ -19,10 +19,10 @@
  */
 package io.jenetics.facilejdbc;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * This class combines a record, stored in the DB, with its primary key.
- *
- * @since 2.1
  *
  * @param <K> the key type
  * @param <T> the record type, stored in the DB
@@ -34,4 +34,7 @@ package io.jenetics.facilejdbc;
  * @since 2.1
  */
 public record Stored<K, T>(K id, T value) {
+	public Stored {
+		requireNonNull(id);
+	}
 }

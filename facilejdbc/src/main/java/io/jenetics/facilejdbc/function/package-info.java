@@ -19,7 +19,7 @@
  */
 
 /**
- * Contains all needed functional interfaces, which may throw a
+ * Contains all necessary functional interfaces, which may throw a
  * {@link java.sql.SQLException}.
  *
  * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>

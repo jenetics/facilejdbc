@@ -36,7 +36,7 @@ final class Reflections {
 	private Reflections() {
 	}
 
-	static <T extends Record> Constructor<T> ctor(final Class<T> type) {
+	static <T extends Record> Constructor<? extends T> ctor(final Class<? extends T> type) {
 		final Class<?>[] columnTypes = Stream.of(type.getRecordComponents())
 			.map(RecordComponent::getType)
 			.toArray(Class<?>[]::new);

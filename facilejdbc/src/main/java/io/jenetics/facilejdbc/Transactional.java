@@ -32,30 +32,27 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * exposed by a database. In this sense, it can be seen as a minimal database
  * interface, just by exposing a {@link Connection} factory method,
  * {@link #connection()}.
- *
- * <pre>{@code
+ * {@snippet lang="java":
  * final Transactional db = () -> DriverManager.getConnection(
  *     "jdbc:hsqldb:mem:testdb",
  *     "SA",
  *     ""
  * );
- * }</pre>
+ * }
  *
  * The code example shows how easy it is to create an in-memory HSQLDB
  * {@code Transactional} instance. If you already have a
  * {@link javax.sql.DataSource} instance, the creation of a <em>transactional</em>
  * object is even easier.
- *
- * <pre>{@code
- * final DataSource ds = ...;
+ * {@snippet lang="java":
+ * final DataSource ds = null; // @replace substring='null' replacement="..."
  * final Transactional db = ds::getConnection;
- * }</pre>
+ * }
  *
  * If you want to implement a different transaction strategy, you have also to
  * implement the {@link #txm(Connection, SqlSupplier)} method of {@code this}
  * interface.
- *
- * <pre>{@code
+ * {@snippet lang="java":
  * final var db = new Transactional() {
  *     public Connection connection() throws SQLException {
  *         return DriverManager.getConnection(
@@ -68,27 +65,25 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  *         throws SQLException
  *     {
  *         // Implement your transaction handling.
- *         return ...;
+ *         return null; // @replace substring='null' replacement="..."
  *     }
  * };
- * }</pre>
+ * }
  *
  *
  * The usage of the <em>db</em> is then also very straight forward.
- *
- * <pre>{@code
+ * {@snippet lang="java":
  * final long id = db.transaction().apply(conn ->
  *     INSERT_QUERY
  *         .on(author, DCTOR)
  *         .executeInsert(conn)
  *         .orElseThrow()
  * );
- * }</pre>
+ * }
  *
  * Using a transaction for batch update.
- *
- * <pre>{@code
- * db.transaction().accept(conn ->
+ * {@snippet lang="java":
+ * db.transaction().accept(conn -> {
  *     final Batch batch = Batch.of(
  *         authors,
  *         Dctor.of(
@@ -98,8 +93,8 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  *     );
  *
  *     INSERT_BOOK_AUTHOR.executeUpdate(batch, conn);
- * );
- * }</pre>
+ * });
+ * }
  *
  * @apiNote
  * The transactional default behavior
@@ -114,44 +109,42 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
 public interface Transactional {
 
 	/**
-	 * Return the DB connection. If you obtain a new connection, you are
+	 * Return the DB connection. If you get a new connection, you are
 	 * responsible for closing it after usage. This is done ideally in a
 	 * resource-try block.
-	 *
-	 * <pre>{@code
-	 * final Transactional db = ...;
+	 * {@snippet lang="java":
+	 * final Transactional db = null; // @replace substring='null' replacement="..."
 	 * try (var conn = db.connection()) {
 	 *     // Using the connection.
-	 *     ...;
+	 *     // ...
 	 * }
-	 * }</pre>
+	 * }
 	 *
 	 * You are usually using the {@link #transaction()} method for getting an
 	 * instance of the {@link Transaction} interface, which is then using this
-	 * method for obtaining the needed connections.
+	 * method for getting the necessary connections.
 	 *
 	 * @see #transaction()
 	 *
 	 * @return the DB connection
-	 * @throws SQLException if obtaining a DB connection fails
+	 * @throws SQLException if getting a DB connection fails
 	 */
 	Connection connection() throws SQLException;
 
 	/**
-	 * Return a <em>Transaction</em> object, which obtains the connection,
+	 * Return a <em>Transaction</em> object, which gets the connection,
 	 * needed for executing a query, from the {@link #connection()} factory
 	 * method. The transactional behavior is defined by the
 	 * {@link #txm(Connection, SqlSupplier)} method of {@code this} interface.
-	 *
-	 * <pre>{@code
-	 * final Transaction db = ...;
+	 * {@snippet lang="java":
+	 * final Transaction db = null; // @replace substring='null' replacement="..."
 	 * final long id = db.transaction().apply(conn ->
 	 *     INSERT_QUERY
 	 *         .on(author, DCTOR)
 	 *         .executeInsert(conn)
 	 *         .orElseThrow()
 	 * );
-	 * }</pre>
+	 * }
 	 *
 	 * @implNote
 	 * It is possible to store the {@code Transaction} instance, returned by
