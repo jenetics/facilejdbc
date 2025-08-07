@@ -841,7 +841,7 @@ public interface RowParser<T> {
 	 *
 	 * @since 1.3
 	 *
-	 * @see ResultSetParser#csvLine()
+	 * @see ResultSetParser#csv()
 	 * @see #ofColumns(Function)
 	 *
 	 * @return a row parser which converts a DB row into a CSV row

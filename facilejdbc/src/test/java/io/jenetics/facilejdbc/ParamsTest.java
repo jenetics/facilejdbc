@@ -20,6 +20,7 @@
 package io.jenetics.facilejdbc;
 
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.List;
 
 import org.testng.Assert;
@@ -39,7 +40,8 @@ public class ParamsTest {
 			Param.value("name_2", "value_2"),
 			Param.value("name_3", "value_3"),
 			Param.value("name_4", "value_4"),
-			Param.value("name_5", "value_5")
+			Param.value("name_5", "value_5"),
+			Param.lazyValue("inserted_at", Instant::now)
 		));
 
 		params.set(List.of("name_2", "name_5", "name_1"), stmt);

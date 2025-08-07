@@ -42,6 +42,15 @@ import io.jenetics.facilejdbc.function.SqlSupplier;
  * );
  * }
  * <p>
+ * <b>Creating (lazy) single-valued parameters</b>
+ * {@snippet lang="java":
+ * INSERT_QUERY.on(
+ *     Param.lazyValue("inserted_at", Instant::now),
+ *     Param.value("forename", "Werner"),
+ *     Param.value("email", "some.email@gmail.com")
+ * );
+ * }
+ * <p>
  * <b>Creating multi-valued parameters</b>
  * {@snippet lang="java":
  * var query = Query.of("SELECT * FROM table WHERE id = IN(:ids);")
