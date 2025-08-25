@@ -1,5 +1,5 @@
-![Build Status](https://github.com/jenetics/facilejdbc/actions/workflows/gradle.yml/badge.svg)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.jenetics/facilejdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.jenetics/facilejdbc)
+[![Build Status](https://github.com/jenetics/facilejdbc/actions/workflows/gradle.yml/badge.svg)](https://github.com/jenetics/facilejdbc/actions/workflows/gradle.yml?query=branch%3Amaster)
+[![Maven Central Version](https://img.shields.io/maven-central/v/io.jenetics/facilejdbc?color=green)](https://central.sonatype.com/artifact/io.jenetics/facilejdbc)
 [![Javadoc](https://www.javadoc.io/badge/io.jenetics/facilejdbc.svg)](http://www.javadoc.io/doc/io.jenetics/facilejdbc)
 
 **_For building and running the library, Java 17 (or above) is required._**
